@@ -1,15 +1,15 @@
 import { useEffect, useState } from 'react';
 import "../../style/homePage/homepage.css";
-import LinkButton from '../homePage/linkButton';
 import "../../style/homePage/settings.css";
 import SettingsModal from './settingsModal';
 import { useNavigate } from "react-router-dom";
 import ChatBox from "../chat/chatBox";
+import GameBox from "../game/GameBox";
+import TournamentList from "../game/TournamentList";
 import { useGameInvites } from '../../hooks/useGameInvites';
 import { useNotifications } from "../../hooks/useNotifications";
+import { useTournament } from "../../hooks/useTournament";
 import { connectSocket } from "../../socket";
-
-//import OneVsOne from "../modes/OneVsOne";
 
 type User = {
   id: number;
@@ -31,6 +31,7 @@ export default function HomePage() {
   const { notification, clear } = useNotifications();
   const [menuOpen, setMenuOpen] = useState(false);
 
+  const tournament = useTournament(user?.id || 0);
 
   const refreshUser = async () => {
     try {
@@ -113,7 +114,6 @@ export default function HomePage() {
       )}
 
 
-      {/* GAME INVITE POPUP */}
       {invite && (
         <div className="invite-popup">
           <p>
@@ -149,21 +149,32 @@ export default function HomePage() {
       </div>
 
       <div className="gameBox">
-        <div className="pongFrame">
-        <img className="pongClassic"
-          src="/images/pongHomePage.png"
-          alt="Pong"
-        /></div>
-        <div className="play">
-          <LinkButton
-            text="Jouer"
-            href="https://localhost:8443/play"
-          />
-        </div>
+        <GameBox
+          gameState={tournament.gameState}
+          invitedPlayers={tournament.invitedPlayers}
+          onPlayAI={tournament.playAI}
+          onPlayRandom={tournament.playRandom}
+          onPlayWithPlayer={tournament.playWithPlayer}
+          onExitGame={tournament.exitGame}
+          onStartTournament={tournament.startTournament}
+          onChangeTournamentName={tournament.changeTournamentName}
+          tournamentId={tournament.tournamentId}
+          tournamentName={tournament.tournamentName}
+          tournamentPlayers={tournament.tournamentPlayers}
+          tournamentMatches={tournament.tournamentMatches}
+          isOrganizer={tournament.isOrganizer}
+        />
       </div>
 
 
       <ChatBox myUserId={user.id} />
+
+      <div className="tournaments-sidebar">
+        <TournamentList
+          tournaments={tournament.availableTournaments}
+          onJoin={tournament.joinTournament}
+        />
+      </div>
 
 
       <div className="profileArea" onClick={() => setMenuOpen(!menuOpen)}>
