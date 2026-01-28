@@ -1,0 +1,165 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*   twoFAPage.css                                                            */
+/*                                                                            */
+/* ************************************************************************** */
+
+/* Контейнер страницы - центрирует содержимое по вертикали и горизонтали */
+.twofa-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #111111 0%, #090909 100%);
+  padding: 20px;
+}
+
+/* Основной контейнер формы */
+.twofa-container {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  max-width: 400px;
+  width: 100%;
+  text-align: center;
+  position: relative;
+}
+
+/* Кнопка закрытия (крестик) */
+.twofa-close-btn {
+  position: absolute;
+  top: 3px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 20px;
+  color: #666;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  padding: 0;
+  line-height: 1;
+}
+
+/* Стили при наведении на кнопку закрытия */
+.twofa-close-btn:hover {
+  background: rgba(0, 0, 0, 0.1);
+  color: #333;
+  transform: translateX(-50%) scale(1.1);
+}
+
+/* Стили при активном состоянии кнопки закрытия */
+.twofa-close-btn:active {
+  transform: translateX(-50%) scale(0.95);
+}
+
+/* Заголовок страницы */
+.twofa-container h2 {
+  margin: 0 0 10px 0;
+  color: #333;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+/* Описание под заголовком */
+.twofa-description {
+  color: #666;
+  font-size: 14px;
+  margin: 0 0 30px 0;
+  line-height: 1.5;
+}
+
+/* Форма для ввода кода */
+.twofa-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Поле ввода кода - большой размер, центрированный текст */
+.twofa-input {
+  width: 100%;
+  padding: 16px;
+  font-size: 32px;
+  font-weight: 600;
+  text-align: center;
+  letter-spacing: 8px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  outline: none;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+}
+
+/* Стили при фокусе на поле ввода */
+.twofa-input:focus {
+  border-color: #24262f;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+/* Стили для неактивного поля ввода */
+.twofa-input:disabled {
+  background-color: #f5f5f5;
+  cursor: not-allowed;
+}
+
+/* Сообщение об ошибке */
+.twofa-error {
+  color: #e74c3c;
+  font-size: 14px;
+  margin: -10px 0 0 0;
+  text-align: center;
+}
+
+/* Кнопка проверки */
+.twofa-button {
+  width: 100%;
+  padding: 14px;
+  font-size: 16px;
+  font-weight: 600;
+  color: white;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+/* Стили при наведении на кнопку */
+.twofa-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+/* Стили для неактивной кнопки */
+.twofa-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Кнопка в режиме деактивации (красная) */
+.twofa-button.danger {
+  background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+}
+
+.twofa-button.danger:hover:not(:disabled) {
+  box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4);
+}
+
+/* QR код для активации 2FA */
+.twofa-qr {
+  width: 100%;
+  max-width: 250px;
+  margin: 0 auto 20px auto;
+  border-radius: 8px;
+  border: 2px solid #e0e0e0;
+}
+

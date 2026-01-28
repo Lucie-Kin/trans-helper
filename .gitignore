@@ -1,0 +1,23 @@
+**/node_modules/*
+
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+dist
+dist-ssr
+*.local
+
+*.sqlite
+*.db
+*.sqlite3
+
+build
+.env
+# reverse-proxy/auth/*.htpasswd
+monitoring/data/*
+ELK/data/*

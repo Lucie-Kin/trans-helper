@@ -1,0 +1,84 @@
+datasource db {
+    provider        = "sqlite"
+    url             = env("DATABASE_URL")
+}
+
+generator client {
+    provider        = "prisma-client-js"
+    binaryTargets   = ["native", "debian-openssl-1.1.x"]
+}
+
+enum MatchType {
+    RANKED
+    CASUAL
+    TOURNAMENT
+}
+
+enum MatchStatus {
+    PENDING
+    IN_PROGRESS
+    COMPLETED
+    CANCELLED
+}
+
+enum QueueMode {
+    RANKED
+    CASUAL
+    RANDOM
+}
+
+enum QueueStatus {
+    WAITING
+    MATCHED
+    EXPIRED
+    CANCELLED
+}
+
+model Match {
+    id                  String          @id @default(cuid())
+    matchType           MatchType
+    playerAId           String
+    playerBId           String
+    playerAIsAi         Boolean         @default(false)
+    playerBIsAi         Boolean         @default(false)
+    tournamentMatchId   String?
+    status              MatchStatus     @default(PENDING)
+    scoreA              Int             @default(0)
+    scoreB              Int             @default(0)
+    winnerId            String?
+    startedAt           DateTime?
+    completedAt         DateTime?
+    createdAt           DateTime        @default(now())
+
+    eloChanges EloHistory[]
+
+    @@index([playerAId])
+    @@index([playerBId])
+    @@index([index])
+}
+
+model EloHistory {
+    id                  String          @id @default(cuid())
+    matchId             String
+    match               Match           @relation(fields: [matchId], references: [id])
+    playerId            String
+    eloBefore           Int
+    eloAfter            Int
+    createdAt           DateTime        @default(now())
+
+    @@index([playerId])
+    @@index([matchId])
+}
+
+model QueueEntry {
+    id                  String          @id @default(cuid())
+    playerId            String          @unique
+    mode                QueueMode
+    eloRating           Int
+    joinedAt            DateTime        @default(now())
+    status              QueueStatus     @default(WAITING)
+    expiresAt           DateTime
+
+    @@index([status, mode])
+    @@index([eloRating])
+}

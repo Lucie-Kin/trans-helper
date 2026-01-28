@@ -1,0 +1,33 @@
+groups:
+  - name: basic-alerts # nom du groupe de règles d'alerte
+    rules:
+
+    - alert: ServiceDown # nom de l'alerte
+      expr: up == 0 # condition d'alerte : la métrique 'up' est égale à 0
+      for: 20s # durée pendant laquelle la condition doit être vraie pour déclencher l'alerte
+      labels:
+        severity: critical  # niveau de sévérité de l'alerte
+      annotations:
+        summary: "Service down"
+        description: "{{$labels.instance}} is not responding" # titre descriptif pour l'alerte
+
+    - alert: HighRequestLatency
+      expr: histogram_quantile(
+              0.95,
+              rate(http_request_duration_seconds_bucket[1m])
+            ) > 1
+      for: 1m
+      labels:
+        severity: warning
+      annotations:
+        summary: "High latency detected"
+        description: "95th percentile latency > 1s"
+
+    - alert: TooMany5xx
+      expr: rate(http_requests_total{status=~"5.."}[1m]) > 0.1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "High error rate"
+        description: "Too many HTTP 5xx responses"

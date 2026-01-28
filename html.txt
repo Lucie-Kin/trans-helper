@@ -1,0 +1,4 @@
+<br> = saut de ligne
+<p> = paragraphe
+
+https://www.youtube.com/watch?v=0dvGni3iwCY

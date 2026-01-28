@@ -1,0 +1,25 @@
+filebeat.inputs:
+  - type: filestream
+    id: docker-containers
+    enabled: true
+    paths:
+      - /var/lib/docker/containers/*/*.log
+    parsers:
+      - container: ~
+
+processors:
+  - add_docker_metadata:
+      host: "unix:///var/run/docker.sock"
+
+output.elasticsearch:
+  hosts: ["http://elastic:9200"]
+  index: "logs-%{[container.name]}-%{+yyyy.MM.dd}"
+
+setup.template.enabled: true
+setup.template.name: "logs"
+setup.template.pattern: "logs-*"
+setup.ilm.enabled: false
+
+logging.level: info
+logging.level: debug
+logging.selectors: ["output", "elasticsearch", "publisher"]

@@ -1,0 +1,12 @@
+- ALLER DANS DOCKER COMPOSE ET REGARDER LE SERVICE DOCKER PROXY (volumes)
+- taper cette commande dans le terminal --> id -u
+- monter le volume " - /run/user/$UID/docker.sock:/var/run/docker.sock:ro "
+- remplacer(sans supprimer) le volume correspondant
+
+exemple : - /run/user/101968/docker.sock:/var/run/docker.sock:ro --> morgane
+
+
+ls -l /var/run/docker.sock
+srw-rw---- 1 root docker 0 nov 16 10:00 /var/run/docker.sock  sur mon ordi perso, Zara idem
+
+

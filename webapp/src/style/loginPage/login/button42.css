@@ -1,0 +1,40 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   button42.css                                       :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: morgane <morgane@student.42.fr>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/09/08 16:46:23 by mobonill          #+#    #+#             */
+/*   Updated: 2025/10/29 01:21:23 by morgane          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+.button42 {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px; /* espace entre logo et texte */
+  background: #000;
+  backdrop-filter: blur(10px);
+  color: #fff;
+  overflow: hidden;
+  padding: 2rem;
+  cursor: pointer;
+  font-size: 1.5rem;
+}
+
+
+.button42:hover {
+	box-shadow:
+		0 40px 80px rgba(0,0,0,0.9),
+		0 0 20px rgba(255,255,255,0.2);
+	transform: translateY(-1px) scale(1.02);
+}
+
+
+.button42 .logo42 {
+  width: 30%;
+  margin-left: -150px;
+}

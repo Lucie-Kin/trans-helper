@@ -1,0 +1,39 @@
+.leftBox {
+  position: absolute;
+  bottom: 4rem;
+  left: 30%;
+  transform: translateX(-50%);
+  width: 40rem;
+  height: 40rem;
+  padding: 1rem;
+  flex-direction: column;
+
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+
+  background: rgb(8, 3, 0);
+
+  -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(24px);
+
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+}
+
+.leftBox::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  pointer-events: none;
+
+  background: linear-gradient(120deg,
+      rgba(255, 255, 255, 0),
+      rgba(255, 255, 255, 0.082),
+      transparent 60%);
+}
+
+/* pour le reflet sur la card */
+.leftBox>* {
+  position: relative;
+  z-index: 1;
+}

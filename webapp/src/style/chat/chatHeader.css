@@ -1,0 +1,83 @@
+
+.chat-header {
+    display: flex;
+    align-items: center;
+    padding: 10px 12px;
+    border-bottom: 1px solid #e5e7eb;
+    background: #141010;
+    cursor: pointer;
+  }
+  
+  .chat-header:hover {
+    background: #141010;
+  }
+  
+  .chat-header-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .avatar-wrapper {
+    position: relative;
+  }
+  
+  .chat-avatar {
+    width: 106px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+  
+  .status-dot {
+    position: absolute;
+    bottom: 10px;
+    right: 0.2px;
+  
+    width: 10px;
+    height:10px;
+    border-radius: 50%;
+  
+    border: 2px solid rgba(8, 0, 0, 0.8);
+  }
+  
+  .status-dot.online {
+    background: #22c55e; /* green */
+  }
+  
+  .status-dot.offline {
+    background: #941d1d; /* gray */
+  }
+  
+  .chat-header-info {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.1;
+  }
+  
+  .chat-login {
+    font-weight: 600;
+    font-size: 15px;
+    color: #f3f4f7;
+    font-family: "Chakra"
+  }
+  
+  .chat-status {
+    font-size: 11px;
+    color: #f5f5f6;
+    font-family : "Chakra"
+  }
+  
+  .text-avatar{
+    position: relative;
+    top: 0px;
+    right: 5px;
+    border: none;
+    background: transparent;
+    font-size: 15px;
+    cursor: pointer;
+    color: #ecf1f7;
+  }
+  .text-avatar:hover {
+    color: #ecedf1;
+  }

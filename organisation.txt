@@ -1,0 +1,32 @@
+Partie obligatoire :
+- Pong (Robin)
+- Tournament & Matchmaking
+- Login page (Morgane) --> en cours
+- Home page
+	-stats
+	-chat (Zara)
+	- etcs
+- Design front(Lucie) -->
+- Your website must be protected against SQL injections/XSS attacks. 
+- HTTPS (morgane) --> done
+
+
+Modules majeurs :
+- Oauth (Morgane) --> done
+- Microservices(Morgane) --> en cours
+- Chat (Zara) -- > en cours
+- 2FA Auth JWT
+- Gestions des users (everyone) --> en cours
+- Adversaire IA
+- 3D
+- Module backend (everyone) --> en cours
+- ELK (Morgane)
+?????-Pong cote serveur ??? (Robin)
+
+Modules mineurs:
+- Grafana et Prometheus (Morgane) --> en cours
+- Extensions navigateurs (everyone) --> en cours
+- Malvoyants (Lucie)
+- Multilingues (Lucie)
+- Support tous les appareils
+- Base de donnee (everyone) -- > en cours

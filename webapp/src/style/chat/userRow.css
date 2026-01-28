@@ -1,0 +1,72 @@
+/* webapp/src/style/chat/userRow.css */
+.chat-user-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.4rem 0.6rem;
+  border-radius: 8px;
+  margin-bottom: 0.4rem;
+  font-size: 1rem;
+  font-family: "Chakra_semi_bold";
+}
+
+.chat-user-item.selected {
+  background: #6f6b6b;
+}
+
+.action-icon {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.action-icon.friend-default,
+.action-icon.none {
+  background: rgb(187, 191, 202);
+}
+
+.action-icon img{
+  width: 18px;      /* ajuste: 14 / 16 / 18 */
+  height: 18px;
+  object-fit: contain;
+  display: block;
+}
+
+.action-icon.friend-outgoing,
+.action-icon.game-inviting {
+  background: #f0c85c;
+  color: #1c1c1c;
+}
+
+.action-icon.game-invited {
+  background: #5c9df0;
+}
+
+.action-icon.friend-confirmed,
+.action-icon.game-accepted {
+  background: #33ad60f8; 
+}
+
+.action-icon.game-rejected {
+  background: #ff805c;
+}
+
+.action-icon:hover {
+  filter: brightness(1.05);
+}
+
+.user-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.user-login {
+  color: #e0e0e0; /* default color */
+}

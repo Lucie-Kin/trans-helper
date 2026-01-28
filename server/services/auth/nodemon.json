@@ -1,0 +1,6 @@
+
+{
+  "watch": ["src"],
+  "ext": "ts",
+  "exec": "cd /auth && npm run build && node /auth/dist/index.js"
+}

@@ -1,0 +1,6 @@
+certicats valables jusqu'au 17 Janvier
+
+pour générer un certificat (exemple pour auth):
+mkcert auth.localhost
+
+key et certif a placer dans reverse-proxy/certs

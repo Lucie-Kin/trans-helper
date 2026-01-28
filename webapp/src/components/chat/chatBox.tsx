@@ -1,0 +1,151 @@
+import { useState, useEffect } from "react";
+import { getSocket } from "../../socket";
+import UserList, { type UserWithInvite } from "./userList";
+import MessageList from "./messageList";
+import MessageInput from "./messageInput";
+import ChatHeader from "./chatHeader";
+import ProfileModal from "./profileModal";
+import "../../style/chat/chatBox.css";
+
+export default function ChatBox({ myUserId }: { myUserId: number }) {
+  const socket = getSocket();
+
+  const [isConnected, setIsConnected] = useState(socket.connected);
+  const [activeUserId, setActiveUserId] = useState<number | null>(null);
+  const [showProfile, setShowProfile] = useState(false);
+  const [blockedByMe, setBlockedByMe] = useState<number[]>([]);
+  const [blockedMe, setBlockedMe] = useState<number[]>([]);
+  const [users, setUsers] = useState<UserWithInvite[]>([]);
+
+  useEffect(() => {
+    const s = getSocket();
+
+    const onConnect = () => {
+      console.log("CHAT SOCKET CONNECTED");
+      setIsConnected(true);
+      s.emit("blocks:list");
+    };
+    const onDisconnect = () => {
+      console.log("CHAT SOCKET DISCONNECTED");
+      setIsConnected(false);
+    };
+    const onBlocksList = (data: any) => {
+      setBlockedByMe(data?.blockedByMe ?? []);
+      setBlockedMe(data?.blockedMe ?? []);
+    };
+
+    //  co uniquement si pas déjà co
+    if (!s.connected) s.connect();
+
+    s.on("connect", onConnect);
+    s.on("disconnect", onDisconnect);
+    s.on("blocks:list", onBlocksList);
+
+    // fermeture le composant est démonté
+    return () => {
+      s.off("connect", onConnect);
+      s.off("disconnect", onDisconnect);
+      s.off("blocks:list", onBlocksList);
+
+      // forcer une seule socket partagée :
+      if (s.connected) s.disconnect();
+    };
+  }, []); // ← dépendances vides, exécuté UNE SEULE FOIS
+
+  const isBlockedByMe =
+    activeUserId !== null && blockedByMe.includes(activeUserId);
+  const isBlockedByThem =
+    activeUserId !== null && blockedMe.includes(activeUserId);
+
+  const handleInvite = (userId: number) => {
+    setUsers((prev) =>
+      prev.map((u) =>
+        u.id === userId
+          ? {
+              ...u,
+              inviteStatus:
+                u.inviteStatus === "none" || u.inviteStatus === "rejected"
+                  ? "inviting"
+                  : "none",
+          }
+          : u
+      )
+    );
+    const user = users.find((u) => u.id === userId);
+    if (!user) return;
+    if (user.inviteStatus === "none" || user.inviteStatus === "rejected")
+      socket.emit("game:invite", { targetId: userId });
+    else
+      socket.emit("game:invite:cancel", { targetId: userId });
+  };
+
+  if (!isConnected) {
+    return <div className="chat-placeholder">Connexion au chat...</div>;
+  }
+
+  return (
+    <div className="chat-box">
+      <UserList
+        users={users}
+        myUserId={myUserId}
+        selectedUserId={activeUserId}
+        onSelectUser={(id) => {
+          setActiveUserId(id);
+          setShowProfile(false);
+        }}
+        onInvite={handleInvite}
+      />
+
+      <div className="chat-right">
+        {activeUserId !== null ? (
+          <>
+            <div className="chat-header-wrapper">
+              <ChatHeader
+                userId={activeUserId}
+                onOpenProfile={() => setShowProfile(true)}
+              />
+              <button
+                className="chat-close-btn"
+                onClick={() => {
+                  setActiveUserId(null);
+                  setShowProfile(false);
+                }}
+                title="Fermer le chat"
+                aria-label="Fermer le chat"
+              >
+                ✕
+              </button>
+            </div>
+
+            <MessageList activeUserId={activeUserId} myUserId={myUserId} />
+
+            <MessageInput
+              activeUserId={activeUserId}
+              isBlockedByMe={isBlockedByMe}
+              isBlockedByThem={isBlockedByThem}
+              onBlock={() =>
+                socket.emit("user:block", { targetId: activeUserId })
+              }
+            />
+
+            {showProfile && (
+              <ProfileModal
+                userId={activeUserId}
+                onClose={() => setShowProfile(false)}
+              />
+            )}
+          </>
+        ) : (
+          <div className="chat-empty-wrapper">
+            <div className="chat-empty-top">
+              <div className="chat-empty-title">Messages</div>
+              <div className="chat-empty-subtitle">Sélectionnez une conversation</div>
+            </div>
+            <div className="chat-empty-body" />
+          </div>
+        )
+        }
+      </div>
+    </div>
+  );
+}

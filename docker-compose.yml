@@ -1,0 +1,356 @@
+services:
+
+  # docker-proxy:
+  #   image: tecnativa/docker-socket-proxy
+  #   container_name: docker-proxy
+  #   restart: unless-stopped
+  #   environment:
+  #     - CONTAINERS=1
+  #     - SERVICES=1
+  #     - TASKS=1
+  #     - NETWORKS=1
+  #     - EVENTS=1
+  #     - SYSTEM=1
+  #     - VERSION=1
+  #     - INFO=1
+  #   volumes:
+  #     - /var/run/docker.sock:/var/run/docker.sock:ro
+  #     # - /run/user/101968/docker.sock:/var/run/docker.sock:ro
+  #   expose:
+  #     - "2375"
+  #   networks:
+  #     - proxy_net
+
+
+  traefik:
+    image: docker.io/traefik:v3.6
+    container_name: traefik
+    restart: unless-stopped
+    # depends_on:
+    #   - docker-proxy
+    security_opt:
+      - label=disable
+    command:
+      - "--providers.docker=true" #repasser sur true si on enleve le docker proxy
+      # - "--providers.docker.endpoint=http://docker-proxy:2375" #a enelever si pu le docker proxy
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.network=transcendance_net"
+      #- "--providers.docker.endpoint=unix://var/run/docker.sock"
+      # entrypoints
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      # redirection http -> https (global)
+      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
+      # provider fichier pour le TLS local
+      - "--providers.file.directory=/dynamics"
+      - "--providers.file.watch=true"
+      # dashboard local (HTTP) + metriques
+      - "--api.insecure=true"
+      - "--metrics.prometheus=true"
+      - "--metrics.prometheus.addrouterslabels=true"
+      - "--accesslog=true"
+      - "--log.level=DEBUG"
+    ports:
+      - "8082:80" #http
+      - "8443:443" #https
+      - "8081:8080" #dashboard
+    volumes:
+      # - /var/run/docker.sock:/var/run/docker.sock:ro
+      - $DOCKER_SOCK:/var/run/docker.sock:ro
+      - ./reverse-proxy/certs:/certs:ro
+      - ./reverse-proxy/dynamics:/dynamics:ro
+      - ./reverse-proxy/auth:/auth:ro
+    networks:
+      # - proxy_net
+      - transcendance_net
+
+
+  auth:
+    container_name: auth
+    build:
+      context: ./server/services/auth
+    expose:
+      - "3001"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.auth.rule=Host(`localhost`) && PathPrefix(`/auth`)"
+      - "traefik.http.routers.auth.entrypoints=websecure"
+      - "traefik.http.routers.auth.tls=true"
+      - "traefik.http.routers.auth.priority=100"
+      - "traefik.http.services.auth.loadbalancer.server.port=3001"
+      - "traefik.http.middlewares.metrics-auth.basicauth.users=prometheus:$$apr1$$qwerty$$mU8gq/R4L.0ZVmZJKzzWb0"
+      - "traefik.docker.network=transcendance_net"
+    volumes:
+      - ./server/services/auth:/app:Z
+      - auth-data:/app/data:Z
+    env_file:
+      - ./.env
+    environment:
+      CLIENT_ID: ${CLIENT_ID}
+      CLIENT_SECRET: ${CLIENT_SECRET}
+      REDIRECT_URI: ${REDIRECT_URI}
+      CHOKIDAR_USEPOLLING: true
+      DB_PATH: /app/data/auth.db
+    command: sh -c "cd /app && npm install && npm run dev"
+    networks: 
+      - transcendance_net
+
+
+  tournament:
+    container_name: tournament
+    build:
+      context: ./server/services/tournament
+    ports:
+      - "3003:3003"
+    volumes:
+      - ./server/services/tournament/src:/app/src:Z
+    user: "1000:1000"
+    env_file:
+      - ./.env
+    networks:
+      - transcendance_net
+
+
+  chat:
+    container_name: chat
+    build:
+      context: ./server/services/chat
+    ports:
+      - "3002:3002"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.chat.rule=Host(`localhost`) && PathPrefix(`/chat/socket.io`)"
+      - "traefik.http.routers.chat.entrypoints=websecure"
+      - "traefik.http.routers.chat.tls=true"
+      - "traefik.http.routers.chat.priority=200"
+      - "traefik.http.services.chat.loadbalancer.server.port=3002"
+      - "traefik.docker.network=transcendance_net"
+      # route principale chat
+      # - "traefik.enable=true"
+      # - "traefik.http.routers.chat.rule=Host(`localhost`) && PathPrefix(`/chat`)"
+      # - "traefik.http.routers.chat.entrypoints=websecure"
+      # - "traefik.http.routers.chat.tls=true"
+      # - "traefik.http.routers.chat.priority=200"
+      # - "traefik.http.services.chat.loadbalancer.server.port=3002"
+      # - "traefik.docker.network=ft_transcendance_transcendance_net"
+      # route séparée pour metrics (bat tout le reste)
+      - "traefik.http.routers.chat-metrics.rule=Host(`localhost`) && Path(`/chat/metrics`)"
+      - "traefik.http.routers.chat-metrics.entrypoints=websecure"
+      - "traefik.http.routers.chat-metrics.tls=true"
+      - "traefik.http.routers.chat-metrics.priority=500"
+      - "traefik.http.services.chat.loadbalancer.server.port=3002"
+    env_file:  
+      - ./.env
+    networks:
+      - transcendance_net
+
+
+  webapp:
+    container_name: webapp
+    build:
+      context: ./webapp
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./webapp/src:/app/src:Z
+      - ./webapp/index.html:/app/index.html:Z
+      - ./webapp/vite.config.ts:/app/vite.config.ts:Z
+      - ./webapp/tsconfig.json:/app/tsconfig.json:Z
+    env_file: 
+      - ./.env
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.front.rule=Host(`localhost`) && PathPrefix(`/`)"
+      - "traefik.http.routers.front.entrypoints=websecure"
+      - "traefik.http.routers.front.tls=true"
+      - "traefik.http.routers.front.priority=1"
+      - "traefik.http.services.front.loadbalancer.server.port=5173"
+    command: npm run dev
+    networks:
+    - transcendance_net
+
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    user: "0:0"
+    restart: unless-stopped
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--web.external-url=https://localhost:8443/prometheus"
+      - "--web.route-prefix=/prometheus"
+      - "--storage.tsdb.path=/prometheus"
+      - "--storage.tsdb.retention.time=30d"
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/prometheus/alerting.yml:/etc/prometheus/alerting.yml:ro
+      - ./monitoring/data/prometheus:/prometheus
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.prom.rule=Host(`localhost`) && PathPrefix(`/prometheus`)"
+      - "traefik.http.routers.prom.entrypoints=websecure"
+      - "traefik.http.routers.prom.tls=true"
+      - "traefik.http.routers.prom.priority=200"
+      - "traefik.http.services.prom.loadbalancer.server.port=9090"
+    networks:
+      - transcendance_net
+
+
+  grafana:
+    image: grafana/grafana-oss:latest
+    container_name: grafana
+    user: "0:0"
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GF_ADMIN_USER}
+      GF_SECURITY_ADMIN_PASSWORD: ${GF_ADMIN_PASSWORD}
+      GF_SERVER_ROOT_URL: "https://localhost:8443/grafana"
+      GF_SERVER_SERVE_FROM_SUB_PATH: "true"
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.grafana.rule=Host(`localhost`) && PathPrefix(`/grafana`)"
+      - "traefik.http.routers.grafana.entrypoints=websecure"
+      - "traefik.http.routers.grafana.tls=true"
+      - "traefik.http.routers.grafana.priority=200"
+      - "traefik.http.services.grafana.loadbalancer.server.port=3000"
+    volumes:
+      - ./monitoring/data/grafana:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards
+    env_file:
+      - ./.env
+    networks:
+      - transcendance_net
+
+
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: node-exporter
+    expose:
+      - "9100"
+    command:
+      - "--path.rootfs=/host"
+      - "--web.listen-address=:9100"
+    volumes:
+      - /:/host:ro,rslave
+    networks: 
+      - transcendance_net
+
+
+  # elastic-init:
+  #   image: curlimages/curl:8.6.0
+  #   container_name: elastic-init
+  #   depends_on:
+  #     - elastic
+  #   volumes:
+  #     - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+  #     - prometheus-data:/prometheus
+  #   networks:
+  #     - transcendance_net
+
+
+  elastic:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.18
+    container_name : elastic
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+      # - network.host=0.0.0.0
+    volumes:
+      - ./ELK/data/elasticsearch:/usr/share/elasticsearch/data
+    expose:
+      - "9200"
+    env_file:
+      - ./.env
+    networks:
+      - transcendance_net
+
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.17.18
+    container_name: kibana
+    environment:
+      ELASTICSEARCH_HOSTS: "http://elastic:9200"
+      SERVER_BASEPATH: "/kibana"
+      SERVER_REWRITEBASEPATH: "true"
+      XPACK_SECURITY_ENCRYPTIONKEY: ${KIBANA_SECURITY_KEY}
+      XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY: ${KIBANA_SAVED_OBJECTS_KEY}
+      XPACK_REPORTING_ENCRYPTIONKEY: ${KIBANA_REPORTING_KEY}
+      SERVER_PUBLICBASEURL: "https://localhost:8443/kibana"
+    depends_on:
+      - elastic
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.kibana.rule=Host(`localhost`) && PathPrefix(`/kibana`)
+      - traefik.http.routers.kibana.entrypoints=websecure
+      - traefik.http.routers.kibana.tls=true
+      - "traefik.http.routers.kibana.middlewares=kibana-auth"
+
+      # basic auth
+      - "traefik.http.middlewares.kibana-auth.basicauth.usersFile=/auth/kibana.htpasswd"
+      - "traefik.http.services.kibana.loadbalancer.server.port=5601"
+    env_file:
+      - ./.env
+    networks:
+        - transcendance_net
+
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:7.17.18
+    container_name: logstash
+    volumes:
+      - ./logs:/var/log/app
+      - ./ELK/logstash//pipeline/logstash.conf:/usr/share/logstash/pipeline/logstash.conf:ro
+    environment:
+      ELASTICSEARCH_HOST: "http://elastic:9200"
+      LS_JAVA_OPTS: "-Xms256m -Xmx256m"
+    expose:
+      - "5044"
+    depends_on:
+      - elastic
+    networks:
+      - transcendance_net
+
+
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:7.17.18
+    container_name: filebeat
+    user: root
+    command: ["filebeat", "-e", "--strict.perms=false", "-c", "/usr/share/filebeat/filebeat.yml"]
+    volumes:
+      # - ./ELK/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      # - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      # - /var/run/docker.sock:/var/run/docker.sock:ro
+      # - ./ELK/data/filebeat:/usr/share/filebeat/data
+      - ./ELK/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - $DOCKER_SOCK:/var/run/docker.sock:ro
+      - $USER_PATH/.local/share/docker/containers:/var/lib/docker/containers:ro
+      - ./ELK/data/filebeat:/usr/share/filebeat/data
+    depends_on:
+      - elastic
+    env_file:
+      - ./.env
+    networks:
+      - transcendance_net
+
+
+volumes:
+  elastic-data:
+  prometheus-data:
+  grafana-data:
+  # elastic-data:
+  auth-data:
+    driver: local
+
+
+networks:
+  # proxy_net:
+  #   name: proxy_net
+  #   driver: bridge
+  transcendance_net:
+    driver: bridge
