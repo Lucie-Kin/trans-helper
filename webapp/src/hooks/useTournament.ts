@@ -25,7 +25,7 @@ export function useTournament(myUserId: number) {
 
   const fetchTournaments = useCallback(async () => {
     try {
-      const res = await fetch("https://localhost:8443/tournament", {
+      const res = await fetch("https://localhost:8443/tournament/list", {
         credentials: "include",
       });
       if (res.ok) {
@@ -34,10 +34,10 @@ export function useTournament(myUserId: number) {
           setAvailableTournaments(
             data.map((t: any) => ({
               id: t.id,
-              name: t.name || `Tournament #${t.id}`,
+              name: t.title || `Tournament #${t.id}`,
               playerCount: t.playerCount || 0,
               maxPlayers: t.maxPlayers || 8,
-              status: t.status || "waiting",
+              status: t.status || "WAITING_FOR_PLAYERS",
               organizerName: t.organizerName || "Unknown",
             }))
           );
@@ -50,19 +50,36 @@ export function useTournament(myUserId: number) {
 
   const fetchTournamentBracket = useCallback(async (id: string) => {
     try {
-      const res = await fetch(`https://localhost:8443/tournament/${id}/bracket`, {
-        credentials: "include",
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setTournamentPlayers(data.players || []);
-        setTournamentMatches(data.matches || []);
-        if (data.name) setTournamentName(data.name);
+      const [bracketRes, infoRes] = await Promise.all([
+        fetch(`https://localhost:8443/tournament/${id}/bracket`, { credentials: "include" }),
+        fetch(`https://localhost:8443/tournament/${id}`, { credentials: "include" }),
+      ]);
+
+      if (bracketRes.ok) {
+        const bracket = await bracketRes.json();
+        const matches: TournamentMatch[] = (bracket.matches || []).map((m: any) => ({
+          id: `${m.roundIndex}-${m.bracketPosition}`,
+          round: m.roundIndex,
+          position: m.bracketPosition,
+          player1Id: m.playerA?.playerId ? Number(m.playerA.playerId) : undefined,
+          player2Id: m.playerB?.playerId ? Number(m.playerB.playerId) : undefined,
+          winnerId: m.winnerId ? Number(m.winnerId) : undefined,
+          score1: m.scoreA,
+          score2: m.scoreB,
+          status: m.status,
+        }));
+        setTournamentMatches(matches);
+      }
+
+      if (infoRes.ok) {
+        const info = await infoRes.json();
+        if (info.title) setTournamentName(info.title);
+        setIsOrganizer(info.organizerId === String(myUserId));
       }
     } catch (err) {
       console.error("Failed to fetch bracket", err);
     }
-  }, []);
+  }, [myUserId]);
 
   useEffect(() => {
     const onGameStart = () => {
@@ -171,11 +188,12 @@ export function useTournament(myUserId: number) {
           }),
         });
         if (res.ok) {
-          const data = await res.json();
-          setTournamentId(data.id);
+          const tournamentInfo = await res.json();
+          setTournamentId(tournamentInfo.id);
+          setTournamentName(tournamentInfo.title);
           setIsOrganizer(true);
           setGameState("tournament");
-          fetchTournamentBracket(data.id);
+          fetchTournamentBracket(tournamentInfo.id);
         }
       } catch (err) {
         console.error("Failed to create tournament", err);
