@@ -4,7 +4,7 @@ import UserRow from "./userRow";
 import { getSocket } from "../../socket";
 import ProfileModal from "./profileModal";
 import { useUserCache } from "../../hooks/useUserCache";
-import { type GameInvitStatus } from "../chat/userRow";
+import type { GameInvitStatus } from "./userRowTypes";
 
 export type UserStatus =
   | "default"

@@ -21,6 +21,16 @@ type User = {
   twofaPassed: boolean;
 } | null;
 
+const DEV_MODE = true;
+const DEV_USER: User = {
+  id: 1,
+  login: "dev-user",
+  email: "dev@local",
+  image: "/avatar.png",
+  displayName: "Dev Mode",
+  is2faEnabled: false,
+  twofaPassed: true,
+};
 
 export default function HomePage() {
   const navigate = useNavigate();
@@ -51,6 +61,11 @@ export default function HomePage() {
 
   useEffect(() => {
     (async () => {
+      if (DEV_MODE) {
+        setUser(DEV_USER);
+        setLoading(false);
+        return;
+      }
       try {
         const res = await fetch('https://localhost:8443/auth/session', {
           credentials: 'include',
