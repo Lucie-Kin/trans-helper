@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { getSocket } from "../../socket";
-import UserList, { type UserWithInvite } from "./userList";
+import UserList from "./userList";
 import MessageList from "./messageList";
 import MessageInput from "./messageInput";
 import ChatHeader from "./chatHeader";
 import ProfileModal from "./profileModal";
+import TournamentList from "../game/TournamentList";
 import "../../style/chat/chatBox.css";
 
 export default function ChatBox({ myUserId }: { myUserId: number }) {
@@ -12,10 +13,12 @@ export default function ChatBox({ myUserId }: { myUserId: number }) {
 
   const [isConnected, setIsConnected] = useState(socket.connected);
   const [activeUserId, setActiveUserId] = useState<number | null>(null);
+  const [activeUserLogin, setActiveUserLogin] = useState<string | null>(null);
   const [showProfile, setShowProfile] = useState(false);
   const [blockedByMe, setBlockedByMe] = useState<number[]>([]);
   const [blockedMe, setBlockedMe] = useState<number[]>([]);
-  const [users, setUsers] = useState<UserWithInvite[]>([]);
+
+  //const [isVisible] = useState<boolean>; //PROP
 
   useEffect(() => {
     const s = getSocket();
@@ -57,27 +60,27 @@ export default function ChatBox({ myUserId }: { myUserId: number }) {
   const isBlockedByThem =
     activeUserId !== null && blockedMe.includes(activeUserId);
 
-  const handleInvite = (userId: number) => {
-    setUsers((prev) =>
-      prev.map((u) =>
-        u.id === userId
-          ? {
-              ...u,
-              inviteStatus:
-                u.inviteStatus === "none" || u.inviteStatus === "rejected"
-                  ? "inviting"
-                  : "none",
-          }
-          : u
-      )
-    );
-    const user = users.find((u) => u.id === userId);
-    if (!user) return;
-    if (user.inviteStatus === "none" || user.inviteStatus === "rejected")
-      socket.emit("game:invite", { targetId: userId });
-    else
-      socket.emit("game:invite:cancel", { targetId: userId });
-  };
+  // const handleInvite = (userId: number) => {
+  //   setUsers((prev) =>
+  //     prev.map((u) =>
+  //       u.id === userId
+  //         ? {
+  //             ...u,
+  //             inviteStatus:
+  //               u.inviteStatus === "none" || u.inviteStatus === "rejected"
+  //                 ? "inviting"
+  //                 : "none",
+  //         }
+  //         : u
+  //     )
+  //   );
+  //   const user = users.find((u) => u.id === userId);
+  //   if (!user) return;
+  //   if (user.inviteStatus === "none" || user.inviteStatus === "rejected")
+  //     socket.emit("game:invite", { targetId: userId });
+  //   else
+  //     socket.emit("game:invite:cancel", { targetId: userId });
+  // };
 
   if (!isConnected) {
     return <div className="chat-placeholder">Connexion au chat...</div>;
@@ -85,16 +88,21 @@ export default function ChatBox({ myUserId }: { myUserId: number }) {
 
   return (
     <div className="chat-box">
-      <UserList
-        users={users}
-        myUserId={myUserId}
-        selectedUserId={activeUserId}
-        onSelectUser={(id) => {
-          setActiveUserId(id);
-          setShowProfile(false);
-        }}
-        onInvite={handleInvite}
-      />
+      <div className="chat-left">
+        <div className={`chat-box-top ${activeUserId ? "compact": ""}`}>
+          <div className="chat-box-title">Messages</div>
+          <div className="chat-box-subtitle">Sélectionnez une conversation</div>
+        </div>
+        <UserList
+          myUserId={myUserId}
+          selectedUserId={activeUserId}
+          onSelectUser={(id) => {
+            setActiveUserId(id);
+            setShowProfile(false);
+          }}
+          // onInvite={handleInvite}
+        />
+      </div>
 
       <div className="chat-right">
         {activeUserId !== null ? (
@@ -102,12 +110,14 @@ export default function ChatBox({ myUserId }: { myUserId: number }) {
             <div className="chat-header-wrapper">
               <ChatHeader
                 userId={activeUserId}
+                login={activeUserLogin}
                 onOpenProfile={() => setShowProfile(true)}
               />
               <button
                 className="chat-close-btn"
                 onClick={() => {
                   setActiveUserId(null);
+                  setActiveUserLogin(null);
                   setShowProfile(false);
                 }}
                 title="Fermer le chat"
@@ -136,12 +146,12 @@ export default function ChatBox({ myUserId }: { myUserId: number }) {
             )}
           </>
         ) : (
-          <div className="chat-empty-wrapper">
-            <div className="chat-empty-top">
-              <div className="chat-empty-title">Messages</div>
-              <div className="chat-empty-subtitle">Sélectionnez une conversation</div>
-            </div>
-            <div className="chat-empty-body" />
+          // {/* TOURNAMENT */}
+          <div className="tournament-wrapper">
+            <TournamentList
+              tournaments={[]}
+              onJoin={(id) => socket.emit("tournament:join", id)}
+             />
           </div>
         )
         }

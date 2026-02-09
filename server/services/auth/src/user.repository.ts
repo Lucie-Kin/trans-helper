@@ -155,4 +155,23 @@ export const findAllUsers = () => {
   });
 };
 
+// add time!!!!
+
+export const findUserByEmail = (email: string) => {
+  return getDb().prepare(
+    `SELECT * FROM user WHERE email = ?`
+  ).get(email) as any;
+};
+
+export const createLocalUser = (
+  login: string,
+  email: string,
+  passwordHash: string,
+  image: string | null = '/avatars/3.jpg'
+) => {
+  return getDb().prepare(`
+    INSERT INTO user (login, email, password_hash, auth_provider, display_name, image)
+    VALUES (?, ?, ?, 'local', ?, ?)
+  `).run(login, email, passwordHash, login, image);
+};
 

@@ -1,55 +1,62 @@
-.game-area {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-  padding: 1rem;
+.game-area{
+    position: fixed;
+    inset: 0;
+
+    display: flex;
+    flex-direction:column;
+    align-items: center;
+    justify-content: center;
+
+    z-index: 99;
+    background: radial-gradient(circle at center, #0b1c2d, #050a14 70%);
 }
 
-.game-placeholder {
-  width: 100%;
-  height: 80%;
-  background: linear-gradient(135deg, rgba(20, 60, 120, 0.9), rgba(10, 40, 80, 0.95));
-  border: 3px solid rgba(100, 180, 255, 0.6);
-  border-radius: 12px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 0 30px rgba(100, 180, 255, 0.3), inset 0 0 60px rgba(100, 180, 255, 0.1);
+/* background: linear-gradient(135deg, rgba(20, 60, 120, 0.9), rbga(10, 40, 80, 0.95)); */
+.game-placeholder{
+    width: min(90vw, 1100px);
+    height: min(75vw, 650px);
+
+    border: 3px solid rgba(100, 180, 255, 0.6);
+    border-radius: 12px;
+    
+    display: flex;
+    flex-direction:column;
+    align-items: center;
+    justify-content: center;
+    
+    box-shadow: 0 0 30px rgba(100, 180, 255, 0.35),
+    inset 0 0 80px rgba(100, 180, 255, 0.1);
 }
 
-.game-placeholder-text {
-  font-size: 1.8rem;
-  font-weight: 700;
-  color: rgba(255, 255, 255, 0.9);
-  font-family: "Chakra_bold", sans-serif;
-  text-shadow: 0 0 10px rgba(100, 180, 255, 0.5);
+.game-placeholder-text{
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.9);
+    font-family: "Chakra_bold", sans-serif;
+    text-shadow: 0 0 10px rgba(100, 180, 255, 0.5);
 }
 
-.game-placeholder-hint {
-  font-size: 0.9rem;
-  color: rgba(200, 220, 255, 0.6);
-  margin-top: 0.5rem;
+.game-placeholder-hint{
+    font-size: 0.9rem;
+    color: rgba(100, 180, 255, 0.6);
+    margin-top: 0.5rem;
 }
 
-.game-exit-btn {
-  margin-top: 1rem;
-  padding: 0.8rem 2rem;
-  background: rgba(200, 50, 50, 0.8);
-  border: 1px solid rgba(255, 100, 100, 0.4);
-  border-radius: 8px;
-  color: white;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
+.game-exit-btn{
+    margin-top: 1rem;
+    padding: 0.8rem 2rem;
+    background: rgba(200, 50, 50, 0.8);
+    border: 1px solid rgba(100, 180, 255, 0.4);
+    border-radius: 8px;
+    color: white;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
 }
 
-.game-exit-btn:hover {
-  background: rgba(220, 70, 70, 0.9);
-  border-color: rgba(255, 120, 120, 0.6);
-  transform: translateY(-2px);
+.game-exit-btn:hover{
+    background: rgba(270, 70, 70, 0.9);
+    border-color: rgba(255, 120, 120, 0.6);
+    transform: translateY(-2px);
 }

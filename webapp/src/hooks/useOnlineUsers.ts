@@ -1,28 +1,29 @@
 import { useEffect, useState } from "react";
 import { getSocket } from "../socket";
 
-type UserData = {
-  id: number;
-  online: boolean;
-};
+type OnlineUser = { id: number; login: string };
 
 export function useOnlineUsers(): number[] {
   const socket = getSocket();
   const [onlineIds, setOnlineIds] = useState<number[]>([]);
 
   useEffect(() => {
-    const handler = (users: UserData[]) => {
-      setOnlineIds(
-        users.filter((u) => u.online).map((u) => u.id)
-      );
+    const onUsersList = (users: { id: number; online: boolean }[]) => {
+      setOnlineIds(users.filter((u) => u.online).map((u) => u.id));
     };
 
-    socket.on("users:list", handler);
+    const onUsersOnline = (users: OnlineUser[]) => {
+      setOnlineIds(users.map((u) => u.id));
+    };
+
+    socket.on("users:list", onUsersList);
+    socket.on("users:online", onUsersOnline);
 
     socket.emit("users:list");
 
     return () => {
-      socket.off("users:list", handler);
+      socket.off("users:list", onUsersList);
+      socket.off("users:online", onUsersOnline);
     };
   }, [socket]);
 

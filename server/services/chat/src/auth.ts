@@ -1,6 +1,7 @@
 // chat/src/auth.ts
 import jwt from "jsonwebtoken";
 
+// Parses cookie header string into an object
 function parseCookies(cookieHeader?: string): Record<string, string> {
   if (!cookieHeader) return {};
 
@@ -12,12 +13,12 @@ function parseCookies(cookieHeader?: string): Record<string, string> {
   );
 }
 
+// Authenticates socket connection using JWT token from cookie or auth handshake
 export function authenticateSocket(socket: any, next: any) {
   try {
-    // 1️⃣ auth.token (если передаётся явно)
     let token = socket.handshake.auth?.token;
 
-    // 2️⃣ cookie
+    // cookie
     if (!token) {
       const cookies = parseCookies(
         socket.handshake.headers.cookie

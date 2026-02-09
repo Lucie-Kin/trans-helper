@@ -1,6 +1,7 @@
 // chat/src/repositories/messages.repository.ts
 import { db } from "../db.js";
 
+// Saves a direct message to the database
 export function saveMessage(
   senderId: number,
   receiverId: number,
@@ -14,6 +15,7 @@ export function saveMessage(
     .run(senderId, receiverId, content);
 }
 
+// Gets all messages in a conversation between two users
 export function getConversation(a: number, b: number) {
   return db
     .prepare(`

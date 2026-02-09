@@ -2,7 +2,6 @@ import Fastify from "fastify";
 import { Server } from "socket.io";
 import { register, onWsConnect, onWsDisconnect, onWsMessage } from "./metrics.js";
 
-
 import { authenticateSocket } from "./auth.js";
 import { initDb } from "./db.js";
 import {
@@ -17,6 +16,7 @@ initDb();
 
 const fastify = Fastify({ logger: true });
 
+// Socket.IO
 const io = new Server(fastify.server, {
   path: "/chat/socket.io",
   cors: {

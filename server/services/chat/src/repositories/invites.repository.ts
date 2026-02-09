@@ -1,8 +1,7 @@
 // chat/src/repositories/invites.repository.ts
 import { db } from "../db.js";
 
-const INVITE_TTL_MS = 5 * 60 * 1000; // 5 минут
-
+// Creates a new game invite between two users
 export function createGameInvite(from: number, to: number) {
   return db.prepare(`
     INSERT INTO game_invites (from_user_id, to_user_id)
@@ -10,6 +9,7 @@ export function createGameInvite(from: number, to: number) {
   `).run(from, to);
 }
 
+// Gets a game invite by its ID
 export function getInviteById(id: number) {
   return db.prepare(`
     SELECT *
@@ -18,14 +18,7 @@ export function getInviteById(id: number) {
   `).get(id);
 }
 
-export function expireInvite(id: number) {
-  db.prepare(`
-    UPDATE game_invites
-    SET status = 'expired'
-    WHERE id = ?
-  `).run(id);
-}
-
+// Updates the status of a game invite (accepted or rejected)
 export function updateInviteStatus(
   id: number,
   status: "accepted" | "rejected"
@@ -37,11 +30,34 @@ export function updateInviteStatus(
   `).run(status, id);
 }
 
-export function isInviteExpired(invite: any): boolean {
-  return (
-    Date.now() - new Date(invite.created_at).getTime() >
-    INVITE_TTL_MS
-  );
+// Finds latest pending invite from one user to another
+export function findLatestPendingInvite(
+  fromUserId: number,
+  toUserId: number
+) {
+  return db
+    .prepare(
+      `
+      SELECT *
+      FROM game_invites
+      WHERE from_user_id = ? AND to_user_id = ? AND status = 'pending'
+      ORDER BY created_at DESC
+      LIMIT 1
+    `
+    )
+    .get(fromUserId, toUserId);
+}
+
+/** Pending game invite between me and other user. Used to restore state after refresh. */
+export function getPendingGameInviteBetween(
+  meId: number,
+  otherId: number
+): { status: "outgoing" | "incoming"; inviteId: number } | null {
+  const outgoing = findLatestPendingInvite(meId, otherId);
+  if (outgoing) return { status: "outgoing", inviteId: outgoing.id };
+  const incoming = findLatestPendingInvite(otherId, meId);
+  if (incoming) return { status: "incoming", inviteId: incoming.id };
+  return null;
 }
 
 export function getInvitationStatus(invitee: number, inviter: number) {

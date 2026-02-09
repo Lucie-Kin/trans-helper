@@ -2,6 +2,7 @@ import "dotenv/config";
 import { initDb } from './db.js'
 import Fastify from "fastify";
 import crypto from "crypto";
+import bcrypt from "bcrypt";
 import fastifyCookie from "@fastify/cookie";
 import fastifyJwt from "@fastify/jwt";
 import fs from "fs";
@@ -12,6 +13,9 @@ import {
 	findUserById,
 	findUserByIntraId,
 	findUserByDisplayName,
+	findUserByLogin,
+	findUserByEmail,
+	createLocalUser,
 	createIntraUser,
 	setTwoFASecret,
 	enable2FA,
@@ -24,6 +28,7 @@ import { registerUsersHandlers } from "./handlers/users.js";
 import { register, startDbFileStatsPolling } from "./metrics.js";
 import { requireAuth } from "./authGuard.js";
 import multipart from "@fastify/multipart";
+import fastifyStatic from "@fastify/static";
 import { validateDisplayName } from "./utils.js";
 
 
@@ -66,6 +71,11 @@ fastify.register(fastifyJwt, {
 	},
 });
 fastify.register(multipart);
+fastify.register(fastifyStatic, {
+	root: path.join(process.cwd(), "avatars"),
+	prefix: "/auth/avatars/",
+});
+
 registerUsersHandlers(fastify, db);
 
 
@@ -373,7 +383,8 @@ fastify.post("/auth/avatar", { preHandler: requireAuth }, async (req, reply) => 
 
 	// controle nom fichier
 	const ext = file.mimetype === "image/png" ? ".png" : ".jpg";
-	const filename = `avatar_${user.id}${ext}`;
+	//const filename = `avatar_${user.id}${ext}`;
+	const filename = `avatar_${user.id}_${Date.now()}${ext}`;
 
 	const uploadDir = path.join(process.cwd(), "avatars");
 	fs.mkdirSync(uploadDir, { recursive: true });
@@ -501,6 +512,185 @@ fastify.post("/auth/profile", { preHandler: requireAuth }, async (req, reply) =>
 });
 
 
+// Password 
+
+
+async function hashPassword(password: string): Promise<string> {
+	const saltRounds = 10;
+	return await bcrypt.hash(password, saltRounds);
+}
+
+async function verifyPassword(password: string, hash: string): Promise<boolean> {
+	return await bcrypt.compare(password, hash);
+}
+
+fastify.post("/auth/register", async (req, reply) => {
+	const { login, email, password } = req.body as {
+		login?: string;
+		email?: string;
+		password?: string;
+	};
+
+	// Validate input data
+	if (!login || !email || !password) {
+		return reply.code(400).send({ error: "All fields are required" });
+	}
+
+	// Check login length
+	if (login.length < 3 || login.length > 20) {
+		return reply.code(400).send({ error: "Login must be between 3 and 20 characters" });
+	}
+
+	// Check login format (only letters, numbers and underscore)
+	if (!/^[a-zA-Z0-9_]+$/.test(login)) {
+		return reply.code(400).send({ error: "Login can only contain letters, numbers and underscore" });
+	}
+
+	// Check password length
+	if (password.length < 6) {
+		return reply.code(400).send({ error: "Password must be at least 6 characters" });
+	}
+
+	// Check email format
+	const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+	if (!emailRegex.test(email)) {
+		return reply.code(400).send({ error: "Invalid email format" });
+	}
+
+	// Check login uniqueness
+	const existingUserByLogin = findUserByLogin(login);
+	if (existingUserByLogin) {
+		return reply.code(409).send({ error: "User with this login already exists" });
+	}
+
+	// Check email uniqueness
+	const existingUserByEmail = findUserByEmail(email);
+	if (existingUserByEmail) {
+		return reply.code(409).send({ error: "User with this email already exists" });
+	}
+
+	try {
+		// Hash password
+		const passwordHash = await hashPassword(password);
+		console.log("Registration:", { login, email, passwordHashLength: passwordHash.length });
+
+		// Create user
+		const result = createLocalUser(login, email, passwordHash);
+		const userId = result.lastInsertRowid as number;
+		
+		// Check that user is created and password_hash is saved
+		const createdUser = findUserById(userId);
+		console.log("User created:", { 
+			id: createdUser?.id, 
+			login: createdUser?.login, 
+			hasPasswordHash: !!createdUser?.password_hash,
+			authProvider: createdUser?.auth_provider 
+		});
+
+		// Initialize display_name
+		initDisplayNameIfNull(userId);
+
+		return reply.code(201).send({ 
+			ok: true, 
+			message: "User successfully registered" 
+		});
+	} catch (err: any) {
+		console.error("Registration error:", err);
+		
+		// Handle uniqueness errors
+		if (err.code === "SQLITE_CONSTRAINT") {
+			if (err.message.includes("login")) {
+				return reply.code(409).send({ error: "User with this login already exists" });
+			}
+			if (err.message.includes("email")) {
+				return reply.code(409).send({ error: "User with this email already exists" });
+			}
+		}
+
+		return reply.code(500).send({ error: "Registration error" });
+	}
+});
+
+
+fastify.post("/auth/login", async (req, reply) => {
+	const { login, password } = req.body as {
+		login?: string;
+		password?: string;
+	};
+
+	// Validate input data
+	if (!login || !password) {
+		return reply.code(400).send({ error: "Login and password are required" });
+	}
+
+	try {
+		// Find user by login or email
+		let user = findUserByLogin(login);
+		if (!user) {
+			user = findUserByEmail(login);
+		}
+
+		// Check if user exists
+		if (!user) {
+			return reply.code(401).send({ error: "Invalid login or password" });
+		}
+
+		// Check that user is registered locally (not via 42)
+		if (user.auth_provider !== 'local') {
+			return reply.code(401).send({ error: "This account uses 42 login" });
+		}
+
+		// Check if password hash exists
+		if (!user.password_hash) {
+			return reply.code(401).send({ error: "Invalid login or password" });
+		}
+
+		// Verify password
+		console.log("Login attempt:", { login: user.login, hasPasswordHash: !!user.password_hash });
+		const isValidPassword = await verifyPassword(password, user.password_hash);
+		console.log("Password verification result:", isValidPassword);
+		if (!isValidPassword) {
+			return reply.code(401).send({ error: "Invalid login or password" });
+		}
+
+		initDisplayNameIfNull(user.id);
+		const updatedUser = findUserById(user.id);
+
+		const appToken = fastify.jwt.sign({
+			id: updatedUser.id,
+			login: updatedUser.login,
+			email: updatedUser.email,
+			image: updatedUser.image,
+			displayName: updatedUser.display_name || updatedUser.login,
+			twofaPassed: updatedUser.is_2fa_enabled === 0, // If 2FA is not enabled, consider it passed
+		}, {
+			expiresIn: "1h"
+		});
+
+		reply.setCookie("appToken", appToken, {
+			path: "/",
+			httpOnly: true,
+			secure: true,
+			sameSite: "none",
+		});
+
+		return reply.send({ 
+			ok: true,
+			user: {
+				id: updatedUser.id,
+				login: updatedUser.login,
+				email: updatedUser.email,
+				image: updatedUser.image,
+				displayName: updatedUser.display_name || updatedUser.login,
+				is2faEnabled: updatedUser.is_2fa_enabled === 1,
+				twofaPassed: updatedUser.is_2fa_enabled === 0,
+			}
+		});
+	} catch (err: any) {
+		console.error("Login error:", err);
+		return reply.code(500).send({ error: "Login error" });
+	}
+});
 
 
 await fastify.listen({ port: 3001, host: "0.0.0.0" });

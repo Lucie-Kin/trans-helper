@@ -14,6 +14,8 @@ type Props = {
   myUserId: number;
 };
 
+const MAX__RENDER_LENGTH = 60;
+
 export default function MessageList({
   activeUserId,
   myUserId,
@@ -23,7 +25,7 @@ export default function MessageList({
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const firstLoadRef = useRef(true);
 
-  //  загрузка истории + подписки
+  // load history + subscriptions
   useEffect(() => {
     setMessages([]);
     firstLoadRef.current = true;
@@ -52,9 +54,9 @@ export default function MessageList({
       socket.off("messages:list", onList);
       socket.off("message:new", onNew);
     };
-  }, [activeUserId]); //  socket НЕ добавляем
+  }, [activeUserId]);
 
-  //  автоскролл
+  // auto scroll
   useEffect(() => {
     if (!bottomRef.current) return;
 
@@ -78,12 +80,10 @@ export default function MessageList({
               isOwn ? "justify-end" : "justify-start"
             }`}
           >
-            <div
-              className={`message-bubble ${
-                isOwn ? "own" : "other"
-              }`}
-            >
-              {m.content}
+            <div className={`message-bubble ${isOwn ? "own" : "other"}`}>
+              {m.content.length > MAX__RENDER_LENGTH
+                ? m.content.slice(0, MAX__RENDER_LENGTH) + "…"
+                : m.content}
             </div>
           </div>
         );

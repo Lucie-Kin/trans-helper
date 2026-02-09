@@ -1,37 +1,90 @@
 import "../../style/game/gameCard.css";
-
-export type GameCardType = "ai" | "random" | "invite";
+import "../../style/game/particules.css";
+import { GameCardType } from "../share/sharedTypes";
 
 type Props = {
-  type: GameCardType;
-  playerName?: string;
-  waiting?: boolean;
-  disabled?: boolean;
-  onClick: () => void;
+    type: GameCardType;
+    playerName?: string;
+    waiting?: boolean;
+    disabled?: boolean;
+    onClick: () => void;
 };
 
-export default function GameCard({ type, playerName, waiting, disabled, onClick }: Props) {
-  const getTitle = () => {
-    if (type === "ai") return "Jouer contre l'IA";
-    if (type === "random") return "Jouer contre Random";
-    if (type === "invite" && playerName) return `Jouer avec ${playerName}`;
-    return "Jouer";
-  };
+export default function GameCard({
+    type,
+    playerName,
+    waiting = false,
+    disabled = false,
+    onClick
+}: Props) {
+    const getIcon = () => {
+        switch(type) {
+            case "ai":
+                return "🤖";
+            case "random":
+                return "🎲";
+            case "invite":
+                return "👥";
+            default:
+                return "🎮";
+        }
+    };
 
-  const getIcon = () => {
-    if (type === "ai") return "🤖";
-    if (type === "random") return "🎲";
-    if (type === "invite") return "👥";
-    return "🎮";
-  };
+    const getTitle = () => {
+        switch(type) {
+            case "ai":
+                return "VS IA";
+            case "random":
+                return "Random Match";
+            case "invite":
+                return `Challenge ${playerName}`;
+            default:
+                return "Play";
+        }
+    };
 
-  const cardClass = `game-card ${type} ${waiting ? "waiting" : ""} ${disabled ? "disabled" : ""}`;
+    const getSubtitle = () => {
+        switch(type) {
+            case "ai":
+                return "Joue contre l'ordi";
+            case "random":
+                return "Trouve un adversaire au hasard";
+            case "invite":
+                return playerName ? `Joue avec ${playerName}`: "Invite un ami";
+            default:
+                return "";
+        }
+    };
 
-  return (
-    <div className={cardClass} onClick={disabled ? undefined : onClick}>
-      <div className="game-card-icon">{getIcon()}</div>
-      <div className="game-card-title">{getTitle()}</div>
-      {waiting && <div className="game-card-waiting">En attente de confirmation...</div>}
-    </div>
-  );
+    const cardClass = `game-card ${type} ${waiting ? "waiting" : ""} ${disabled ? "disabled" : ""}`;
+
+    return (
+        <div className={cardClass} onClick={disabled || waiting ? undefined : onClick}>
+            <div className="card-glow"/>
+            <div className="card-border">
+                <div className={`game-card-inner ${type}`}>
+                    <div className="particles-glow" />
+                    <div className="game-card-content">
+                        <div className="game-card-icon">{getIcon()}</div>
+                        {playerName && type === "invite" && (
+                            <div className="game-card-player-name">{playerName}</div>
+                        )}
+                        <div className={`game-card-banner ${type}`}>
+                            <div className="game-card-title">{getTitle()}</div>
+                            <div className="game-card-subtitle">{getSubtitle()}</div>
+                        </div>
+                        {waiting && (
+                            <div className="game-card-waiting">En attente de confirmation...</div>
+                        )}
+                    </div>
+                    <div className="game-card-fx">
+                        <span className="spark s1"></span>
+                        <span className="spark s2"></span>
+                        <span className="spark s3"></span>
+                    </div>
+                </div>
+                <div className="game-card-reflection"></div>
+            </div>
+        </div>
+    );
 }

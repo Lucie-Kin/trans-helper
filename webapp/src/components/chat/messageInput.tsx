@@ -10,6 +10,8 @@ type Props = {
   onBlock: () => void;
 };
 
+const MAX_LENGTH = 512;
+
 export default function MessageInput({
   activeUserId,
   isBlockedByMe,
@@ -21,6 +23,7 @@ export default function MessageInput({
 
   const disabled = isBlockedByMe || isBlockedByThem || !activeUserId;
 
+    //clear text on block
   useEffect(() => {
     if (isBlockedByMe || isBlockedByThem) {
       setText("");
@@ -50,6 +53,7 @@ export default function MessageInput({
   return (
     <div className="message-input-bar">
       <textarea
+        maxLength={MAX_LENGTH}
         id="chat-message"
         name="message"
         className="message-textarea"
@@ -58,7 +62,8 @@ export default function MessageInput({
         disabled={disabled}
         rows={1}
         onChange={(e) => {
-          setText(e.target.value);
+          const value = e.target.value.slice(0, MAX_LENGTH);
+          setText(value);
           e.target.style.height = "auto";
           e.target.style.height =
             Math.min(e.target.scrollHeight, 140) + "px";
@@ -80,7 +85,7 @@ export default function MessageInput({
         ➤
       </button>
 
-      {/*BLOCK / UNBLOCK — ВСЕГДА ДОСТУПНА */}
+      {/* 🚫 BLOCK / 🔓 UNBLOCK — ALWAYS AVAILABLE */}
       <button
         className={`message-btn block ${isBlockedByMe ? "active" : ""}`}
         onClick={onBlock}

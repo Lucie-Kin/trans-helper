@@ -8,10 +8,7 @@ type SnapshotUser = {
   avatar: string | null;
 };
 
-/**
- * Вставляет или обновляет пользователя
- * @returns true если пользователь НОВЫЙ
- */
+// Inserts or updates user, returns true if user is NEW
 export function upsertUser(u: SnapshotUser): boolean {
   const existing = db
     .prepare(`SELECT 1 FROM users_snapshot WHERE user_id = ?`)
@@ -35,9 +32,10 @@ export function upsertUser(u: SnapshotUser): boolean {
     VALUES (?, ?, ?, ?)
   `).run(u.userId, u.login, u.displayName, u.avatar);
 
-  return true; // 🔥 новый пользователь
+  return true; // new user
 }
 
+// Gets all users from the snapshot table
 export function getAllSnapshotUsers() {
   return db.prepare(`
     SELECT

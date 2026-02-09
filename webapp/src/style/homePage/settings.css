@@ -1,264 +1,207 @@
-/* ============================================
-   Оверлей (фон модального окна)
-   ============================================ */
-.settingsOverlay {
-    position: fixed;              /* Фиксированная позиция относительно viewport */
-    inset: 0;                     /* Занимает весь экран (top:0, right:0, bottom:0, left:0) */
-    background: rgba(0, 0, 0, 0.65); /* Полупрозрачный черный фон (65% непрозрачности) */
-    backdrop-filter: blur(6px);   /* Размытие фона за модальным окном */
-    display: flex;                 /* Flexbox для центрирования содержимого */
-    align-items: center;           /* Вертикальное центрирование */
-    justify-content: center;       /* Горизонтальное центрирование */
-    z-index: 2000;                /* Высокий z-index, чтобы быть поверх всего */
+.settings-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(6px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000; 
 }
 
-/* ============================================
-   Модальное окно настроек
-   ============================================ */
-.settingsModal {
-    background: rgba(20, 20, 20, 0.9); /* Темный полупрозрачный фон */
-    border-radius: 16px;          /* Скругленные углы */
-    padding: 2rem;                 /* Внутренние отступы */
-    width: 22rem;                  /* Ширина модального окна */
-    color: white;                  /* Цвет текста */
-    position: relative;           /* Относительное позиционирование для дочерних элементов */
-    box-shadow: 0 0 40px rgba(0, 0, 0, 0.8); /* Тень вокруг модального окна */
+.settings-modal {
+    background: rgba(20, 20, 20, 0.9);
+    border-radius: 16px;
+    padding: 2rem;
+    width: 22rem;
+    color: white;
+    position: relative;
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.8);
 }
 
-/* ============================================
-   Заголовок в модальном окне
-   ============================================ */
-.settingsModal h3 {
-    margin-bottom: 1rem;          /* Отступ снизу */
-    text-align: center;            /* Центрирование текста */
+.settings-modal h3 {
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    font-size: clamp(1.8rem, 3.3rem, 7rem);
 }
 
-/* ============================================
-   Кнопки в настройках (обычные)
-   ============================================ */
-.settingsBtn {
-    width: 100%;                   /* Ширина на всю доступную ширину */
-    margin-top: 1rem;              /* Отступ сверху */
-    padding: 0.6rem;               /* Внутренние отступы */
-    border-radius: 12px;          /* Скругленные углы */
-    border: none;                  /* Убрать границу */
-    background: #685fcc;     /* Зеленый цвет фона */
-    color: white;                  /* Белый цвет текста */
-    font-weight: bold;             /* Жирный шрифт */
-    cursor: pointer;               /* Курсор-указатель при наведении */
+.settings-btn {
+    width: 100%;
+    margin-top: 0.1rem;
+    border-radius: 12px;
+    border: none;
+    background: #685fcc;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    font-family: "Chakra_bold";
 }
 
-/* ============================================
-   Кнопки в настройках (опасные действия)
-   ============================================ */
+.settings-btn.register {
+    background: #1a1a1a;
+    transition: border-color 0.25s;
+}
+
+.settings-btn.register:hover {
+    background: #685fcc;
+}
+
 .settingsBtn.danger {
-    background: #c0392b;          /* Красный цвет для опасных действий (отключение 2FA) */
+    background: #c0392b;
 }
 
-/* ============================================
-   Кнопки в настройках (неактивное состояние)
-   ============================================ */
-.settingsBtn:disabled {
-    opacity: 0.5;                 /* Полупрозрачность для неактивной кнопки */
-    cursor: not-allowed;          /* Курсор "запрещено" при наведении */
-    pointer-events: none;         /* Отключить все события мыши */
+.settings-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
 }
 
-/* ============================================
-   QR-код для 2FA
-   ============================================ */
-.qrCode {
-    width: 100%;                   /* Ширина на всю доступную ширину */
-    margin: 1rem 0;                /* Вертикальные отступы */
-    border-radius: 8px;            /* Скругленные углы */
+.qr-code {
+    width: 100%;
+    margin: 1rem 0; 
+    border-radius: 8px;
 }
 
-/* ============================================
-   Поле ввода кода 2FA
-   ============================================ */
-.settingsModal input {
-    width: 100%;                   /* Ширина на всю доступную ширину */
-    padding: 0.75rem;              /* Внутренние отступы */
-    margin-top: 0.5rem;            /* Отступ сверху */
-    border-radius: 8px;            /* Скругленные углы */
-    border: 1px solid rgba(255, 255, 255, 0.2); /* Полупрозрачная белая граница */
-    background: rgba(255, 255, 255, 0.1); /* Полупрозрачный белый фон */
-    color: white;                  /* Белый цвет текста */
-    font-size: 1rem;               /* Размер шрифта */
-    text-align: center;             /* Центрирование текста */
-    letter-spacing: 0.2rem;        /* Расстояние между буквами (для читаемости кода) */
+.settings-modal input {
+    width: 100%;
+    padding: 0.75rem;
+    /* margin-top: 0.5rem; */
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    font-size: 1rem;
+    text-align: center;
+    letter-spacing: 0.2rem;
 }
 
-/* ============================================
-   Поле ввода при фокусе (когда пользователь кликает)
-   ============================================ */
-.settingsModal input:focus {
-    outline: none;                 /* Убрать стандартную обводку браузера */
-    border-color: #4caf50;        /* Зеленая граница при фокусе */
-    background: rgba(255, 255, 255, 0.15); /* Немного ярче фон при фокусе */
+.settings-modal input:focus {
+    outline: none;
+    border-color: #4caf50;
+    background: rgba(255, 255, 255, 0.15);
 }
 
-/* ============================================
-   Плейсхолдер (подсказка) в поле ввода
-   ============================================ */
-.settingsModal input::placeholder {
-    color: rgba(255, 255, 255, 0.5); /* Полупрозрачный белый цвет для placeholder */
+.settings-modal input::placeholder {
+    color: rgba(255, 255, 255, 0.5);
 }
 
-/* ============================================
-   Поле ввода (неактивное состояние)
-   ============================================ */
-.settingsModal input:disabled {
-    opacity: 0.5;                 /* Полупрозрачность для неактивного поля */
-    cursor: not-allowed;          /* Курсор "запрещено" при наведении */
-    background: rgba(255, 255, 255, 0.05); /* Более темный фон для неактивного поля */
+.settings-modal input:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: rgba(255, 255, 255, 0.05);
 }
 
-/* ============================================
-   Кнопка закрытия модального окна (крестик)
-   ============================================ */
-.closeBtn {
-    position: absolute;            /* Абсолютное позиционирование относительно .settingsModal */
-    top: 0.6rem;                   /* Отступ сверху */
-    right: 0rem;                 /* Отступ справа */
-    background: none;              /* Прозрачный фон */
-    border: none;                  /* Убрать границу */
-    color: white;                  /* Белый цвет иконки */
-    font-size: 1.2rem;             /* Размер иконки */
-    cursor: pointer;               /* Курсор-указатель при наведении */
+.error-text {
+    color: #e74c3c;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+    text-align: center;
 }
 
-/* ============================================
-   Текст ошибки в модальном окне
-   ============================================ */
-.errorText {
-    color: #e74c3c;               /* Красный цвет для ошибок */
-    font-size: 0.9rem;            /* Размер шрифта */
-    margin-top: 0.5rem;            /* Отступ сверху */
-    text-align: center;           /* Центрирование текста */
-}
-
-/* ============================================
-   Секция выбора аватара
-   ============================================ */
 .avatarSection {
-    display: flex;                 /* Flexbox для вертикального расположения */
-    flex-direction: column;        /* Вертикальное направление */
-    align-items: center;           /* Центрирование по горизонтали */
-    gap: 1rem;                     /* Отступ между элементами */
-    margin-bottom: 1rem;          /* Отступ снизу */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
 }
 
-/* ============================================
-   Текущий аватар (большой)
-   ============================================ */
-.currentAvatar {
-    width: 96px;                  /* Ширина аватара */
-    height: 96px;                  /* Высота аватара */
-    border-radius: 50%;            /* Круглая форма */
-    object-fit: cover;             /* Обрезка изображения по размеру */
-    border: 2px solid white;      /* Белая рамка */
+.current-avatar {
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid white;
+    margin-bottom: 1rem;
 }
 
-/* ============================================
-   Контейнер для выбора аватаров
-   ============================================ */
-.avatarChoices {
-    display: flex;                 /* Flexbox для горизонтального расположения */
-    gap: 1rem;                     /* Отступ между аватарами */
+.avatar-choices {
+    display: flex;
+    gap: 1rem;
 }
 
-/* ============================================
-   Варианты аватаров (маленькие кружки)
-   ============================================ */
-.avatarChoice {
-    width: 48px;                   /* Ширина варианта аватара */
-    height: 48px;                   /* Высота варианта аватара */
-    border-radius: 50%;             /* Круглая форма */
-    object-fit: cover;              /* Обрезка изображения по размеру */
-    cursor: pointer;                /* Курсор-указатель при наведении */
-    border: 2px solid rgba(255, 255, 255, 0.5); /* Полупрозрачная белая рамка */
-    transition: all 0.3s ease;      /* Плавная анимация при изменении */
+.avatar-choice {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    cursor: pointer; 
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    transition: all 0.3s ease;
 }
 
-/* ============================================
-   Эффект при наведении на вариант аватара
-   ============================================ */
-.avatarChoice:hover {
-    border-color: white;           /* Белая рамка при наведении */
-    transform: scale(1.1);          /* Увеличение при наведении */
+.avatar-choice:hover {
+    border-color: white;
+    transform: scale(1.1);
 }
 
-/* ============================================
-   Кнопка загрузки аватара (плюсик)
-   ============================================ */
-.avatarChoice.upload {
-    display: flex;                 /* Flexbox для центрирования содержимого */
-    align-items: center;           /* Вертикальное центрирование */
-    justify-content: center;       /* Горизонтальное центрирование */
-    background: rgba(255, 255, 255, 0.1); /* Полупрозрачный белый фон */
-    color: white;                  /* Белый цвет текста */
-    font-size: 24px;               /* Размер плюсика */
-    border: 2px dashed rgba(255, 255, 255, 0.5); /* Пунктирная рамка */
+.avatar-choice.upload {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    font-size: 24px;
+    border: 2px dashed rgba(255, 255, 255, 0.5);
 }
 
-/* ============================================
-   Эффект при наведении на кнопку загрузки
-   ============================================ */
-.avatarChoice.upload:hover {
-    background: rgba(255, 255, 255, 0.2); /* Более яркий фон при наведении */
-    border-color: white;           /* Белая рамка при наведении */
+.avatar-choice.upload:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: white;
 }
 
-/* ============================================
-   Секция редактирования display name
-   ============================================ */
-.displayNameSection {
-    display: flex;                 /* Flexbox для вертикального расположения */
-    flex-direction: column;        /* Вертикальное направление */
-    gap: 0.75rem;                  /* Отступ между элементами */
-    margin-top: 1.5rem;            /* Отступ сверху */
-    margin-bottom: 1rem;           /* Отступ снизу */
+.display-name-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
 }
 
-/* ============================================
-   Метка для поля display name
-   ============================================ */
-.displayNameSection label {
-    font-size: 0.9rem;             /* Размер шрифта */
-    color: rgba(255, 255, 255, 0.8); /* Полупрозрачный белый цвет */
-    margin-bottom: 0.25rem;        /* Отступ снизу */
+.display-name-section label {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 0.25rem;
+    font-family: "Chakra";
 }
 
-/* ============================================
-   Поле ввода display name
-   ============================================ */
-.displayNameSection input {
-    width: 100%;                   /* Ширина на всю доступную ширину */
-    padding: 0.75rem;              /* Внутренние отступы */
-    border-radius: 8px;            /* Скругленные углы */
-    border: 1px solid rgba(255, 255, 255, 0.2); /* Полупрозрачная белая граница */
-    background: rgba(255, 255, 255, 0.1); /* Полупрозрачный белый фон */
-    color: white;                  /* Белый цвет текста */
-    font-size: 1rem;               /* Размер шрифта */
-    text-align: left;              /* Выравнивание текста слева */
+.display-name-section input::placeholder {
+    font-family: "Chakra";
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.6);
+    opacity: 1;
 }
 
-/* ============================================
-   Поле ввода display name при фокусе
-   ============================================ */
-.displayNameSection input:focus {
-    outline: none;                 /* Убрать стандартную обводку браузера */
-    border-color: #4caf50;        /* Зеленая граница при фокусе */
-    background: rgba(255, 255, 255, 0.15); /* Немного ярче фон при фокусе */
+.display-name-section input {
+    width: 100%;
+    padding: 0.75rem;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    font-size: 1rem;
+    text-align: left;
+    font-family: "Chakra_bold";
 }
 
-/* ============================================
-   Поле ввода display name (неактивное состояние)
-   ============================================ */
-.displayNameSection input:disabled {
-    opacity: 0.5;                 /* Полупрозрачность для неактивного поля */
-    cursor: not-allowed;          /* Курсор "запрещено" при наведении */
-    background: rgba(255, 255, 255, 0.05); /* Более темный фон для неактивного поля */
+.display-name-section input:focus {
+    outline: none;
+    border-color: #4caf50;
+    background: rgba(255, 255, 255, 0.15);
+    font-family: "Chakra_bold";
 }
-  
+
+.display-name-section input:focus::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.display-name-section input:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.display-name-section input:disabled::placeholder {
+    opacity: 0.7;
+}

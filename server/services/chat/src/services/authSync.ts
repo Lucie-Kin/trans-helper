@@ -11,6 +11,7 @@ const AUTH_URL = "http://auth:3001";
 
 let authReady = false;
 
+// Syncs users from auth service to chat service database
 export async function syncUsersFromAuth(): Promise<boolean> {
   try {
     const res = await fetch(`${AUTH_URL}/auth/internal/users`, {

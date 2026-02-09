@@ -13,31 +13,13 @@ body {
   height: 100vh;
   margin: 0;
   min-height: 100vh;
-background: linear-gradient(
+  background: linear-gradient(
     135deg,
-    #d9edff 0%,
-    #1b578b25 50%,
-    #dddcff10 100%
+    rgb(228, 237, 245) 10%,
+    rgba(10, 32, 49, 0.664) 50%,
+    rgba(4, 1, 19, 0.753) 100%
   );
-  color: #1c2b3a;
-  
-  /* background-image: 
-    radial-gradient(circle at 30% 10%, rgb(13, 1, 22) 30%, transparent 50%),
-    radial-gradient(circle at 45% 50%, rgb(29, 0, 43) 0%, transparent 65%),
-      radial-gradient(circle at 25% 50%, rgb(212, 248, 255) 0%, transparent 50%),
-    repeating-radial-gradient(
-      circle at 3px 3px,
-      transparent 0,
-      transparent 1.5px,
-      rgba(120, 220, 255, 0.015) 1.5px,
-      rgba(120, 220, 255, 0.015) 3px
-    );
-  
-  background-size: 200% 200%, 100% 100%, 6px 6px;
-  background-blend-mode: overlay, normal, normal;
-  background-attachment: fixed;
-   */
-  color: #c0e0ff;
+  /* color: #122538f5; */
 }
 
 .container {

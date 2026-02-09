@@ -1,4 +1,4 @@
-.leftBox {
+.left-box {
   position: absolute;
   bottom: 4rem;
   left: 30%;
@@ -19,7 +19,7 @@
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
 }
 
-.leftBox::before {
+.left-box::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -32,8 +32,8 @@
       transparent 60%);
 }
 
-/* pour le reflet sur la card */
-.leftBox>* {
+/* card reflection*/
+.left-box>* {
   position: relative;
   z-index: 1;
 }

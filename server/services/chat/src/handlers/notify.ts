@@ -2,6 +2,7 @@
 import { getSocketIds } from "../socketRegistry.js";
 import { saveNotification } from "../repositories/notifications.repository.js";
 
+// Sends notification to user if online, otherwise saves it for later
 export function notify(io: any, userId: number, payload: any) {
   const socketIds = getSocketIds(userId);
 
@@ -10,7 +11,7 @@ export function notify(io: any, userId: number, payload: any) {
       io.to(socketId).emit("notification", payload);
     }
   } else {
-    // пользователь оффлайн → сохраняем
+    // user offline → save
     saveNotification(userId, payload);
   }
 }

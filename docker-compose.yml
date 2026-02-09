@@ -57,7 +57,8 @@ services:
       - "8081:8080" #dashboard
     volumes:
       # - /var/run/docker.sock:/var/run/docker.sock:ro
-      - $DOCKER_SOCK:/var/run/docker.sock:ro
+      # - /var/run/docker.sock:/var/run/docker.sock:ro,z
+      - ${DOCKER_SOCK}:/var/run/docker.sock:ro,z
       - ./reverse-proxy/certs:/certs:ro
       - ./reverse-proxy/dynamics:/dynamics:ro
       - ./reverse-proxy/auth:/auth:ro
@@ -74,9 +75,14 @@ services:
       - "3001"
     labels:
       - "traefik.enable=true"
+
       - "traefik.http.routers.auth.rule=Host(`localhost`) && PathPrefix(`/auth`)"
       - "traefik.http.routers.auth.entrypoints=websecure"
       - "traefik.http.routers.auth.tls=true"
+
+      - "traefik.http.middlewares.auth-strip.stripprefix.prefixes=/auth"
+      - "traefik.http.routers.auth.middlewares=auth-strip"
+
       - "traefik.http.routers.auth.priority=100"
       - "traefik.http.services.auth.loadbalancer.server.port=3001"
       - "traefik.http.middlewares.metrics-auth.basicauth.users=prometheus:$$apr1$$qwerty$$mU8gq/R4L.0ZVmZJKzzWb0"
@@ -92,6 +98,13 @@ services:
       REDIRECT_URI: ${REDIRECT_URI}
       CHOKIDAR_USEPOLLING: true
       DB_PATH: /app/data/auth.db
+    depends_on:
+        - logstash
+    logging:
+      driver: "gelf"
+      options:
+        gelf-address: "udp://127.0.0.1:12201"
+        tag: "auth"
     command: sh -c "cd /app && npm install && npm run dev"
     networks: 
       - transcendance_net
@@ -142,6 +155,13 @@ services:
       - "traefik.http.services.chat.loadbalancer.server.port=3002"
     env_file:  
       - ./.env
+    depends_on:
+        - logstash
+    logging:
+      driver: "gelf"
+      options:
+        gelf-address: "udp://127.0.0.1:12201"
+        tag: "chat"
     networks:
       - transcendance_net
 
@@ -167,8 +187,15 @@ services:
       - "traefik.http.routers.front.rule=Host(`localhost`) && PathPrefix(`/`)"
       - "traefik.http.routers.front.entrypoints=websecure"
       - "traefik.http.routers.front.tls=true"
-      - "traefik.http.routers.front.priority=1"
+      - "traefik.http.routers.front.priority=1000"
       - "traefik.http.services.front.loadbalancer.server.port=5173"
+    depends_on:
+        - logstash
+    logging:
+      driver: "gelf"
+      options:
+        gelf-address: "udp://127.0.0.1:12201"
+        tag: "webapp"
     command: npm run dev
     networks:
     - transcendance_net
@@ -233,36 +260,24 @@ services:
     expose:
       - "9100"
     command:
-      - "--path.rootfs=/host"
+     # - "--path.rootfs=/host"
       - "--web.listen-address=:9100"
-    volumes:
-      - /:/host:ro,rslave
+    #volumes:
+     # - /:/host:ro,rslave
     networks: 
       - transcendance_net
 
 
-  # elastic-init:
-  #   image: curlimages/curl:8.6.0
-  #   container_name: elastic-init
-  #   depends_on:
-  #     - elastic
-  #   volumes:
-  #     - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-  #     - prometheus-data:/prometheus
-  #   networks:
-  #     - transcendance_net
-
-
-  elastic:
+  elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.17.18
-    container_name : elastic
+    container_name : elasticsearch
     environment:
       - discovery.type=single-node
       - xpack.security.enabled=false
       - ES_JAVA_OPTS=-Xms1g -Xmx1g
-      # - network.host=0.0.0.0
     volumes:
-      - ./ELK/data/elasticsearch:/usr/share/elasticsearch/data
+      # - ./ELK/data/elasticsearch:/usr/share/elasticsearch/data
+      - elastic-data:/usr/share/elasticsearch/data
     expose:
       - "9200"
     env_file:
@@ -275,15 +290,15 @@ services:
     image: docker.elastic.co/kibana/kibana:7.17.18
     container_name: kibana
     environment:
-      ELASTICSEARCH_HOSTS: "http://elastic:9200"
+      ELASTICSEARCH_HOSTS: "http://elasticsearch:9200"
       SERVER_BASEPATH: "/kibana"
       SERVER_REWRITEBASEPATH: "true"
-      XPACK_SECURITY_ENCRYPTIONKEY: ${KIBANA_SECURITY_KEY}
-      XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY: ${KIBANA_SAVED_OBJECTS_KEY}
-      XPACK_REPORTING_ENCRYPTIONKEY: ${KIBANA_REPORTING_KEY}
+      # XPACK_SECURITY_ENCRYPTIONKEY: ${KIBANA_SECURITY_KEY}
+      # XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY: ${KIBANA_SAVED_OBJECTS_KEY}
+      # XPACK_REPORTING_ENCRYPTIONKEY: ${KIBANA_REPORTING_KEY}
       SERVER_PUBLICBASEURL: "https://localhost:8443/kibana"
     depends_on:
-      - elastic
+      - elasticsearch
     labels:
       - traefik.enable=true
       - traefik.http.routers.kibana.rule=Host(`localhost`) && PathPrefix(`/kibana`)
@@ -304,41 +319,39 @@ services:
     image: docker.elastic.co/logstash/logstash:7.17.18
     container_name: logstash
     volumes:
-      - ./logs:/var/log/app
-      - ./ELK/logstash//pipeline/logstash.conf:/usr/share/logstash/pipeline/logstash.conf:ro
+      - ./ELK/logstash/logs:/var/log/app
+      - ./ELK/logstash/pipeline/logstash.conf:/usr/share/logstash/pipeline/logstash.conf:ro
     environment:
-      ELASTICSEARCH_HOST: "http://elastic:9200"
+      ELASTICSEARCH_HOST: "http://elasticsearch:9200"
       LS_JAVA_OPTS: "-Xms256m -Xmx256m"
-    expose:
-      - "5044"
+      XPACK_MONITORING_ENABLED: false
+    # expose:
+    #   - "5044"
+    ports:
+      - "127.0.0.1:12201:12201/udp"
     depends_on:
-      - elastic
+      - elasticsearch
     networks:
       - transcendance_net
 
 
-  filebeat:
-    image: docker.elastic.co/beats/filebeat:7.17.18
-    container_name: filebeat
-    user: root
-    command: ["filebeat", "-e", "--strict.perms=false", "-c", "/usr/share/filebeat/filebeat.yml"]
-    volumes:
-      # - ./ELK/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
-      # - /var/lib/docker/containers:/var/lib/docker/containers:ro
-      # - /var/run/docker.sock:/var/run/docker.sock:ro
-      # - ./ELK/data/filebeat:/usr/share/filebeat/data
-      - ./ELK/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
-      - $DOCKER_SOCK:/var/run/docker.sock:ro
-      - $USER_PATH/.local/share/docker/containers:/var/lib/docker/containers:ro
-      - ./ELK/data/filebeat:/usr/share/filebeat/data
-    depends_on:
-      - elastic
-    env_file:
-      - ./.env
-    networks:
-      - transcendance_net
-
-
+  # filebeat:
+  #   image: docker.elastic.co/beats/filebeat:7.17.18
+  #   container_name: filebeat
+  #   user: root
+  #   command: ["filebeat", "-e", "--strict.perms=false", "-c", "/usr/share/filebeat/filebeat.yml"]
+  #   volumes:
+  #     - ./ELK/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+  #     - $DOCKER_SOCK:/var/run/docker.sock:ro
+  #     # - $USER_PATH/.local/share/docker/containers:/var/lib/docker/containers:ro
+  #     - ./ELK/data/filebeat:/usr/share/filebeat/data
+  #   depends_on:
+  #     - elasticsearch
+  #   env_file:
+  #     - ./.env
+  #   networks:
+  #     - transcendance_net
+  
 volumes:
   elastic-data:
   prometheus-data:

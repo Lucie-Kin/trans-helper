@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import "../../style/chat/profileModal.css";
 
 type User = {
   id: number;
@@ -170,34 +171,37 @@ export default function SettingsModal({
   };
 
   return (
-    <div className="settingsOverlay" onClick={onClose}>
-      <div className="settingsModal" onClick={(e) => e.stopPropagation()}>
+    <div className="settings-overlay" onClick={onClose}>
+      <div className="settings-modal" onClick={(e) => e.stopPropagation()}>
         <h3>Settings</h3>
+        <button className="close-btn" onClick={onClose}>
+          ✕
+        </button>
 
         {/* ===== AVATAR SECTION ===== */}
-        <div className="avatarSection">
+        <div className="avatar-section">
           <img
             src={user.image || "../../../avatar.png"}
-            className="currentAvatar"
+            className="current-avatar"
             alt="Avatar actuel"
           />
 
-          <div className="avatarChoices">
+          <div className="avatar-choices">
             <img
               src="/avatars/default1.png"
-              className="avatarChoice"
+              className="avatar-choice"
               onClick={() => setDefaultAvatar("/avatars/default1.png")}
               alt="Avatar par défaut 1"
             />
 
             <img
               src="/avatars/default2.png"
-              className="avatarChoice"
+              className="avatar-choice"
               onClick={() => setDefaultAvatar("/avatars/default2.png")}
               alt="Avatar par défaut 2"
             />
 
-            <label className="avatarChoice upload">
+            <label className="avatar-choice upload">
               +
               <input
                 type="file"
@@ -215,7 +219,7 @@ export default function SettingsModal({
         </div>
 
         {/* ===== DISPLAY NAME ===== */}
-        <div className="displayNameSection">
+        <div className="display-name-section">
           <label>Display name (actuel: {user.displayName || user.login})</label>
           <input
             type="text"
@@ -226,7 +230,7 @@ export default function SettingsModal({
             disabled={savingName || uploading}
           />
           <button
-            className="settingsBtn"
+            className={`settings-btn register`}
             onClick={saveDisplayName}
             disabled={savingName || uploading || displayName.length < 3}
           >
@@ -237,7 +241,7 @@ export default function SettingsModal({
         {/* ===== ENABLE 2FA ===== */}
         {!user.is2faEnabled && (
           <button
-            className="settingsBtn"
+            className={`settings-btn active2fa`}
             onClick={enable2FA}
             disabled={loading || uploading}
           >
@@ -248,7 +252,7 @@ export default function SettingsModal({
         {/* ===== DISABLE 2FA ===== */}
         {user.is2faEnabled && (
           <button
-            className="settingsBtn danger"
+            className="settings-btn danger"
             onClick={disable2FA}
             disabled={uploading}
           >
@@ -256,11 +260,8 @@ export default function SettingsModal({
           </button>
         )}
 
-        {error && <p className="errorText">{error}</p>}
+        {error && <p className="error-text">{error}</p>}
 
-        <button className="closeBtn" onClick={onClose}>
-          ✕
-        </button>
       </div>
     </div>
   );

@@ -7,4 +7,3 @@ fi
 echo "vm.max_map_count configuré"
 echo "Enable Kibana"
 sudo sysctl enable kibana
-

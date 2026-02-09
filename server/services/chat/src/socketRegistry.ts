@@ -10,13 +10,15 @@ type SocketSet = Set<string>;
 // userId → Set<socketId>
 const userSockets = new Map<number, SocketSet>();
 
-// userId → user info (храним 1 раз)
+// userId → user info (store once)
 const users = new Map<number, OnlineUser>();
 
-/**
- * Регистрируем socket пользователя
- * (поддерживает несколько вкладок / устройств)
- */
+/*users = {
+  5: { id: 5, login: "alice" },
+  7: { id: 7, login: "bob" },
+}*/
+
+// Register user socket (supports multiple tabs / devices)
 export function registerSocket(
   user: OnlineUser,
   socketId: string
@@ -32,10 +34,7 @@ export function registerSocket(
   sockets.add(socketId);
 }
 
-/**
- * Удаляем конкретный socketId пользователя
- * @returns true если пользователь полностью оффлайн
- */
+// Remove specific user socketId, returns true if user is completely offline
 export function unregisterSocket(
   userId: number,
   socketId: string
@@ -54,21 +53,17 @@ export function unregisterSocket(
   return false;
 }
 
-/**
- * Получить ВСЕ socketId пользователя
- * (используется для io.to(...).emit)
- */
+// Get ALL user socketIds (used for io.to(...).emit)
 export function getSocketIds(userId: number): string[] {
   return Array.from(userSockets.get(userId) ?? []);
 }
 
-/**
- * Список онлайн-пользователей (уникальные)
- */
+// Get list of online users (unique)
 export function getAllUsers(): OnlineUser[] {
   return Array.from(users.values());
 }
 
+// Checks if a user is currently online
 export function isUserOnline(userId: number): boolean {
   const sockets = userSockets.get(userId);
   return !!sockets && sockets.size > 0;

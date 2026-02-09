@@ -1,35 +1,99 @@
+:root {
+  --header-height: 120px;
+}
+
+#root {
+  max-width: none;
+}
+
+html, body {
+  margin: 0;
+  overflow-x: hidden;
+}
+
 .homepage {
+  min-height: 100vh;
+  width: 100%;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
   margin: 0;
   padding: 0;
   font-family: "Poppins";
-
 }
 
 .title-container {
-  position: absolute;
-  top: 10%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  text-align: center;
-  z-index: 10;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+
+  padding: 1rem 0;
+  min-height: var(--header-height);
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  background: transparent;
 }
 
+.title-container.compact {
+  justify-content: flex-start;
+  align-items: flex-start;
+  padding: 0.5rem 1rem;
+  min-width: 100vw;
+}
+
+.title-container.compact h3 {
+  font-size: 1.2rem;
+  text-align: left;
+}
+
+.title-container.compact h4 {
+  display: none;
+}
 
 h3 {
+  /* color: #030f3ae1 */
   color: #030b29e1;
-  font-size: 4rem;
+  font-size: clamp(2.2rem, 5vw, 4rem);
   animation: glow 4s ease-in-out infinite alternate;
   font-family: "Gugi";
 }
 
 h4 {
+  /* color: rgb(202, 206, 218); */
   color: rgb(167, 173, 189);
-  font-size: 2.4rem;
+  font-size: clamp(1rem, 2.5vw, 2.4rem);
   font-family: "Chakra_semi_bold";
 }
 
+.title-container h3,
+.title-container h4 {
+  margin: 0;
+  line-height: 1.1;
+  text-align: center;
+}
 
-.avatarHomePage {
+.boxes-wrapper {
+  flex: 1;
+  display: flex;
+  gap: 2rem;
+  padding: 2rem;
+  justify-content: center;
+  align-items: stretch;
+  min-height: 0;
+  max-width: 100%;
+  overflow-x: hidden;
+  height: calc(100vh = var(--header-height));
+}
+
+.boxes-wrapper.playing {
+  display: none;
+}
+
+.avatar-home-page {
   width: 140%;
   height: 140%;
   object-fit: cover;
@@ -37,17 +101,23 @@ h4 {
   display: block;
 }
 
-.loginHomePage {
+.login-home-page {
   position: fixed;
   top: 2rem;
   right: 5rem;
   z-index: 1000;
   font-size: 1.2rem;
-  color: rgb(167, 173, 189);
+  color: rgb(202, 206, 218);
   font-family: "Chakra_bold";
 }
 
-.profileArea {
+.profile-box {
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem;
+}
+
+.profile-area {
   position: fixed;
   top: 1.5rem;
   right: 1.5rem;
@@ -60,7 +130,7 @@ h4 {
   cursor: pointer;
 }
 
-.settingsBox {
+.settings-box {
   width: 2.5rem;
   height: 2.5rem;
   border-radius: 9999px;
@@ -69,7 +139,7 @@ h4 {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-.avatarHomePage {
+.avatar-home-page {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -77,7 +147,7 @@ h4 {
 }
 
 
-.profileMenu {
+.profile-menu {
   position: fixed;
   top: 4.8rem;
   right: 1.5rem;
@@ -87,9 +157,10 @@ h4 {
   border-radius: 12px;
   padding: 0.4rem;
   width: 180px;
+  font-family: "Chakra_bold";
 }
 
-.profileMenu button {
+.profile-menu button {
   width: 100%;
   background: transparent;
   border: 0;
@@ -100,11 +171,11 @@ h4 {
   cursor: pointer;
 }
 
-.profileMenu button:hover {
+.profile-menu button:hover {
   background: rgba(255, 255, 255, 0.08);
 }
 
-.pongFrame {
+.pong-frame {
   border-radius: 24px;
   overflow: hidden;
   background: #000;
@@ -112,119 +183,9 @@ h4 {
   border-color: rgba(120, 220, 255, 0.35);
 }
 
-.pongClassic {
+.pong-classic {
   width: 100%;
   height: 100%;
   display: block;
   object-fit: cover;
-}
-
-
-.gameBox {
-  position: absolute;
-  bottom: 4rem;
-  left: 30%;
-  transform: translateX(-50%);
-  width: 40rem;
-  height: 40rem;
-  padding: 1rem;
-  flex-direction: column;
-
-  border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-
-  background: rgb(8, 3, 0);
-
-  -webkit-backdrop-filter: blur(24px);
-  backdrop-filter: blur(24px);
-
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
-}
-
-.gameBox::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: 16px;
-  pointer-events: none;
-
-  background: linear-gradient(120deg,
-      rgba(255, 255, 255, 0),
-      rgba(255, 255, 255, 0.082),
-      transparent 60%);
-}
-
-/* pour le reflet sur la card */
-.gameBox>* {
-  position: relative;
-  z-index: 1;
-}
-
-.tournaments-sidebar {
-  position: fixed;
-  bottom: 4rem;
-  left: 1.5rem;
-  width: 280px;
-  max-height: 300px;
-  background: rgba(20, 25, 40, 0.9);
-  border-radius: 12px;
-  border: 1px solid rgba(100, 140, 200, 0.2);
-  backdrop-filter: blur(16px);
-  overflow: hidden;
-}
-
-.invite-popup,
-.tournament-popup {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: rgba(30, 35, 50, 0.95);
-  border: 2px solid rgba(100, 180, 255, 0.4);
-  border-radius: 16px;
-  padding: 2rem;
-  z-index: 2000;
-  text-align: center;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-}
-
-.invite-popup p,
-.tournament-popup p {
-  color: rgba(255, 255, 255, 0.9);
-  font-size: 1.1rem;
-  margin-bottom: 1.5rem;
-}
-
-.invite-actions {
-  display: flex;
-  gap: 1rem;
-  justify-content: center;
-}
-
-.invite-popup button,
-.tournament-popup button {
-  padding: 0.6rem 1.5rem;
-  border: none;
-  border-radius: 8px;
-  font-size: 0.95rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.invite-popup button:first-child,
-.tournament-popup button:first-child {
-  background: rgba(50, 180, 100, 0.8);
-  color: white;
-}
-
-.invite-popup button:last-child,
-.tournament-popup button:last-child {
-  background: rgba(180, 50, 50, 0.8);
-  color: white;
-}
-
-.invite-popup button:hover,
-.tournament-popup button:hover {
-  transform: translateY(-2px);
 }

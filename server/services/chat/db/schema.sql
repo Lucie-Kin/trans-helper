@@ -71,7 +71,7 @@ CREATE TABLE IF NOT EXISTS game_invites (
   from_user_id  INTEGER NOT NULL,
   to_user_id    INTEGER NOT NULL,
   status        TEXT NOT NULL DEFAULT 'pending'
-                CHECK (status IN ('pending', 'accepted', 'rejected', 'expired')),
+                CHECK (status IN ('pending', 'accepted', 'rejected')),
   created_at    DATETIME DEFAULT CURRENT_TIMESTAMP,
   CHECK (from_user_id <> to_user_id)
 );

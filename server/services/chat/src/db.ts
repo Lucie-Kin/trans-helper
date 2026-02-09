@@ -8,6 +8,7 @@ const SCHEMA_PATH = "/chat/db/schema.sql";
 
 let db: Database.Database;
 
+// Initializes the chat service database and creates schema if needed
 export function initDb() {
   try {
     const dir = path.dirname(DB_PATH);

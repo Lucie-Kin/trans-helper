@@ -24,10 +24,10 @@ ps:
 
 
 clean:
-	docker-compose down
+	docker compose down
 
 fclean-hard:
-	docker-compose down
+	docker compose down
 	docker system prune -a -f --volumes
 	docker network prune -f
 	docker network rm $$(docker network ls -q) 2>/dev/null || true

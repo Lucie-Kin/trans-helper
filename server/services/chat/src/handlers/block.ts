@@ -8,14 +8,16 @@ import {
 } from "../repositories/blocks.repository.js";
 import { getSocketIds } from "../socketRegistry.js";
 
+// Extracts target user ID from payload (supports number or object with targetId)
 function readTargetId(payload: any): number | null {
   if (typeof payload === "number") return payload;
   if (payload && typeof payload.targetId === "number") return payload.targetId;
   return null;
 }
 
+// Registers all block-related socket event handlers
 export function registerBlockHandlers(io: any, socket: any) {
-  // 📋 отдать списки блоков текущему пользователю
+  // send block lists to current user
   socket.on("blocks:list", () => {
     const me = socket.user.id;
     socket.emit("blocks:list", {
@@ -24,7 +26,7 @@ export function registerBlockHandlers(io: any, socket: any) {
     });
   });
 
-  // 🚫 block / 🔓 unblock
+  // block / unblock
   socket.on("user:block", (payload: any) => {
     const targetId = readTargetId(payload);
     if (!targetId || targetId === socket.user.id) return;
@@ -33,20 +35,18 @@ export function registerBlockHandlers(io: any, socket: any) {
     const iBlockedHim = isBlocked(me, targetId);
 
     if (iBlockedHim) {
-      // 🔓 UNBLOCK
       unblockUser(me, targetId);
     } else {
-      // 🚫 BLOCK
       blockUser(me, targetId);
     }
 
-    // 🔁 обновляем блок-листы у себя
+    // update block lists for ourselves
     socket.emit("blocks:list", {
       blockedByMe: getBlockedUsers(me),
       blockedMe: getBlockedByUsers(me),
     });
 
-    // 🔁 и у второго пользователя (во всех его вкладках)
+    // and for the second user (in all their tabs)
     for (const sid of getSocketIds(targetId)) {
       io.to(sid).emit("blocks:list", {
         blockedByMe: getBlockedUsers(targetId),
@@ -54,7 +54,7 @@ export function registerBlockHandlers(io: any, socket: any) {
       });
     }
 
-    // 🔄 триггер обновления UI (users:list)
+    // trigger UI update (users:list)
     socket.emit("user:state:update", {});
     for (const sid of getSocketIds(targetId)) {
       io.to(sid).emit("user:state:update", {});

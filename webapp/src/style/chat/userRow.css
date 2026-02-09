@@ -33,7 +33,7 @@
 }
 
 .action-icon img{
-  width: 18px;      /* ajuste: 14 / 16 / 18 */
+  width: 18px;
   height: 18px;
   object-fit: contain;
   display: block;
@@ -58,6 +58,15 @@
   background: #ff805c;
 }
 
+.action-icon.game-invite-outgoing {
+  background: #f0c85c;
+  color: #1c1c1c;
+}
+
+.action-icon.game-invite-incoming {
+  background: #33ad60f8;
+}
+
 .action-icon:hover {
   filter: brightness(1.05);
 }
@@ -68,5 +77,5 @@
 }
 
 .user-login {
-  color: #e0e0e0; /* default color */
+  color: #e0e0e0;
 }

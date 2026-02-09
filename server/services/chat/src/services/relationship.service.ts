@@ -5,70 +5,59 @@ import {
   updateRelationship,
   deleteRelationship,
 } from "../repositories/relationships.repository.js";
-import { isBlocked } from "../repositories/blocks.repository.js";
-
-export type RelationshipState =
-  | "none"
-  | "outgoing_request"
-  | "incoming_request"
-  | "friends"
-  | "blocked"
-  | "blocked_by";
 
 class RelationshipService {
-  getState(me: number, other: number): RelationshipState {
-    if (isBlocked(me, other)) return "blocked";
-    if (isBlocked(other, me)) return "blocked_by";
-
-    const rel = getRelationship(me, other);
-    const reverse = getRelationship(other, me);
-
-    if (rel?.status === "requested") return "outgoing_request";
-    if (reverse?.status === "requested") return "incoming_request";
-
-    if (rel?.status === "accepted" && reverse?.status === "accepted") {
-      return "friends";
+  // Get friendship status ignoring block status (allows managing friendship even when blocked)
+    private getFriendshipState(me: number, other: number): "none" | "outgoing_request" | "incoming_request" | "friends" {
+      const rel = getRelationship(me, other);
+      const reverse = getRelationship(other, me);
+  
+      if (rel?.status === "requested") return "outgoing_request";
+      if (reverse?.status === "requested") return "incoming_request";
+  
+      if (rel?.status === "accepted" && reverse?.status === "accepted") {
+        return "friends";
+      }
+  
+      return "none";
     }
-
-    return "none";
-  }
-
-  // 📩 отправить заявку (idempotent)
+  
+    //  send request (idempotent)
   sendRequest(me: number, other: number) {
-    const state = this.getState(me, other);
+    const state = this.getFriendshipState(me, other);
     if (state !== "none") return;
 
     createRelationship(me, other, "requested");
   }
 
-  // ✅ принять заявку
+  // accept request
   acceptRequest(me: number, other: number) {
-    const state = this.getState(me, other);
+    const state = this.getFriendshipState(me, other);
     if (state !== "incoming_request") return;
 
     updateRelationship(other, me, "accepted");
     createRelationship(me, other, "accepted");
   }
 
-  // ❌ отменить СВОЮ заявку
+  //  cancel OWN request
   cancelRequest(me: number, other: number) {
-    const state = this.getState(me, other);
+    const state = this.getFriendshipState(me, other);
     if (state !== "outgoing_request") return;
 
     deleteRelationship(me, other);
   }
 
-  // ❌ отклонить ЧУЖУЮ заявку
+  //  reject OTHER'S request
   rejectRequest(me: number, other: number) {
-    const state = this.getState(me, other);
+    const state = this.getFriendshipState(me, other);
     if (state !== "incoming_request") return;
 
     deleteRelationship(other, me);
   }
 
-  // 🧹 удалить из друзей
+  //  remove from friends
   removeFriend(me: number, other: number) {
-    const state = this.getState(me, other);
+    const state = this.getFriendshipState(me, other);
     if (state !== "friends") return;
 
     deleteRelationship(me, other);

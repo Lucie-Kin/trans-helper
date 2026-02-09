@@ -1,0 +1,132 @@
+/* PARTICULES ANIMEES */
+.game-card-inner {
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    background:
+    radial-gradient(circle at 50% 40%,
+      rgba(192,132,255,.25),
+      transparent 60%),
+    linear-gradient(160deg,
+      rgba(40,10,70,.95),
+      rgba(20,5,40,.98));
+}
+
+.game-card-inner::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+
+    background-image:
+        radial-gradient(circle,
+            rgba(192, 132, 255, 0.9) 1px, transparent 1.5px),
+        radial-gradient(circle,
+            rgba(95, 165, 250, 0.9) 3px, transparent 2.5px);
+    background-size: 60px 60px, 90px 90px;
+    background-position: 0 0, 30px 40px;
+    animation: driftSlow 80s linear infinite;
+    opacity: 0.6;
+}
+
+.game-card-inner::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+
+    background-image:
+        radial-gradient(circle,
+            rgba(244, 114, 182, 0.9) 4px, transparent 5px),
+        radial-gradient(circle,
+            rgba(192, 132, 255, 0.8) 5px, transparent 6px);
+    background-size: 140px 140px, 180px 180px;
+    background-position: 20px 60px, 70px 10px;
+    animation: driftFast 50s linear infinite;
+    opacity: 0.4;
+}
+
+.particles-glow {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+
+    background-image:
+        radial-gradient(circle,
+            rgba(192, 132, 255, 0.8) 6px, transparent 10px),
+        radial-gradient(circle,
+            rgba(96, 165, 250, 0.7) 5px, transparent 9px);
+    background-size: 120px 120px, 160px 160px;
+    background-position: 10px 40px, 60px 80px;
+    filter: blur(16px);
+
+    mix-blend-mode: screen;
+    animation: driftGlow 120s linear infinite;
+    opacity: 0.9;
+}
+
+.spark {
+    position: absolute;
+    width: 70px;
+    height: 2px;
+    background: linear-gradient(90deg,
+        transparent, white, transparent);
+    filter: blur(2px);
+    opacity: 0;
+    transform: rotate(-20deg);
+    animation: sparkFlash 3s infinite ease-in-out;
+}
+
+.s1 {
+    top: 30%;
+    left: -20%;
+    animation-delay: 0s;
+}
+
+.s2 {
+    top: 60%;
+    left: 10%;
+    animation-delay: 1.2s;
+}
+
+.s3 {
+    top: 20%;
+    left: 50%;
+    animation-delay: 2s;
+}
+
+@keyframes sparkFlash {
+    0%   { opacity: 0; transform: translateX(0) rotate(-20deg); }
+    15%  { opacity: 1; }
+    60%  { transform: translateX(240px) rotate(-20deg); opacity: 0; }
+    100% { opacity: 0; }
+}
+
+@keyframes driftSlow {
+    from { transform: translateY(0); }
+    to { transform: translateY(-200px); }
+}
+
+@keyframes driftFast {
+    from { transform: translateY(0); }
+    to { transform: translateY(-300px); }
+}
+
+@keyframes driftGlow {
+    from { transform: translateY(0); }
+    to { transform: translateY(-150px); }
+}
+
+@keyframes starDrift {
+    from { background-position: 0 0, 20px 40px, 40px 10px; }
+    to { background-position: 0 -400px, 20px -360px, 40px -420px; }
+}
+
+@keyframes twinkle {
+    from { opacity: 0.3; }
+    to { opacity: 0.7; }
+}

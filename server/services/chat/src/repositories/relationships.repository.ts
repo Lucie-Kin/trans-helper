@@ -1,6 +1,7 @@
 //chat/src/repositories/relationships.repository.ts
 import { db } from "../db.js";
 
+// Retrieves the relationship record between two users
 export function getRelationship(a: number, b: number) {
   return db
     .prepare(
@@ -9,6 +10,7 @@ export function getRelationship(a: number, b: number) {
     .get(a, b);
 }
 
+// Creates a new relationship record between two users
 export function createRelationship(
   a: number,
   b: number,
@@ -22,6 +24,7 @@ export function createRelationship(
     .run(a, b, status);
 }
 
+// Updates the status of an existing relationship
 export function updateRelationship(
   a: number,
   b: number,
@@ -35,6 +38,7 @@ export function updateRelationship(
     .run(status, a, b);
 }
 
+// Deletes a relationship record between two users
 export function deleteRelationship(a: number, b: number) {
   return db
     .prepare(

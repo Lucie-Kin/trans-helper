@@ -8,12 +8,13 @@ import { isBlocked } from "../repositories/blocks.repository.js";
 
 const MAX_MESSAGE_LENGTH = 1000;
 
+// Registers all message-related socket event handlers
 export function registerMessageHandlers(io: any, socket: any) {
-  // 📜 LOAD HISTORY
+  // LOAD HISTORY
   socket.on("messages:load", (otherId: number) => {
     if (!otherId) return;
 
-    // 🚫 block в ЛЮБУЮ сторону
+    // block in ANY direction
     if (
       isBlocked(socket.user.id, otherId) ||
       isBlocked(otherId, socket.user.id)
@@ -26,19 +27,19 @@ export function registerMessageHandlers(io: any, socket: any) {
     socket.emit("messages:list", messages);
   });
 
-  // 📩 SEND MESSAGE
+  // SEND MESSAGE
   socket.on("message:send", ({ toId, content }) => {
     if (!toId || typeof content !== "string") return;
 
     const trimmed = content.trim();
 
-    // ❌ пустое сообщение
+    //  empty message
     if (trimmed.length === 0) return;
 
-    // ❌ слишком длинное
+    //  too long
     if (trimmed.length > MAX_MESSAGE_LENGTH) return;
 
-    // 🚫 block в ЛЮБУЮ сторону
+    //  block in ANY direction
     if (
       isBlocked(socket.user.id, toId) ||
       isBlocked(toId, socket.user.id)
@@ -59,12 +60,12 @@ export function registerMessageHandlers(io: any, socket: any) {
       content: trimmed,
     };
 
-    // 📩 получателю (во все сокеты)
+    //  to receiver (to all sockets)
     for (const sid of getSocketIds(toId)) {
       io.to(sid).emit("message:new", msg);
     }
 
-    // 🔁 отправителю (ТОЛЬКО в текущий сокет)
+    //  to sender (ONLY to current socket)
     socket.emit("message:new", msg);
   });
 }

@@ -6,7 +6,7 @@ export function registerUsersHandlers(
   app: FastifyInstance,
   db: Database.Database
 ) {
-  // PUBLIC — через JWT (для webapp)
+  //  PUBLIC — via JWT (for webapp)
   app.get("/auth/api/users", async (req, reply) => {
     await req.jwtVerify({ onlyCookie: true });
 
@@ -21,7 +21,7 @@ export function registerUsersHandlers(
     return reply.send(users);
   });
 
-  // INTERNAL — для chat (БЕЗ JWT)
+  //  INTERNAL — for chat (WITHOUT JWT)
   app.get("/auth/internal/users", async (req, reply) => {
     if (req.headers["x-internal"] !== "chat") {
       return reply.code(403).send({ error: "forbidden" });
@@ -35,7 +35,7 @@ export function registerUsersHandlers(
       `)
       .all();
 
-    return reply.send(users); // 🔥 ВАЖНО: return
+    return reply.send(users);
   });
 }
 

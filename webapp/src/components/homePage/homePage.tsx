@@ -1,15 +1,31 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from "react-router-dom";
 import "../../style/homePage/homepage.css";
 import "../../style/homePage/settings.css";
 import SettingsModal from './settingsModal';
-import { useNavigate } from "react-router-dom";
 import ChatBox from "../chat/chatBox";
-import GameBox from "../game/GameBox";
-import TournamentList from "../game/TournamentList";
+import GameBox from '../game/GameBox';
+import GameArea from '../game/GameArea';
 import { useGameInvites } from '../../hooks/useGameInvites';
 import { useNotifications } from "../../hooks/useNotifications";
-import { useTournament } from "../../hooks/useTournament";
+import { useTournament } from '../../hooks/useTournament';
 import { connectSocket } from "../../socket";
+
+import { GameState } from '../share/sharedTypes';
+
+
+////////////
+const DEV_MODE = false;
+const DEV_USER: User = {
+  id: 1,
+  login: "dev-user",
+  email: "dev@local",
+  image: "/avatar.png",
+  displayName: "Dev Mode",
+  is2faEnabled: false,
+  twofaPassed: true,
+};
+//////////// 
 
 type User = {
   id: number;
@@ -21,27 +37,16 @@ type User = {
   twofaPassed: boolean;
 } | null;
 
-const DEV_MODE = true;
-const DEV_USER: User = {
-  id: 1,
-  login: "dev-user",
-  email: "dev@local",
-  image: "/avatar.png",
-  displayName: "Dev Mode",
-  is2faEnabled: false,
-  twofaPassed: true,
-};
 
 export default function HomePage() {
   const navigate = useNavigate();
   const [user, setUser] = useState<User>(null);
   const [loading, setLoading] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
-  const { invite, accept, reject } = useGameInvites();
   const { notification, clear } = useNotifications();
-  const [menuOpen, setMenuOpen] = useState(false);
-
+  const gameInvites = useGameInvites();
   const tournament = useTournament(user?.id || 0);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const refreshUser = async () => {
     try {
@@ -121,23 +126,22 @@ export default function HomePage() {
               navigate(`/pong/${notification.matchId}`)
             }
           >
-            Acceder au match
+            Accèder au match
           </button>
 
           <button onClick={clear}>Fermer</button>
         </div>
       )}
 
-
-      {invite && (
+      {gameInvites.invite && (
         <div className="invite-popup">
           <p>
-            <strong>{invite.from.login}</strong> souhaite jouer avec vous
+            <strong>{gameInvites.invite.from.login}</strong> souhaite jouer avec vous
           </p>
 
           <div className="invite-actions">
-            <button onClick={accept}>Accepter</button>
-            <button onClick={reject}>Refuser</button>
+            <button onClick={gameInvites.accept}>Accepter</button>
+            <button onClick={gameInvites.reject}>Refuser</button>
           </div>
         </div>
       )}
@@ -158,50 +162,66 @@ export default function HomePage() {
         />
       )}
 
-      <div className="title-container">
+      <div className={`title-container ${tournament.gameState === GameState.Playing ? 'compact' : ''}`}>
         <h3>Transcendance</h3>
         <h4>Bienvenue, {user.displayName}</h4>
       </div>
 
-      <div className="gameBox">
-        <GameBox
-          gameState={tournament.gameState}
-          invitedPlayers={tournament.invitedPlayers}
-          onPlayAI={tournament.playAI}
-          onPlayRandom={tournament.playRandom}
-          onPlayWithPlayer={tournament.playWithPlayer}
-          onExitGame={tournament.exitGame}
-          onStartTournament={tournament.startTournament}
-          onChangeTournamentName={tournament.changeTournamentName}
-          tournamentId={tournament.tournamentId}
-          tournamentName={tournament.tournamentName}
-          tournamentPlayers={tournament.tournamentPlayers}
-          tournamentMatches={tournament.tournamentMatches}
-          isOrganizer={tournament.isOrganizer}
-        />
-      </div>
+      {tournament.gameState === GameState.Playing ? (
+        < GameArea onExit={tournament.exitGame} />
+      ) : (
+        <div className="boxes-wrapper">
+          <div className="game-box">
 
+            {/* <div className="pong-frame">
+            <img className="pong-classic"
+              src="/images/pongHomePage.png"
+              alt="Pong"
+            /></div>
+            <div className="play">
+              <LinkButton
+                text="Jouer"
+                href="https://localhost:8443/play"
+              />
+            </div> */}
 
-      <ChatBox myUserId={user.id} />
+            <GameBox
+              gameState={tournament.gameState}
+              invitedPlayers={tournament.invitedPlayers}
+              onPlayAi={tournament.playAI}
+              onPlayRandom={tournament.playRandom}
+              onPlayWithPlayer={tournament.playWithPlayer}
+              onStartTournament={tournament.startTournament}
+              onChangeTournamentName={tournament.changeTournamentName}
+              tournamentId={tournament.tournamentId}
+              tournamentName={tournament.tournamentName}
+              tournamentPlayers={tournament.tournamentPlayers}
+              tournamentMatches={tournament.tournamentMatches}
+              isOrganizer={tournament.isOrganizer}
+            />
+          </div>
+          {/* <div className="play">
+            <LinkButton
+              text="Jouer"
+              href="https://localhost:8443/pong"
+            />
+          </div> */}
 
-      <div className="tournaments-sidebar">
-        <TournamentList
-          tournaments={tournament.availableTournaments}
-          onJoin={tournament.joinTournament}
-        />
-      </div>
-
-
-      <div className="profileArea" onClick={() => setMenuOpen(!menuOpen)}>
-        <div className="settingsBox">
-          <img className="avatarHomePage" src={user.image} alt="Avatar" />
+          <ChatBox myUserId={user.id} />
         </div>
-        <div className="loginHomePage">{user.displayName}</div>
-      </div>
+      )}
 
+      <div className="profile-box">
+        <div className="profile-area" onClick={() => setMenuOpen(!menuOpen)}>
+          <div className="settings-box">
+            <img className="avatar-home-page" src={user.image} alt="Avatar" />
+          </div>
+          <div className="login-home-page">{user.displayName}</div>
+        </div>
+      </div>
 
       {menuOpen && (
-        <div className="profileMenu">
+        <div className="profile-menu">
           <button type="button" onClick={() => { setMenuOpen(false); setShowSettings(true); }}>
             Settings
           </button>
@@ -211,7 +231,6 @@ export default function HomePage() {
           </button>
         </div>
       )}
-
 
     </div>
   );

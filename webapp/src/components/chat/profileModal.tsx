@@ -43,7 +43,7 @@ export default function ProfileModal({ userId, onClose }: Props) {
       })
       .catch((err) => {
         console.error("ProfileModal fetch error:", err);
-        setError("Не удалось загрузить профиль");
+        setError("Failed to load profile");
       })
       .finally(() => {
         setLoading(false);
@@ -60,7 +60,7 @@ export default function ProfileModal({ userId, onClose }: Props) {
           ✕
         </button>
 
-        {loading && <div>Загрузка…</div>}
+        {loading && <div>Chargement…</div>}
 
         {error && <div className="empty">{error}</div>}
 

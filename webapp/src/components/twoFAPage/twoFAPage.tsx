@@ -278,12 +278,12 @@ export default function TwoFAPage() {
    */
   const getDescription = () => {
     if (mode === "setup") {
-      return "Scannez le QR code avec votre application d'authentification, puis entrez le code à 6 chiffres";
+      return "Scannez le QR code avec Google Authenticator, puis entrez le code à 6 chiffres";
     }
     if (mode === "disable") {
-      return "Entrez le code à 6 chiffres généré par votre application d'authentification pour désactiver 2FA";
+      return "Entrez le code à 6 chiffres généré par Google Authenticator pour désactiver 2FA";
     }
-    return "Entrez le code à 6 chiffres généré par votre application d'authentification";
+    return "Entrez le code à 6 chiffres généré par Google Authenticator";
   };
 
   /**
