@@ -55,7 +55,7 @@ export default function GameBox({
                     tournamentName={tournamentName}
                     players={allPlayers}
                     matches={tournamentMatches}
-                    isOrganizer={isOrganizer}
+                    isOrganizer={isOrganizer || !tournamentId}
                     onStart={onStartTournament}
                     onChangeName={onChangeTournamentName}
                 />
