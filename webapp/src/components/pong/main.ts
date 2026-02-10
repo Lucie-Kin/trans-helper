@@ -42,8 +42,7 @@ export function startPong(
   invitePlayerId?: number,
   onGameEnd?: (result: MatchResult) => void,
   player1Elo: number = 1000,
-  player2Elo: number = 1000,
-  onExit?: () => void
+  player2Elo: number = 1000
 ) {
   if (invitePlayerId) console.log("invite player id: ", invitePlayerId);
   const ctx = canvas.getContext("2d");
@@ -94,13 +93,6 @@ export function startPong(
   };
   
   const onKeyDown = (e: KeyboardEvent) => {
-    if (e.key === "Escape" && gameEnded) {
-      e.preventDefault();
-      cleanup();
-      onExit?.();
-      return;
-    }
-
     if (e.code === "Space" && waitingForSpace) {
       e.preventDefault();
       waitingForSpace = false;
@@ -202,10 +194,6 @@ export function startPong(
     ctx.fillStyle = "#888888";
     ctx.font = "16px Chakra";
     ctx.fillText(`${loserName} - ${loserScore} pts`, cx, cy + 90);
-
-    ctx.fillStyle = "#666666";
-    ctx.font = "14px Chakra";
-    ctx.fillText("Appuyer sur Echap pour quitter", cx, cy + 130);
   };
 
   const renderWaitingForSpace = () => {

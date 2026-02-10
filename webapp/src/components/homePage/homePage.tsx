@@ -14,7 +14,6 @@ import { GameCardType, GameState } from '../share/sharedTypes';
 import "../../style/homePage/homepage.css";
 import "../../style/homePage/settings.css";
 
-
 ////////////
 const DEV_MODE = false;
 const DEV_USER: User = {
@@ -162,14 +161,11 @@ export default function HomePage() {
   const exitGame = () => {
     setActiveCard(null);
     setInvitePlayerId(undefined);
-    setAcceptedInvite(null);
     setGameState(GameState.Idle);
-
-    if (tournament.tournamentId) {
+    if (tournament.tournamentId)
       tournament.exitGame();
-    } else {
+    else
       tournament.clearInvites();
-    }
   };
 
   if (loading) return <div>Chargement…</div>;
@@ -209,6 +205,8 @@ export default function HomePage() {
             : tournament.invitedPlayers.find(p => p.id === invitePlayerId)?.name || "Adversaire"
           }
           invitePlayerId={invitePlayerId}
+          
+          // onGameEnd={() => { tournament.exitGame(); }}
         />
       ) : (
         <div className="boxes-wrapper">
@@ -224,7 +222,7 @@ export default function HomePage() {
               tournamentName={tournament.tournamentName}
               tournamentPlayers={tournament.tournamentPlayers}
               tournamentMatches={tournament.tournamentMatches}
-
+              isOrganizer={tournament.isOrganizer}
               // acceptedInvite={acceptedInvite ?? undefined}
             />
           </div>

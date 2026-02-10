@@ -3,7 +3,7 @@ import { Player } from '../entities/player';
 import { GameField } from './gameField';
 import { AIController } from './AIController';
 
-export const WIN_SCORE = 5;
+export const WIN_SCORE = 1;
 
 export class GameEngine {
 	public AIController?: AIController;
