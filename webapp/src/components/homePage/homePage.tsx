@@ -13,7 +13,7 @@ import { GameCardType, GameState } from '../share/sharedTypes';
 
 import "../../style/homePage/homepage.css";
 import "../../style/homePage/settings.css";
-import { exit } from 'node:process';
+
 
 ////////////
 const DEV_MODE = false;
@@ -162,8 +162,14 @@ export default function HomePage() {
   const exitGame = () => {
     setActiveCard(null);
     setInvitePlayerId(undefined);
+    setAcceptedInvite(null);
     setGameState(GameState.Idle);
-    tournament.exitGame();
+
+    if (tournament.tournamentId) {
+      tournament.exitGame();
+    } else {
+      tournament.clearInvites();
+    }
   };
 
   if (loading) return <div>Chargement…</div>;
@@ -195,7 +201,6 @@ export default function HomePage() {
       {gameState === GameState.Playing && activeCard ? (
         < GameArea
           onExit={exitGame}
-          onGameEnd={exitGame}
           gameCardType={activeCard}
           player1Name={user.displayName || user.login}
           player2Name={
@@ -204,8 +209,6 @@ export default function HomePage() {
             : tournament.invitedPlayers.find(p => p.id === invitePlayerId)?.name || "Adversaire"
           }
           invitePlayerId={invitePlayerId}
-          
-          // onGameEnd={() => { tournament.exitGame(); }}
         />
       ) : (
         <div className="boxes-wrapper">

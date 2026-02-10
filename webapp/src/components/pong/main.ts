@@ -94,7 +94,6 @@ export function startPong(
   };
   
   const onKeyDown = (e: KeyboardEvent) => {
-    console.log("GAME ENDED: ", gameEnded === true ? "true" : "false");
     if (e.key === "Escape" && gameEnded) {
       e.preventDefault();
       cleanup();

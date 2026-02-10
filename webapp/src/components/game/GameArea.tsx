@@ -32,7 +32,7 @@ export default function GameArea({
         canvas.width = rect.width;
         canvas.height = rect.height;
 
-        const game = startPong(canvas, gameCardType, player1Name, player2Name, invitePlayerId, onGameEnd);
+        const game = startPong(canvas, gameCardType, player1Name, player2Name, invitePlayerId, onGameEnd, 1000, 1000, onExit);
         if (!game) return;
 
         const onBlur = () => game.setPaused(true);
