@@ -13,14 +13,24 @@ export type MatchResult = {
   player2Name: string;
 };
 
-function getRank(score: number): string {
-  if (score >= 9) return "Pro";
-  if (score >= 5) return "Mid";
+function getRank(elo: number): string {
+  if (elo >= 1600) return "Pro";
+  if (elo >= 1200) return "Mid";
   return "Noob";
 }
 
-function getElo(winnerScore: number, loserScore: number): number {
-  return 1000 + (winnerScore - loserScore) * 50;
+function getKFactor(elo: number): number {
+  if (elo >= 1600) return 16;
+  if (elo >= 1200) return 24;
+  return 32;
+}
+
+function computeEloChange(winnerElo: number, loserElo: number): { winnerNew: number; loserNew: number } {
+  const expectedWinner = 1 / (1 + Math.pow(10, (loserElo - winnerElo) / 400));
+  const expectedLoser = 1 / (1 + Math.pow(10, (winnerElo - loserElo) / 400));
+  const winnerNew = Math.max(0, Math.round(winnerElo + getKFactor(winnerElo) * (1 - expectedWinner)));
+  const loserNew = Math.max(0, Math.round(loserElo + getKFactor(loserElo) * (0 - expectedLoser)));
+  return { winnerNew, loserNew };
 }
 
 export function startPong(
@@ -29,7 +39,9 @@ export function startPong(
   player1Name: string = "Player 1",
   player2Name: string = "Player 2",
   invitePlayerId?: number,
-  onGameEnd?: (result: MatchResult) => void
+  onGameEnd?: (result: MatchResult) => void,
+  player1Elo: number = 1000,
+  player2Elo: number = 1000
 ) {
   if (invitePlayerId) console.log("invite player id: ", invitePlayerId);
   const ctx = canvas.getContext("2d");
@@ -117,10 +129,11 @@ export function startPong(
     const w = engine.winner!;
     const winnerName = w === 1 ? player1Name : p2Name;
     const loserName = w === 1 ? p2Name : player1Name;
-    const winnerScore = w === 1 ? engine.scoreP1 : engine.scoreP2;
     const loserScore = w === 1 ? engine.scoreP2 : engine.scoreP1;
-    const elo = getElo(winnerScore, loserScore);
-    const winnerRank = getRank(winnerScore);
+    const winnerCurrentElo = w === 1 ? player1Elo : player2Elo;
+    const loserCurrentElo = w === 1 ? player2Elo : player1Elo;
+    const eloResult = computeEloChange(winnerCurrentElo, loserCurrentElo);
+    const winnerRank = getRank(eloResult.winnerNew);
 
     ctx.fillStyle = "rgba(0, 0, 0, 0.75)";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -150,7 +163,8 @@ export function startPong(
 
     ctx.fillStyle = "#aaaaaa";
     ctx.font = "18px Chakra";
-    ctx.fillText(`ELO: ${elo}`, cx, cy + 20);
+    const eloChange = eloResult.winnerNew - winnerCurrentElo;
+    ctx.fillText(`ELO: ${eloResult.winnerNew} (+${eloChange})`, cx, cy + 20);
 
     ctx.fillStyle = winnerRank === "Pro" ? "#ffd700" : winnerRank === "Mid" ? "#87ceeb" : "#aaaaaa";
     ctx.font = "20px Chakra_bold";

@@ -9,8 +9,7 @@ generator client {
 }
 
 enum MatchType {
-    RANKED
-    CASUAL
+    NORMAL
     TOURNAMENT
 }
 
@@ -19,12 +18,6 @@ enum MatchStatus {
     IN_PROGRESS
     COMPLETED
     CANCELLED
-}
-
-enum QueueMode {
-    RANKED
-    CASUAL
-    RANDOM
 }
 
 enum QueueStatus {
@@ -54,7 +47,6 @@ model Match {
 
     @@index([playerAId])
     @@index([playerBId])
-    @@index([index])
 }
 
 model EloHistory {
@@ -73,12 +65,11 @@ model EloHistory {
 model QueueEntry {
     id                  String          @id @default(cuid())
     playerId            String          @unique
-    mode                QueueMode
     eloRating           Int
     joinedAt            DateTime        @default(now())
     status              QueueStatus     @default(WAITING)
     expiresAt           DateTime
 
-    @@index([status, mode])
+    @@index([status])
     @@index([eloRating])
 }

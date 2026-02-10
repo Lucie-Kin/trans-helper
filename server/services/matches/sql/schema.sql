@@ -3,7 +3,7 @@ CREATE TABLE match (
     tournament_match_id TEXT,
     match_type TEXT NOT NULL
         CONSTRAINT match_type_check
-        CHECK (match_type IN ('RANKED', 'CASUAL', 'TOURNAMENT')),
+        CHECK (match_type IN ('NORMAL', 'TOURNAMENT')),
     player_a_id TEXT NOT NULL,
     player_b_id TEXT NOT NULL,
     player_a_is_ai BOOLEAN DEFAULT FALSE,
@@ -36,9 +36,6 @@ CREATE INDEX idx_elo_match_id ON elo_history(match_id);
 CREATE TABLE queue_entry (
     id TEXT PRIMARY KEY,
     player_id TEXT NOT NULL UNIQUE,
-    mode TEXT NOT NULL
-        CONSTRAINT queue_mode_check
-        CHECK (mode IN ('RANKED', 'CASUAL', 'RANDOM')),
     elo_rating INTEGER NOT NULL,
     joined_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     status TEXT NOT NULL DEFAULT 'WAITING'
@@ -46,5 +43,5 @@ CREATE TABLE queue_entry (
         CHECK (status IN ('WAITING', 'MATCHED', 'EXPIRED', 'CANCELLED')),
     expires_at DATETIME NOT NULL
 );
-CREATE INDEX idx_queue_status_mode ON queue_entry(status, mode);
+CREATE INDEX idx_queue_status ON queue_entry(status);
 CREATE INDEX idx_queue_elo_rating ON queue_entry(elo_rating);
