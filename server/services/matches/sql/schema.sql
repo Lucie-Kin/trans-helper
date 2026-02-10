@@ -43,5 +43,5 @@ CREATE TABLE queue_entry (
         CHECK (status IN ('WAITING', 'MATCHED', 'EXPIRED', 'CANCELLED')),
     expires_at DATETIME NOT NULL
 );
-CREATE INDEX idx_queue_status ON queue_entry(status);
+CREATE INDEX idx_queue_status_mode ON queue_entry(status, mode);
 CREATE INDEX idx_queue_elo_rating ON queue_entry(elo_rating);

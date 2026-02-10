@@ -1,3 +1,4 @@
+// webapp/src/pong/main.ts
 import { GameField } from "./core/gameField";
 import { Player } from "./entities/player";
 import { Ball } from "./entities/ball";
@@ -47,6 +48,7 @@ export function startPong(
   const ctx = canvas.getContext("2d");
   if (!ctx) return;
 
+  // On se cale sur la taille du canvas React
   const field = new GameField(canvas.width, canvas.height);
   const paddleHeight = 100;
 
@@ -89,13 +91,8 @@ export function startPong(
     countdown = COUTDOWN_DURATION;
     countdownStart = now;
   };
-
+  
   const onKeyDown = (e: KeyboardEvent) => {
-    if (e.key === " " && waitingForSpace) {
-      waitingForSpace = false;
-      startCountdown(performance.now());
-      return;
-    }
     if (e.key === "w" || e.key === "s") pressed.add(e.key);
     if (e.key === "p" && !gameEnded) paused = !paused;
     if (mode !== GameCardType.AI) {
@@ -116,7 +113,8 @@ export function startPong(
     externallyPaused = value;
     if (!externallyPaused) {
       last = now;
-      if (!waitingForSpace) startCountdown(now);
+      if (!waitingForSpace)
+        startCountdown(now);
     }
   };
 
@@ -128,7 +126,7 @@ export function startPong(
   const renderGameOver = () => {
     const w = engine.winner!;
     const winnerName = w === 1 ? player1Name : p2Name;
-    const loserName = w === 1 ? p2Name : player1Name;
+    const loserName = w === 2 ? p2Name : player1Name;
     const loserScore = w === 1 ? engine.scoreP2 : engine.scoreP1;
     const winnerCurrentElo = w === 1 ? player1Elo : player2Elo;
     const loserCurrentElo = w === 1 ? player2Elo : player1Elo;
@@ -147,7 +145,7 @@ export function startPong(
     ctx.font = "42px Chakra_bold";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText("VICTORY", cx, cy - 100);
+    ctx.fillText("VICTOIRE", cx, cy - 100);
     ctx.shadowBlur = 0;
 
     ctx.shadowColor = "#ffd700";
@@ -176,13 +174,13 @@ export function startPong(
 
     ctx.fillStyle = "#666666";
     ctx.font = "14px Chakra";
-    ctx.fillText("Appuyez sur Echap pour quitter", cx, cy + 130);
+    ctx.fillText("Appuyer sur Echap pour quitter", cx, cy + 130);
   };
 
   const renderWaitingForSpace = () => {
     ctx.fillStyle = "black";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-
+    
     ctx.fillStyle = "white";
     ctx.fillRect(player1.x, player1.y, player1.width, player1.height);
     ctx.fillRect(player2.x, player2.y, player2.width, player2.height);
@@ -197,7 +195,7 @@ export function startPong(
     ctx.font = "24px Chakra_bold";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText(player1Name, canvas.width * 0.25, cy - 40);
+    ctx.fillText(player1Name, canvas.width * 0, 25, cy - 40);
     ctx.fillText("VS", cx, cy - 40);
     ctx.fillText(p2Name, canvas.width * 0.75, cy - 40);
 
@@ -223,7 +221,7 @@ export function startPong(
       ctx.beginPath();
       ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
       ctx.fill();
-      ctx.font = "24px Arial";
+      ctx.font = "24px Chakra_bold";
       ctx.fillText(`${engine.scoreP1} | ${engine.scoreP2}`, canvas.width / 2 - 25, 30);
 
       renderGameOver();
@@ -243,22 +241,26 @@ export function startPong(
       return;
     }
 
+    // fond
     ctx.fillStyle = "black";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+    // raquettes
     ctx.fillStyle = "white";
     ctx.fillRect(player1.x, player1.y, player1.width, player1.height);
     ctx.fillRect(player2.x, player2.y, player2.width, player2.height);
 
+    // balle
     ctx.beginPath();
     ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
     ctx.fill();
 
-    ctx.font = "24px Arial";
+    // score (simple, sans DOM)
+    ctx.font = "24px Chakra_bold";
     ctx.fillText(`${engine.scoreP1} | ${engine.scoreP2}`, canvas.width / 2 - 25, 30);
 
     if (paused) {
-      ctx.font = "28px Arial";
+      ctx.font = "28px Chakra_bold";
       ctx.fillText("PAUSE (p)", canvas.width / 2 - 70, canvas.height / 2);
     }
 
@@ -303,15 +305,14 @@ export function startPong(
     const dt = now - last;
     last = now;
 
-    if (!waitingForSpace) {
+    if (!waitingForSpace)
       handleInput();
 
-      if (countdown > 0) {
-        const elapsed = (now - countdownStart) / 1000;
-        countdown = Math.max(COUTDOWN_DURATION - Math.floor(elapsed), 0);
-      } else if (!paused && !externallyPaused && !engine.gameOver)
-        engine.update(dt);
-    }
+    if (countdown > 0) {
+      const elapsed = (now - countdownStart) / 1000;
+      countdown = Math.max(COUTDOWN_DURATION - Math.floor(elapsed), 0);
+    } else if (!paused && !externallyPaused && !engine.gameOver)
+      engine.update(dt);
 
     render();
     rafId = requestAnimationFrame(loop);
@@ -319,6 +320,7 @@ export function startPong(
   last = performance.now();
   rafId = requestAnimationFrame(loop);
 
+  // super important pour React : on nettoie quand on quitte la page
   return {
     cleanup: () => {
       cancelAnimationFrame(rafId);

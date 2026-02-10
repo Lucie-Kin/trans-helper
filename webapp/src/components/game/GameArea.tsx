@@ -1,12 +1,13 @@
 import { useEffect, useRef } from "react";
 import "../../style/game/gameArea.css";
-import { startPong, type MatchResult } from "../pong/main";
+import { startPong } from "../pong/main";
+import type { MatchResult } from "../pong/main";
 import { GameCardType } from "../share/sharedTypes";
 
 type Props = {
     gameCardType: GameCardType;
     player1Name?: string;
-    player2Name?: string;
+    player2Name?: string; 
     invitePlayerId?: number;
     onExit: () => void;
     onGameEnd?: (result: MatchResult) => void;
@@ -63,6 +64,14 @@ export default function GameArea({
                     className="pong-canvas"
                 />
             </div>
+            {/* <button className="game-exit-btn"
+                onClick={() => {
+                    const el = document.querySelector(".game-area");
+                    el?.requestFullscreen();
+                }}
+            >
+                Fullscreen
+            </button> */}
             <button className="game-exit-btn" onClick={onExit}>
                 Quitter la partie
             </button>

@@ -185,13 +185,13 @@ export default function HomePage() {
       </div>
 
       {gameState === GameState.Playing && activeCard ? (
-        <GameArea
+        < GameArea
           gameCardType={activeCard}
           player1Name={user.displayName || user.login}
           player2Name={
-            activeCard === GameCardType.AI
-              ? "AI"
-              : tournament.invitedPlayers.find(p => p.id === invitePlayerId)?.name || "Adversaire"
+            activeCard === GameCardType.AI 
+            ? "AI"
+            : tournament.invitedPlayers.find(p => p.id === invitePlayerId)?.name || "Adversaire"
           }
           invitePlayerId={invitePlayerId}
           onExit={() => {
@@ -200,9 +200,7 @@ export default function HomePage() {
             setGameState(GameState.Idle);
             tournament.exitGame();
           }}
-          onGameEnd={() => {
-            tournament.exitGame();
-          }}
+          onGameEnd={() => { tournament.exitGame(); }}
         />
       ) : (
         <div className="boxes-wrapper">
@@ -219,6 +217,7 @@ export default function HomePage() {
               tournamentPlayers={tournament.tournamentPlayers}
               tournamentMatches={tournament.tournamentMatches}
               isOrganizer={tournament.isOrganizer}
+              // acceptedInvite={acceptedInvite ?? undefined}
             />
           </div>
 

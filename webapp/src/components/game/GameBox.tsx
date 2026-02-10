@@ -2,7 +2,8 @@ import "../../style/game/gameBox.css";
 import GameCard from "./GameCard";
 import TournamentBracket from "./TournamentBracket";
 import type { TournamentPlayer, TournamentMatch } from "./TournamentBracket";
-import { type GameState, GameCardType } from "../share/sharedTypes";
+import type { GameState } from "../share/sharedTypes";
+import { GameCardType } from "../share/sharedTypes";
 
 export type InvitedPlayer = {
     id:number;

@@ -21,7 +21,6 @@ export function useTournament(myUserId: number) {
     const [tournamentMatches, setTournamentMatches] = useState<TournamentMatch[]>([]);
     const [isOrganizer, setIsOrganizer] = useState(false);
     const [availableTournaments, setAvailableTournaments] = useState<TournamentInfo[]>([]);
-    const [activeInviteId, setActiveInviteId] = useState<number | undefined>();
 
     const fetchTournaments = useCallback(async () => {
         try {
@@ -82,25 +81,12 @@ export function useTournament(myUserId: number) {
     }, [myUserId]);
 
     useEffect(() => {
-        const onGameStart = (data: { inviteId: number; players: number[] }) => {
-            const otherPlayerId = data.players.find(id => id !== myUserId);
-            if (otherPlayerId) {
-                setInvitedPlayers((prev) => {
-                    const exists = prev.find((p) => p.id === otherPlayerId);
-                    if (exists) {
-                        return prev.map((p) =>
-                            p.id === otherPlayerId ? { ...p, confirmed: true } : p
-                        );
-                    }
-                    return prev;
-                });
-            }
-            setActiveInviteId(data.inviteId);
+        const onGameStart = () => {
+            setGameState(GameState.Playing);
         };
         const onGameEnd = () => {
             setGameState(GameState.Idle);
             setInvitedPlayers([]);
-            setActiveInviteId(undefined);
         };
         const onInviteAccepted = (data: { from: { id: number; login: string } }) => {
             setInvitedPlayers((prev) => {
@@ -112,9 +98,6 @@ export function useTournament(myUserId: number) {
                 }
                 return [...prev, { id: data.from.id, name: data.from.login, confirmed: true }];
             });
-        };
-        const onGameInviteRejected = (data: { by: number }) => {
-            setInvitedPlayers((prev) => prev.filter((p) => p.id !== data.by));
         };
         const onNotification = (payload: any) => {
             if (payload.type === "tournament") {
@@ -128,7 +111,6 @@ export function useTournament(myUserId: number) {
         socket.on("game:start", onGameStart);
         socket.on("game:end", onGameEnd);
         socket.on("game:invite:accepted", onInviteAccepted);
-        socket.on("game:invite:rejected", onGameInviteRejected);
         socket.on("notification", onNotification);
 
         fetchTournaments();
@@ -136,11 +118,10 @@ export function useTournament(myUserId: number) {
         return () => {
             socket.off("game:start", onGameStart);
             socket.off("game:end", onGameEnd);
-            socket.off("game:invite:accepted", onInviteAccepted);
-            socket.off("game:invite:rejected", onGameInviteRejected);
+            socket.off("game:invite", onInviteAccepted);
             socket.off("notification", onNotification);
         };
-    }, [socket, myUserId, fetchTournaments, fetchTournamentBracket]);
+    }, [socket, fetchTournaments, fetchTournamentBracket]);
 
     const addPendingInvite = useCallback((playerId: number, playerName: string) => {
         setInvitedPlayers((prev) => {
@@ -244,14 +225,12 @@ export function useTournament(myUserId: number) {
         setTournamentPlayers([]);
         setTournamentMatches([]);
         setIsOrganizer(false);
-        setActiveInviteId(undefined);
         setGameState(GameState.Idle);
     }, []);
 
     return {
         invitedPlayers,
         gameState,
-        activeInviteId,
         tournamentId,
         tournamentName,
         tournamentPlayers,

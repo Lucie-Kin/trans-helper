@@ -154,9 +154,11 @@ export default function UserList({
       return;
     }
     
+    // Send invite
     socket.emit("game:invite", { targetId: user.id });
     onGameInviteSent(user.id, user.login);
     
+    // Set status to "outgoing" (inviteId will be received later)
     setGameInviteStatuses(prev => {
       const newMap = new Map(prev);
       newMap.set(user.id, { status: "outgoing" });

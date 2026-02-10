@@ -18,27 +18,23 @@ export class MatchmakingQueue {
     addToQueue(player: QueuedPlayer): void {
         this.queue.set(player.oddPlayerId, player);
     }
-
     removeFromQueue(oddPlayerId: string): void {
         this.queue.delete(oddPlayerId);
     }
-
     isInQueue(oddPlayerId: string): boolean {
         return this.queue.has(oddPlayerId);
     }
-
     getQueueSize(): number {
         return this.queue.size;
     }
-
     getWaitingPlayers(): QueuedPlayer[] {
         return Array.from(this.queue.values());
     }
 
     findMatch(player: QueuedPlayer): MatchPair | null {
         const candidates = this.getWaitingPlayers().filter(p => p.oddPlayerId !== player.oddPlayerId);
-        if (candidates.length === 0) return null;
-
+        if (candidates.length === 0)
+            return null;
         const searchRadius = expandSearchRadius(player.joinedAt);
         let bestMatch: QueuedPlayer | null = null;
         let smallestDiff = Infinity;
@@ -50,8 +46,8 @@ export class MatchmakingQueue {
                 bestMatch = candidate;
             }
         }
-
-        if (!bestMatch) return null;
+        if (!bestMatch)
+            return null;
 
         this.removeFromQueue(player.oddPlayerId);
         this.removeFromQueue(bestMatch.oddPlayerId);
@@ -61,7 +57,7 @@ export class MatchmakingQueue {
             playerB: bestMatch,
         };
     }
-
+    
     processQueue(): MatchPair[] {
         const matches: MatchPair[] = [];
         const processed = new Set<string>();
@@ -77,7 +73,6 @@ export class MatchmakingQueue {
         }
         return matches;
     }
-
     cleanupExpired(maxWaitMinutes: number = 10): string[] {
         const now = Date.now();
         const expired: string[] = [];

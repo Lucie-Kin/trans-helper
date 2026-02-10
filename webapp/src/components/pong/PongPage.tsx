@@ -8,10 +8,11 @@ export default function PongPage() {
   useEffect(() => {
     if (!canvasRef.current) return;
 
-    const game = startPong(canvasRef.current, "ai");
+    // startPong retourne une fonction de cleanup (
+    const stop = startPong(canvasRef.current);
 
     return () => {
-      game?.cleanup();
+      if (typeof stop === "function") stop();
     };
   }, []);
 
