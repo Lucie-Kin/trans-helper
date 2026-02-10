@@ -80,13 +80,13 @@ function buildLayout(matchesByRound: TournamentMatch[][]) {
     return boxes;
 }
 
-function MatchSVG({ box, isWinner }: { box: MatchBox; isWinner: (playerId?: number) => boolean }) {
+function MatchSVG({ box }: { box: MatchBox }) {
     const { match, x, y } = box;
     const pA = match.playerA;
     const pB = match.playerB;
 
-    const winA = isWinner(pA?.id);
-    const winB = isWinner(pB?.id);
+    const winA = match.winner !== undefined && match.winner === pA?.id;
+    const winB = match.winner !== undefined && match.winner === pB?.id;
 
     return (
         <g transform={`translate(${x}, ${y})`}>
@@ -167,9 +167,9 @@ function ConnectorLines({ boxes }: { boxes: MatchBox[][] }) {
             } else if (topBox) {
                 const fromX = topBox.x + MATCH_W;
                 const toX = currBox.x;
-                const y = topBox.y + MATCH_H / 2;
+                const lineY = topBox.y + MATCH_H / 2;
                 lines.push(
-                    <line key={`conn-${r}-${i}`} x1={fromX} y1={y} x2={toX} y2={y} className="svg-connector" />
+                    <line key={`conn-${r}-${i}`} x1={fromX} y1={lineY} x2={toX} y2={lineY} className="svg-connector" />
                 );
             }
         });
@@ -298,9 +298,7 @@ export default function TournamentBracket({
                             <ConnectorLines boxes={layout} />
                             {layout.map((roundBoxes, rIdx) =>
                                 roundBoxes.map((box, mIdx) => (
-                                    <MatchSVG key={`${rIdx}-${mIdx}`} box={box} isWinner={(pid) => {
-                                        return box.match.winner !== undefined && box.match.winner === pid;
-                                    }} />
+                                    <MatchSVG key={`${rIdx}-${mIdx}`} box={box} />
                                 ))
                             )}
                         </svg>

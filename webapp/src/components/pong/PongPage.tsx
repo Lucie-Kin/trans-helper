@@ -5,6 +5,10 @@ import { GameCardType } from "../share/sharedTypes";
 export default function PongPage() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
+  const onExit = () => {
+    window.location.href = "/home";
+  };
+
   useEffect(() => {
     if (!canvasRef.current) return;
 
@@ -18,10 +22,7 @@ export default function PongPage() {
         console.log("Game ended: ", result);
       },
       1000,
-      1000,
-      () => {
-        window.location.href = "/home";
-      }
+      1000
     );
 
     return () => {
@@ -35,7 +36,7 @@ export default function PongPage() {
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [onExit]);
+  }, []);
 
 
   return (
