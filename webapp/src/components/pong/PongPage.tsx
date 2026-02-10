@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
-
 import { startPong } from "./main";
+import { GameCardType } from "../share/sharedTypes";
 
 export default function PongPage() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -8,27 +8,42 @@ export default function PongPage() {
   useEffect(() => {
     if (!canvasRef.current) return;
 
-    // startPong retourne une fonction de cleanup (
-    const stop = startPong(canvasRef.current);
+    const game = startPong(
+      canvasRef.current,
+      GameCardType.AI,
+      "Me",
+      "AI",
+      undefined,
+      (result) => {
+        console.log("Game ended: ", result);
+      },
+      1000,
+      1000,
+      () => {
+        window.location.href = "/home";
+      }
+    );
 
     return () => {
-      if (typeof stop === "function") stop();
+      game?.cleanup();
     };
   }, []);
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") window.location.href = "/home";
+      if (e.key === "Escape") onExit();
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, []);
+  }, [onExit]);
 
 
   return (
     <div style={{ display: "flex", justifyContent: "center", padding: 24 }}>
       <canvas ref={canvasRef} width={900} height={500} />
-      <button onClick={() => (window.location.href = "/home")}>← Quitter le jeu</button>
+        <button onClick={() => (window.location.href = "/home")}>
+          ← Quitter le jeu
+        </button>
     </div>
   );
 }

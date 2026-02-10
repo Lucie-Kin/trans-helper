@@ -30,7 +30,7 @@ export class TournamentManager {
             organizer_id: t.organizedId,
             status: t.status,
             playerCount,
-            maxPlayers: 16
+            maxPlayers: 8
         };
     }
     async startTournament(tournamentId: string): Promise<boolean> {

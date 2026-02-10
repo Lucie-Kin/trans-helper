@@ -42,7 +42,8 @@ export function startPong(
   invitePlayerId?: number,
   onGameEnd?: (result: MatchResult) => void,
   player1Elo: number = 1000,
-  player2Elo: number = 1000
+  player2Elo: number = 1000,
+  onExit?: () => void
 ) {
   if (invitePlayerId) console.log("invite player id: ", invitePlayerId);
   const ctx = canvas.getContext("2d");
@@ -93,12 +94,29 @@ export function startPong(
   };
   
   const onKeyDown = (e: KeyboardEvent) => {
-    if (e.key === "w" || e.key === "s") pressed.add(e.key);
-    if (e.key === "p" && !gameEnded) paused = !paused;
-    if (mode !== GameCardType.AI) {
-      if (pressed.has("ArrowUp")) engine.movePlayer(player2, "up");
-      if (pressed.has("ArrowDown")) engine.movePlayer(player2, "down");
+    console.log("GAME ENDED: ", gameEnded === true ? "true" : "false");
+    if (e.key === "Escape" && gameEnded) {
+      e.preventDefault();
+      cleanup();
+      onExit?.();
+      return;
     }
+
+    if (e.code === "Space" && waitingForSpace) {
+      e.preventDefault();
+      waitingForSpace = false;
+      paused = false;
+      externallyPaused = false;
+      startCountdown(performance.now());
+      return;
+    }
+
+    if (e.key === "w" || e.key === "s") pressed.add(e.key);
+    if (e.key === "ArrowUp" || e.key === "ArrowDown") pressed.add(e.key);
+
+    if (e.key === "p" && !gameEnded) paused = !paused;
+    console.log("e.key: \"", e.key,"\"");
+    console.log("e.code: \"", e.code,"\"");
   };
 
   const onKeyUp = (e: KeyboardEvent) => {
@@ -118,9 +136,20 @@ export function startPong(
     }
   };
 
+  const cleanup = () => {
+    cancelAnimationFrame(rafId);
+    window.removeEventListener("keydown", onKeyDown);
+    window.removeEventListener("keyup", onKeyUp);
+  };
+
   const handleInput = () => {
     if (pressed.has("w")) engine.movePlayer(player1, "up");
     if (pressed.has("s")) engine.movePlayer(player1, "down");
+
+    if (mode !== GameCardType.AI) {
+      if (pressed.has("ArrowUp")) engine.movePlayer(player2, "up");
+      if (pressed.has("ArrowDown")) engine.movePlayer(player2, "down");
+    }
   };
 
   const renderGameOver = () => {
@@ -133,8 +162,11 @@ export function startPong(
     const eloResult = computeEloChange(winnerCurrentElo, loserCurrentElo);
     const winnerRank = getRank(eloResult.winnerNew);
 
+    ctx.save();
+    ctx.globalAlpha = 0.9;
     ctx.fillStyle = "rgba(0, 0, 0, 0.75)";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.restore();
 
     const cx = canvas.width / 2;
     const cy = canvas.height / 2;
@@ -195,7 +227,7 @@ export function startPong(
     ctx.font = "24px Chakra_bold";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText(player1Name, canvas.width * 0, 25, cy - 40);
+    ctx.fillText(player1Name, canvas.width * 0.25, cy - 40);
     ctx.fillText("VS", cx, cy - 40);
     ctx.fillText(p2Name, canvas.width * 0.75, cy - 40);
 
@@ -322,11 +354,7 @@ export function startPong(
 
   // super important pour React : on nettoie quand on quitte la page
   return {
-    cleanup: () => {
-      cancelAnimationFrame(rafId);
-      window.removeEventListener("keydown", onKeyDown);
-      window.removeEventListener("keyup", onKeyUp);
-    },
+    cleanup,
     setPaused: (value: boolean) => setPaused(value, last)
   };
 }

@@ -13,6 +13,7 @@ import { GameCardType, GameState } from '../share/sharedTypes';
 
 import "../../style/homePage/homepage.css";
 import "../../style/homePage/settings.css";
+import { exit } from 'node:process';
 
 ////////////
 const DEV_MODE = false;
@@ -158,6 +159,13 @@ export default function HomePage() {
     window.location.href = '/';
   };
 
+  const exitGame = () => {
+    setActiveCard(null);
+    setInvitePlayerId(undefined);
+    setGameState(GameState.Idle);
+    tournament.exitGame();
+  };
+
   if (loading) return <div>Chargement…</div>;
   if (!user) return <div>Accès refusé. <a href="/">Connecte-toi</a>.</div>;
 
@@ -186,6 +194,8 @@ export default function HomePage() {
 
       {gameState === GameState.Playing && activeCard ? (
         < GameArea
+          onExit={exitGame}
+          onGameEnd={exitGame}
           gameCardType={activeCard}
           player1Name={user.displayName || user.login}
           player2Name={
@@ -194,13 +204,8 @@ export default function HomePage() {
             : tournament.invitedPlayers.find(p => p.id === invitePlayerId)?.name || "Adversaire"
           }
           invitePlayerId={invitePlayerId}
-          onExit={() => {
-            setActiveCard(null);
-            setInvitePlayerId(undefined);
-            setGameState(GameState.Idle);
-            tournament.exitGame();
-          }}
-          onGameEnd={() => { tournament.exitGame(); }}
+          
+          // onGameEnd={() => { tournament.exitGame(); }}
         />
       ) : (
         <div className="boxes-wrapper">

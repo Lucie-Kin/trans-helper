@@ -3,10 +3,10 @@ import { Player } from '../entities/player';
 import { GameField } from './gameField';
 import { AIController } from './AIController';
 
-export const WIN_SCORE = 11;
+export const WIN_SCORE = 5;
 
 export class GameEngine {
-	public AIController: AIController;
+	public AIController?: AIController;
 
 	public player1: Player;
 	public player2: Player;
@@ -35,8 +35,10 @@ export class GameEngine {
 		this.scoreP1 = scoreP1;
 		this.scoreP2 = scoreP2;
 		
-		this.AIController = AI ?? new AIController(field);
-		this.AIController.attach(player2, player1, ball);
+		if (AI) {
+			this.AIController = AI;
+			this.AIController.attach(player2, player1, ball);
+		}
 	}
 
 	movePlayer(player: Player, direction: 'up' | 'down') {
@@ -53,7 +55,7 @@ export class GameEngine {
 		this.ball.y = this.field.height / 2;
 		this.ball.speedX = Math.cos(angle) * BASE_KICKOFF_SPEED * direction;
 		this.ball.speedY = Math.sin(angle) * BASE_KICKOFF_SPEED;
-		this.AIController.onKickoff();
+		this.AIController?.onKickoff();
 	}
 
 	private moveBall() {
@@ -126,10 +128,10 @@ export class GameEngine {
 		this.moveBall();
 		this.checkCollisions();
 
-		// décision IA (max 1/sec) + mouvement chaque frame
-		this.AIController.tick(performance.now());
-
-		const move = this.AIController.getMoveAction();
-		if (move !== 'stay') this.movePlayer(this.player2, move);
+		if (this.AIController) {
+			this.AIController.tick(performance.now());
+			const move = this.AIController.getMoveAction();
+			if (move !== 'stay') this.movePlayer(this.player2, move);
+		}
 	}
 }
