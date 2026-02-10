@@ -224,7 +224,7 @@ export default function HomePage() {
               tournamentName={tournament.tournamentName}
               tournamentPlayers={tournament.tournamentPlayers}
               tournamentMatches={tournament.tournamentMatches}
-              isOrganizer={tournament.isOrganizer}
+
               // acceptedInvite={acceptedInvite ?? undefined}
             />
           </div>

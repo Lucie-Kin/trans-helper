@@ -21,7 +21,6 @@ type Props = {
     tournamentName?: string;
     tournamentPlayers?: TournamentPlayer[];
     tournamentMatches?: TournamentMatch[];
-    isOrganizer?: boolean;
 };
 
 export default function GameBox({
@@ -34,7 +33,6 @@ export default function GameBox({
     tournamentName,
     tournamentPlayers = [],
     tournamentMatches = [],
-    isOrganizer = false,
 }: Props) {
     const isTournamentMode = invitedPlayers.length >= 2 || gameState === "tournament";
 
@@ -55,7 +53,7 @@ export default function GameBox({
                     tournamentName={tournamentName}
                     players={allPlayers}
                     matches={tournamentMatches}
-                    isOrganizer={isOrganizer || !tournamentId}
+                    isOrganizer={true}
                     onStart={onStartTournament}
                     onChangeName={onChangeTournamentName}
                 />
