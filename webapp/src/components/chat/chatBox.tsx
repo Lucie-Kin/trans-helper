@@ -8,7 +8,12 @@ import ProfileModal from "./profileModal";
 import TournamentList from "../game/TournamentList";
 import "../../style/chat/chatBox.css";
 
-export default function ChatBox({ myUserId }: { myUserId: number }) {
+type Props = {
+  myUserId: number;
+  onGameInviteAccept: (playerId: number) => void;
+};
+
+export default function ChatBox({ myUserId, onGameInviteAccept }: Props) {
   const socket = getSocket();
 
   const [isConnected, setIsConnected] = useState(socket.connected);
@@ -96,10 +101,12 @@ export default function ChatBox({ myUserId }: { myUserId: number }) {
         <UserList
           myUserId={myUserId}
           selectedUserId={activeUserId}
-          onSelectUser={(id) => {
+          onSelectUser={(id, login) => {
             setActiveUserId(id);
+            setActiveUserLogin(login);
             setShowProfile(false);
           }}
+          onGameInviteAccept={onGameInviteAccept}
           // onInvite={handleInvite}
         />
       </div>

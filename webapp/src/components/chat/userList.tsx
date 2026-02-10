@@ -10,12 +10,14 @@ type Props = {
   myUserId: number;
   selectedUserId: number | null;
   onSelectUser: (id: number, login: string) => void;
+  onGameInviteAccept: (playerId: number) => void;
 };
 
 export default function UserList({
   myUserId,
   selectedUserId,
   onSelectUser,
+  onGameInviteAccept,
 }: Props) {
   const socket = getSocket();
   const navigate = useNavigate();
@@ -138,9 +140,7 @@ export default function UserList({
   function handleGameInviteClick(user: User) {
     const inviteData = gameInviteStatuses.get(user.id);
     
-    if (inviteData?.status === "incoming") {
-      return;
-    }
+    if (inviteData?.status === "incoming") return;
     
     if (inviteData?.status === "outgoing") {
       // Cancel outgoing invite
@@ -168,13 +168,15 @@ export default function UserList({
 
   function handleGameInviteAccept(userId: number) {
     const inviteData = gameInviteStatuses.get(userId);
-    if (!inviteData || inviteData.status !== "incoming" || !inviteData.inviteId) {
+    if (!inviteData || inviteData.status !== "incoming" || !inviteData?.inviteId) {
       return;
     }
     
     socket.emit("game:invite:accept", {
       inviteId: inviteData.inviteId,
     });
+
+    onGameInviteAccept(userId);
     
     setGameInviteStatuses(prev => {
       const newMap = new Map(prev);

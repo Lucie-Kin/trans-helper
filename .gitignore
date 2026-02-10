@@ -1,6 +1,8 @@
 **/node_modules/*
+package-lock.json
+auth.db
 
-logs
+logs/
 *.log
 npm-debug.log*
 yarn-debug.log*

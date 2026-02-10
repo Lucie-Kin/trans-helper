@@ -80,9 +80,6 @@ services:
       - "traefik.http.routers.auth.entrypoints=websecure"
       - "traefik.http.routers.auth.tls=true"
 
-      - "traefik.http.middlewares.auth-strip.stripprefix.prefixes=/auth"
-      - "traefik.http.routers.auth.middlewares=auth-strip"
-
       - "traefik.http.routers.auth.priority=100"
       - "traefik.http.services.auth.loadbalancer.server.port=3001"
       - "traefik.http.middlewares.metrics-auth.basicauth.users=prometheus:$$apr1$$qwerty$$mU8gq/R4L.0ZVmZJKzzWb0"
@@ -187,7 +184,7 @@ services:
       - "traefik.http.routers.front.rule=Host(`localhost`) && PathPrefix(`/`)"
       - "traefik.http.routers.front.entrypoints=websecure"
       - "traefik.http.routers.front.tls=true"
-      - "traefik.http.routers.front.priority=1000"
+      - "traefik.http.routers.front.priority=1"
       - "traefik.http.services.front.loadbalancer.server.port=5173"
     depends_on:
         - logstash

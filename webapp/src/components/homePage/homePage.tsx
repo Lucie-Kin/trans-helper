@@ -1,18 +1,18 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from "react-router-dom";
-import "../../style/homePage/homepage.css";
-import "../../style/homePage/settings.css";
-import SettingsModal from './settingsModal';
 import ChatBox from "../chat/chatBox";
 import GameBox from '../game/GameBox';
 import GameArea from '../game/GameArea';
-import { useGameInvites } from '../../hooks/useGameInvites';
-import { useNotifications } from "../../hooks/useNotifications";
+import SettingsModal from './settingsModal';
 import { useTournament } from '../../hooks/useTournament';
 import { connectSocket } from "../../socket";
+import { GameCardType, GameState } from '../share/sharedTypes';
 
-import { GameState } from '../share/sharedTypes';
+// import { useGameInvites } from '../../hooks/useGameInvites';
+// import { useNotifications } from "../../hooks/useNotifications";
 
+import "../../style/homePage/homepage.css";
+import "../../style/homePage/settings.css";
 
 ////////////
 const DEV_MODE = false;
@@ -26,6 +26,11 @@ const DEV_USER: User = {
   twofaPassed: true,
 };
 //////////// 
+
+type AcceptedInvite = {
+  playerId: number;
+  expiresAt: number;
+};
 
 type User = {
   id: number;
@@ -42,11 +47,18 @@ export default function HomePage() {
   const navigate = useNavigate();
   const [user, setUser] = useState<User>(null);
   const [loading, setLoading] = useState(true);
-  const [showSettings, setShowSettings] = useState(false);
-  const { notification, clear } = useNotifications();
-  const gameInvites = useGameInvites();
+
   const tournament = useTournament(user?.id || 0);
+
+  const [gameState, setGameState] = useState<GameState>(GameState.Idle);
+  const [activeCard, setActiveCard] = useState<GameCardType | null>(null);
+  const [invitePlayerId, setInvitePlayerId] = useState<number | undefined>(undefined);
+  const [acceptedInvite, setAcceptedInvite] = useState<AcceptedInvite | null>(null);
+  
+  const [showSettings, setShowSettings] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  // const gameInvites = useGameInvites();
+  // const { notification, clear } = useNotifications();
 
   const refreshUser = async () => {
     try {
@@ -62,8 +74,8 @@ export default function HomePage() {
       console.error("Failed to refresh user",err);
     }
   };
-  
 
+  // BOOTSTRAP //
   useEffect(() => {
     (async () => {
       if (DEV_MODE) {
@@ -71,6 +83,7 @@ export default function HomePage() {
         setLoading(false);
         return;
       }
+
       try {
         const res = await fetch('https://localhost:8443/auth/session', {
           credentials: 'include',
@@ -100,6 +113,36 @@ export default function HomePage() {
     })();
   }, [navigate]);
 
+  // INVITATION TIMEOUT //
+
+  useEffect(() => {
+    if (!acceptedInvite) return;
+      const timer = setInterval(() => {
+        if (Date.now() > acceptedInvite.expiresAt)
+          setAcceptedInvite(null);
+      }, 1000);
+
+    return () => clearInterval(timer);
+  }, [acceptedInvite]);
+
+  // HANDLERS //
+
+  const handleGameInviteAccept = (playerId: number) => {
+    const expiresAt = Date.now() + 3 * 60 * 1000;
+    setAcceptedInvite({ playerId, expiresAt });
+
+    setActiveCard(GameCardType.Invite);
+    setInvitePlayerId(playerId);
+    setGameState(GameState.Idle);
+  };
+
+  const handlePlayCard = (type: GameCardType, playerId?: number) => {
+    setActiveCard(type);
+    if (playerId)
+      setInvitePlayerId(playerId);
+    setGameState(GameState.Playing);
+  };
+
   const logout = async () => {
     await fetch('https://localhost:8443/auth/logout', {
       method: 'POST',
@@ -113,39 +156,6 @@ export default function HomePage() {
 
   return (
     <div className="homepage">
-
-      {notification?.type === "tournament" && (
-        <div className="tournament-popup">
-          <p>
-            Prochain match contre{" "}
-            <strong>{notification.opponent?.login}</strong>
-          </p>
-
-          <button
-            onClick={() =>
-              navigate(`/pong/${notification.matchId}`)
-            }
-          >
-            Accèder au match
-          </button>
-
-          <button onClick={clear}>Fermer</button>
-        </div>
-      )}
-
-      {gameInvites.invite && (
-        <div className="invite-popup">
-          <p>
-            <strong>{gameInvites.invite.from.login}</strong> souhaite jouer avec vous
-          </p>
-
-          <div className="invite-actions">
-            <button onClick={gameInvites.accept}>Accepter</button>
-            <button onClick={gameInvites.reject}>Refuser</button>
-          </div>
-        </div>
-      )}
-
 
       {showSettings && user && (
         <SettingsModal
@@ -162,35 +172,31 @@ export default function HomePage() {
         />
       )}
 
-      <div className={`title-container ${tournament.gameState === GameState.Playing ? 'compact' : ''}`}>
+      <div className={`title-container ${gameState === GameState.Playing ? 'compact' : ''}`}>
         <h3>Transcendance</h3>
         <h4>Bienvenue, {user.displayName}</h4>
       </div>
 
-      {tournament.gameState === GameState.Playing ? (
-        < GameArea onExit={tournament.exitGame} />
+      {gameState === GameState.Playing && activeCard ? (
+        < GameArea
+          gameCardType={activeCard}
+          invitePlayerId={invitePlayerId}
+          onExit={() => {
+            setActiveCard(null);
+            setInvitePlayerId(undefined);
+            setGameState(GameState.Idle);
+            tournament.exitGame();
+
+          }}
+        />
       ) : (
         <div className="boxes-wrapper">
           <div className="game-box">
 
-            {/* <div className="pong-frame">
-            <img className="pong-classic"
-              src="/images/pongHomePage.png"
-              alt="Pong"
-            /></div>
-            <div className="play">
-              <LinkButton
-                text="Jouer"
-                href="https://localhost:8443/play"
-              />
-            </div> */}
-
             <GameBox
-              gameState={tournament.gameState}
+              gameState={gameState}
               invitedPlayers={tournament.invitedPlayers}
-              onPlayAi={tournament.playAI}
-              onPlayRandom={tournament.playRandom}
-              onPlayWithPlayer={tournament.playWithPlayer}
+              onPlayCard={handlePlayCard}
               onStartTournament={tournament.startTournament}
               onChangeTournamentName={tournament.changeTournamentName}
               tournamentId={tournament.tournamentId}
@@ -198,16 +204,14 @@ export default function HomePage() {
               tournamentPlayers={tournament.tournamentPlayers}
               tournamentMatches={tournament.tournamentMatches}
               isOrganizer={tournament.isOrganizer}
+              acceptedInvite={acceptedInvite ?? undefined}
             />
           </div>
-          {/* <div className="play">
-            <LinkButton
-              text="Jouer"
-              href="https://localhost:8443/pong"
-            />
-          </div> */}
 
-          <ChatBox myUserId={user.id} />
+          <ChatBox 
+            myUserId={user.id}
+            onGameInviteAccept={handleGameInviteAccept}
+          />
         </div>
       )}
 

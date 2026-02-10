@@ -5,9 +5,9 @@ export enum PlayerLevel {
 }
 
 export const LEVEL_DISPLAY_NAMES: Record<PlayerLevel, string> = {
-    [PlayerLevel.NOOB]: 'Cheese Sticks',
-    [PlayerLevel.MID]: 'Cheese Roll',
-    [PlayerLevel.PRO]: 'Buffala della Nonna'
+    [PlayerLevel.NOOB]: 'Noob',
+    [PlayerLevel.MID]: 'Mid',
+    [PlayerLevel.PRO]: 'Pro'
 };
 
 const K_FACTORS: Record<PlayerLevel, number> = {

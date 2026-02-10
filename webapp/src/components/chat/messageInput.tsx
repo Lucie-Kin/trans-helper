@@ -45,7 +45,7 @@ export default function MessageInput({
   };
 
   const placeholder = isBlockedByMe
-    ? "Vous avez bloqué cet utilisateur..."
+    ? "Utilisateur bloqué..."
     : isBlockedByThem
     ? "Vous êtes bloqué."
     : "Tapez un message...";

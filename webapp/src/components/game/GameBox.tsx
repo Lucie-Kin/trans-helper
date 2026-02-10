@@ -2,7 +2,7 @@ import "../../style/game/gameBox.css";
 import GameCard from "./GameCard";
 import TournamentBracket from "./TournamentBracket";
 import type { TournamentPlayer, TournamentMatch } from "./TournamentBracket";
-import type { GameState } from "../share/sharedTypes";
+import { type GameState, GameCardType } from "../share/sharedTypes";
 
 export type InvitedPlayer = {
     id:number;
@@ -13,9 +13,7 @@ export type InvitedPlayer = {
 type Props = {
     gameState: GameState;
     invitedPlayers: InvitedPlayer[];
-    onPlayAi: () => void;
-    onPlayRandom: () => void;
-    onPlayWithPlayer: (playerId: number) => void;
+    onPlayCard: (type: GameCardType, playerId?: number) => void;
     onStartTournament: () => void;
     onChangeTournamentName: (name: string) => void;
     tournamentId?: string;
@@ -23,14 +21,13 @@ type Props = {
     tournamentPlayers?: TournamentPlayer[];
     tournamentMatches?: TournamentMatch[];
     isOrganizer?: boolean;
+    acceptedInvite?: {playerId: number; expiresAt: number};
 };
 
 export default function GameBox({
     gameState,
     invitedPlayers,
-    onPlayAi,
-    onPlayRandom,
-    onPlayWithPlayer,
+    onPlayCard,
     onStartTournament,
     onChangeTournamentName,
     tournamentId,
@@ -38,6 +35,7 @@ export default function GameBox({
     tournamentPlayers = [],
     tournamentMatches = [],
     isOrganizer = false,
+    acceptedInvite,
 }: Props) {
     const isTournamentMode = invitedPlayers.length >= 2 || gameState === "tournament";
 
@@ -74,15 +72,16 @@ export default function GameBox({
             <div className="game-card-grid">
                 {singleInvite ? (
                     <GameCard
-                        type="invite"
+                        type={GameCardType.Invite}
                         playerName={singleInvite.name}
                         waiting={!singleInvite.confirmed}
-                        onClick={() => onPlayWithPlayer(singleInvite.id)}
+                        disabled={!acceptedInvite || acceptedInvite.playerId !== singleInvite.id}
+                        onClick={() => onPlayCard(GameCardType.Invite, singleInvite.id)}
                     />
                 ) : (
-                    <GameCard type="ai" onClick={onPlayAi}/>
+                    <GameCard type={GameCardType.AI} onClick={() => onPlayCard(GameCardType.AI)}/>
                 )}
-                <GameCard type="random" onClick={onPlayRandom}/>
+                <GameCard type={GameCardType.Random} onClick={() => onPlayCard(GameCardType.Random)}/>
             </div>
         </div>
     );
