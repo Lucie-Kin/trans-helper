@@ -46,7 +46,21 @@ A React/Vite frontend application with authentication features. A web applicatio
 - Build command: `cd webapp && npm run build`
 - Output directory: `webapp/dist`
 
+## Tournament System
+- **Name validation**: Printable ASCII only, no whitespace, max 20 characters
+- **Sender auto-included**: Invite sender is automatically a tournament member (2 invites = 3 players)
+- **Open access**: Any participant can edit name, start tournament, and invite more players
+- **Tournament list**: Shows all active tournaments (waiting + in_progress) until they finish
+- **SVG bracket**: Challonge-style visualization with match boxes, seed numbers, and connecting lines
+- **ELO**: Noob (0-1199, K=32), Mid (1200-1599, K=24), Pro (1600+, K=16)
+
 ## Recent Changes
+- 2026-02-10: SVG tournament bracket with challonge-style boxes and connector lines
+- 2026-02-10: Tournament name validation (printable, no whitespace, 20 char max)
+- 2026-02-10: Auto-include invite sender in tournament player list
+- 2026-02-10: Integrated TournamentList into homepage, filters out finished tournaments
+- 2026-02-10: Fixed TournamentMatch shape alignment between hook and bracket component
+- 2026-02-10: Normalized tournament status from API to lowercase enum values
 - 2026-01-28: Configured for Replit environment (port 5000, allowed hosts)
 - 2026-01-28: Added GameBox, GameCard, GameArea components for game mode selection
 - 2026-01-28: Added TournamentBracket component with organigram visualization

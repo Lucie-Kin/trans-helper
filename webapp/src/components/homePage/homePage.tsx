@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import ChatBox from "../chat/chatBox";
 import GameBox from '../game/GameBox';
 import GameArea from '../game/GameArea';
+import TournamentList from '../game/TournamentList';
 import SettingsModal from './settingsModal';
 import { useTournament } from '../../hooks/useTournament';
 import { connectSocket } from "../../socket";
@@ -222,9 +223,16 @@ export default function HomePage() {
               tournamentName={tournament.tournamentName}
               tournamentPlayers={tournament.tournamentPlayers}
               tournamentMatches={tournament.tournamentMatches}
-              isOrganizer={tournament.isOrganizer}
-              // acceptedInvite={acceptedInvite ?? undefined}
+              currentUser={user ? { id: user.id, name: user.displayName || user.login } : undefined}
             />
+            {tournament.availableTournaments.length > 0 && (
+              <div className="tournament-wrapper">
+                <TournamentList
+                  tournaments={tournament.availableTournaments}
+                  onJoin={tournament.joinTournament}
+                />
+              </div>
+            )}
           </div>
 
           <ChatBox 

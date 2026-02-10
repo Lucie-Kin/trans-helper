@@ -21,6 +21,7 @@ type Props = {
     tournamentName?: string;
     tournamentPlayers?: TournamentPlayer[];
     tournamentMatches?: TournamentMatch[];
+    currentUser?: { id: number; name: string };
 };
 
 export default function GameBox({
@@ -33,18 +34,35 @@ export default function GameBox({
     tournamentName,
     tournamentPlayers = [],
     tournamentMatches = [],
+    currentUser,
 }: Props) {
     const isTournamentMode = invitedPlayers.length >= 2 || gameState === "tournament";
 
     if (isTournamentMode) {
-        const allPlayers: TournamentPlayer[] = tournamentPlayers.length > 0
-        ? tournamentPlayers
-        : invitedPlayers.map((p) => ({
-            id: p.id,
-            name: p.name,
+        const meAsPlayer: TournamentPlayer | null = currentUser ? {
+            id: currentUser.id,
+            name: currentUser.name,
             isAI: false,
-            confirmed: p.confirmed,
-        }));
+            confirmed: true,
+        } : null;
+
+        let allPlayers: TournamentPlayer[];
+        if (tournamentPlayers.length > 0) {
+            const hasMe = meAsPlayer && tournamentPlayers.some((p) => p.id === meAsPlayer.id);
+            allPlayers = hasMe ? tournamentPlayers : [...(meAsPlayer ? [meAsPlayer] : []), ...tournamentPlayers];
+        } else {
+            allPlayers = [
+                ...(meAsPlayer ? [meAsPlayer] : []),
+                ...invitedPlayers
+                    .filter((p) => p.id !== currentUser?.id)
+                    .map((p) => ({
+                        id: p.id,
+                        name: p.name,
+                        isAI: false,
+                        confirmed: p.confirmed,
+                    })),
+            ];
+        }
 
         return (
             <div className="game-box-container">

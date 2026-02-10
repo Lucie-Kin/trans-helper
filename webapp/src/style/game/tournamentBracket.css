@@ -67,80 +67,94 @@
     color: rgba(200, 220, 255, 0.7);
 }
 
-.bracket-container{
-    display: flex;
-    gap: 1.5rem;
-    justify-content: center;
-    flex: 1;
-    overflow-x: auto;
-    padding: 0.5rem 0;
-}
-
-.bracket-round{
+.bracket-svg-wrapper{
     display: flex;
     flex-direction: column;
-    align-items: center;
-    min-width: 120px;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.bracket-round-headers{
+    display: flex;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    margin-bottom: 0.5rem;
 }
 
 .round-title{
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     font-weight: 600;
     color: rgba(180, 200, 255, 0.8);
-    margin-bottom: 0.6rem;
     text-transform: uppercase;
-    letter-spacing: 0.5rem;
+    letter-spacing: 0.5px;
+    text-align: center;
+    flex-shrink: 0;
 }
 
-.round-matches{
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    justify-content: space-around;
-    height: 100%;
+.bracket-svg-scroll{
+    flex: 1;
+    overflow: auto;
+    min-height: 0;
 }
 
-.bracket-match{
-    background: rgba(40, 40, 60, 0.7);
-    border: 1px solid rgba(100, 140, 200, 0.3);
-    border-radius: 8px;
-    padding: 0.5rem 0.6rem;
-    min-width: 100px;
+.bracket-svg{
+    display: block;
 }
 
-.bracket-player{
-    padding: 0.3rem 0.4rem;
-    font-size: 0.8rem;
-    color: rgba(255, 255, 255, 0.85);
-    display: flex;
-    align-items: center;
-    gap: 0.3rem;
+.svg-match-bg{
+    fill: rgba(30, 32, 48, 0.95);
 }
 
-.bracket-player.winner{
-    color: rgba(100, 255, 150, 1);
+.svg-match-border{
+    fill: none;
+    stroke: rgba(80, 110, 170, 0.4);
+    stroke-width: 1;
+}
+
+.svg-seed-bg{
+    fill: rgba(50, 55, 80, 0.9);
+}
+
+.svg-seed-text{
+    fill: rgba(180, 200, 255, 0.6);
+    font-size: 10px;
+    font-family: "Chakra", sans-serif;
+}
+
+.svg-player-bg{
+    fill: rgba(35, 38, 55, 0.9);
+}
+
+.svg-player-bg.winner{
+    fill: rgba(40, 80, 55, 0.8);
+}
+
+.svg-player-name{
+    fill: rgba(220, 225, 240, 0.9);
+    font-size: 11px;
+    font-family: "Chakra", sans-serif;
+}
+
+.svg-player-name.winner{
+    fill: rgba(100, 255, 150, 1);
     font-weight: 600;
 }
 
-.bracket-player .unconfirmed{
-    opacity: 0.5;
+.svg-player-name.pending{
+    fill: rgba(180, 190, 210, 0.5);
     font-style: italic;
 }
 
-.bracket-player .tbd{
-    color: rgba(150, 150, 150, 0.6);
-    font-style: italic;
+.svg-player-divider{
+    stroke: rgba(80, 110, 170, 0.25);
+    stroke-width: 1;
 }
 
-.ai-badge{
-    font-size: 0.7rem;
-}
-
-.bracket-vs{
-    font-size: 0.6rem;
-    color: rgba(255, 200, 100, 0.7);
-    text-align: center;
-    padding: 0.1rem 0;
+.svg-connector{
+    stroke: rgba(100, 140, 200, 0.35);
+    stroke-width: 1.5;
+    fill: none;
 }
 
 .tournament-start-btn{
