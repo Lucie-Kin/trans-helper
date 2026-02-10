@@ -21,7 +21,6 @@ type Props = {
     tournamentPlayers?: TournamentPlayer[];
     tournamentMatches?: TournamentMatch[];
     isOrganizer?: boolean;
-    acceptedInvite?: {playerId: number; expiresAt: number};
 };
 
 export default function GameBox({
@@ -35,7 +34,6 @@ export default function GameBox({
     tournamentPlayers = [],
     tournamentMatches = [],
     isOrganizer = false,
-    acceptedInvite,
 }: Props) {
     const isTournamentMode = invitedPlayers.length >= 2 || gameState === "tournament";
 
@@ -75,7 +73,7 @@ export default function GameBox({
                         type={GameCardType.Invite}
                         playerName={singleInvite.name}
                         waiting={!singleInvite.confirmed}
-                        disabled={!acceptedInvite || acceptedInvite.playerId !== singleInvite.id}
+                        disabled={!singleInvite.confirmed}
                         onClick={() => onPlayCard(GameCardType.Invite, singleInvite.id)}
                     />
                 ) : (

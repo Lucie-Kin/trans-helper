@@ -10,10 +10,11 @@ import "../../style/chat/chatBox.css";
 
 type Props = {
   myUserId: number;
-  onGameInviteAccept: (playerId: number) => void;
+  onGameInviteSent: (playerId: number, playerLogin: string) => void;
+  onGameInviteAccept: (playerId: number, playerLogin: string) => void;
 };
 
-export default function ChatBox({ myUserId, onGameInviteAccept }: Props) {
+export default function ChatBox({ myUserId, onGameInviteSent, onGameInviteAccept }: Props) {
   const socket = getSocket();
 
   const [isConnected, setIsConnected] = useState(socket.connected);
@@ -106,8 +107,8 @@ export default function ChatBox({ myUserId, onGameInviteAccept }: Props) {
             setActiveUserLogin(login);
             setShowProfile(false);
           }}
+          onGameInviteSent={onGameInviteSent}
           onGameInviteAccept={onGameInviteAccept}
-          // onInvite={handleInvite}
         />
       </div>
 

@@ -1,6 +1,5 @@
 // webapp/src/components/chat/userList.tsx
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import UserRow from "./userRow";
 import { getSocket } from "../../socket";
 import type { RealtimeGameInviteStatus, User } from "../share/sharedTypes";
@@ -10,17 +9,18 @@ type Props = {
   myUserId: number;
   selectedUserId: number | null;
   onSelectUser: (id: number, login: string) => void;
-  onGameInviteAccept: (playerId: number) => void;
+  onGameInviteSent: (playerId: number, playerLogin: string) => void;
+  onGameInviteAccept: (playerId: number, playerLogin: string) => void;
 };
 
 export default function UserList({
   myUserId,
   selectedUserId,
   onSelectUser,
+  onGameInviteSent,
   onGameInviteAccept,
 }: Props) {
   const socket = getSocket();
-  const navigate = useNavigate();
 
   const [users, setUsers] = useState<User[]>([]);
   const [viewingProfileId, setViewingProfileId] = useState<number | null>(null);
@@ -90,13 +90,12 @@ export default function UserList({
         });
       };
   
-      const onGameStart = ({ inviteId }: { inviteId: number }) => {
+      const onGameStart = (_data: { inviteId: number; players: number[] }) => {
         setGameInviteStatuses(prev => {
           const newMap = new Map(prev);
           newMap.clear();
           return newMap;
         });
-        navigate(`/pong/${inviteId}`);
       };
    
     refresh();
@@ -155,10 +154,9 @@ export default function UserList({
       return;
     }
     
-    // Send invite
     socket.emit("game:invite", { targetId: user.id });
+    onGameInviteSent(user.id, user.login);
     
-    // Set status to "outgoing" (inviteId will be received later)
     setGameInviteStatuses(prev => {
       const newMap = new Map(prev);
       newMap.set(user.id, { status: "outgoing" });
@@ -176,7 +174,8 @@ export default function UserList({
       inviteId: inviteData.inviteId,
     });
 
-    onGameInviteAccept(userId);
+    const user = users.find(u => u.id === userId);
+    onGameInviteAccept(userId, user?.login || `Player ${userId}`);
     
     setGameInviteStatuses(prev => {
       const newMap = new Map(prev);

@@ -127,7 +127,14 @@ export default function HomePage() {
 
   // HANDLERS //
 
-  const handleGameInviteAccept = (playerId: number) => {
+  const handleGameInviteSent = (playerId: number, playerLogin: string) => {
+    tournament.addPendingInvite(playerId, playerLogin);
+  };
+
+  const handleGameInviteAccept = (playerId: number, playerLogin: string) => {
+    tournament.addPendingInvite(playerId, playerLogin);
+    tournament.confirmInvite(playerId);
+
     const expiresAt = Date.now() + 3 * 60 * 1000;
     setAcceptedInvite({ playerId, expiresAt });
 
@@ -178,15 +185,23 @@ export default function HomePage() {
       </div>
 
       {gameState === GameState.Playing && activeCard ? (
-        < GameArea
+        <GameArea
           gameCardType={activeCard}
+          player1Name={user.displayName || user.login}
+          player2Name={
+            activeCard === GameCardType.AI
+              ? "AI"
+              : tournament.invitedPlayers.find(p => p.id === invitePlayerId)?.name || "Adversaire"
+          }
           invitePlayerId={invitePlayerId}
           onExit={() => {
             setActiveCard(null);
             setInvitePlayerId(undefined);
             setGameState(GameState.Idle);
             tournament.exitGame();
-
+          }}
+          onGameEnd={() => {
+            tournament.exitGame();
           }}
         />
       ) : (
@@ -204,12 +219,12 @@ export default function HomePage() {
               tournamentPlayers={tournament.tournamentPlayers}
               tournamentMatches={tournament.tournamentMatches}
               isOrganizer={tournament.isOrganizer}
-              acceptedInvite={acceptedInvite ?? undefined}
             />
           </div>
 
           <ChatBox 
             myUserId={user.id}
+            onGameInviteSent={handleGameInviteSent}
             onGameInviteAccept={handleGameInviteAccept}
           />
         </div>
