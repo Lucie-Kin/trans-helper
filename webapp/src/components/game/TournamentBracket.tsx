@@ -61,7 +61,7 @@ function buildLayout(matchesByRound: TournamentMatch[][]) {
             const prevBoxes = boxes[r - 1];
             roundMatches.forEach((match, i) => {
                 const topIdx = i * 2;
-                const botIdx = i * 2;
+                const botIdx = i * 2 + 1;
                 const topBox = prevBoxes[topIdx];
                 const botBox = prevBoxes[botIdx];
                 let y: number;

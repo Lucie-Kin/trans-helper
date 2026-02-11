@@ -218,12 +218,14 @@ export default function HomePage() {
               tournamentMatches={tournament.tournamentMatches}
               currentUser={user ? { id: user.id, name: user.displayName || user.login } : undefined}
             />
-            <div className="tournament-wrapper">
-              <TournamentList
-                tournaments={tournament.availableTournaments}
-                onJoin={tournament.joinTournament}
-              />
-            </div>
+            {tournament.availableTournaments.length > 0 && (
+              <div className="tournament-wrapper">
+                <TournamentList
+                  tournaments={tournament.availableTournaments}
+                  onJoin={tournament.joinTournament}
+                />
+              </div>
+            )}
           </div>
 
           <ChatBox 
