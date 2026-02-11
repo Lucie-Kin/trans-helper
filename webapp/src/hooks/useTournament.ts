@@ -256,10 +256,26 @@ export function useTournament(myUserId: number) {
         const match = findFirstUnplayedMatch(matches);
         if (!match) return false;
 
-        const pA = match.playerA;
-        const pB = match.playerB;
+        let pA = match.playerA;
+        let pB = match.playerB;
 
-        const isAI = !pA || !pB || (pA?.isAI ?? false) || (pB?.isAI ?? false);
+        if (!pA || !pB) {
+            const aiPlayerA: TournamentPlayer | undefined = pA ? undefined : { id: -(match.id * 10 + 1), name: "AI", isAI: true, confirmed: true };
+            const aiPlayerB: TournamentPlayer | undefined = pB ? undefined : { id: -(match.id * 10 + 2), name: "AI", isAI: true, confirmed: true };
+
+            if (aiPlayerA || aiPlayerB) {
+                matches = matches.map((m) =>
+                    m.id === match.id
+                        ? { ...m, playerA: aiPlayerA ?? m.playerA, playerB: aiPlayerB ?? m.playerB }
+                        : m
+                );
+                setTournamentMatches(matches);
+                pA = aiPlayerA ?? pA;
+                pB = aiPlayerB ?? pB;
+            }
+        }
+
+        const isAI = (pA?.isAI ?? false) || (pB?.isAI ?? false);
 
         setActiveTournamentMatch({
             matchId: match.id,
