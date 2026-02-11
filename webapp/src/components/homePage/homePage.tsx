@@ -52,7 +52,7 @@ export default function HomePage() {
   const [activeCard, setActiveCard] = useState<GameCardType | null>(null);
   const [invitePlayerId, setInvitePlayerId] = useState<number | undefined>(undefined);
   const [acceptedInvite, setAcceptedInvite] = useState<AcceptedInvite | null>(null);
-  
+
   const [showSettings, setShowSettings] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -155,6 +155,11 @@ export default function HomePage() {
   };
 
   const exitGame = () => {
+    if (tournament.activeTournamentMatch) {
+      tournament.handleTournamentMatchEnd(1, 0, 0);
+      setGameState(GameState.Idle);
+      return;
+    }
     setActiveCard(null);
     setInvitePlayerId(undefined);
     setGameState(GameState.Idle);
@@ -190,8 +195,19 @@ export default function HomePage() {
         <h4>Bienvenue, {user.displayName}</h4>
       </div>
 
-      {gameState === GameState.Playing && activeCard ? (
-        < GameArea
+      {gameState === GameState.Playing && tournament.activeTournamentMatch ? (
+        <GameArea
+          onExit={exitGame}
+          gameCardType={tournament.activeTournamentMatch.isAIOpponent ? GameCardType.AI : GameCardType.Invite}
+          player1Name={tournament.activeTournamentMatch.playerAName}
+          player2Name={tournament.activeTournamentMatch.playerBName}
+          onGameEnd={(result) => {
+            tournament.handleTournamentMatchEnd(result.winner, result.scoreP1, result.scoreP2);
+            setGameState(GameState.Idle);
+          }}
+        />
+      ) : gameState === GameState.Playing && activeCard ? (
+        <GameArea
           onExit={exitGame}
           gameCardType={activeCard}
           player1Name={user.displayName || user.login}
@@ -210,7 +226,12 @@ export default function HomePage() {
               gameState={gameState}
               invitedPlayers={tournament.invitedPlayers}
               onPlayCard={handlePlayCard}
-              onStartTournament={tournament.startTournament}
+              onStartTournament={() => {
+                tournament.startTournamentMatch();
+                if (tournament.tournamentMatches.some(m => m.winner === undefined)) {
+                  setGameState(GameState.Playing);
+                }
+              }}
               onChangeTournamentName={tournament.changeTournamentName}
               tournamentId={tournament.tournamentId}
               tournamentName={tournament.tournamentName}
@@ -218,12 +239,14 @@ export default function HomePage() {
               tournamentMatches={tournament.tournamentMatches}
               currentUser={user ? { id: user.id, name: user.displayName || user.login } : undefined}
             />
-            <div className="tournament-wrapper">
-              <TournamentList
-                tournaments={tournament.availableTournaments}
-                onJoin={tournament.joinTournament}
-              />
-            </div>
+            {tournament.availableTournaments.length > 0 && (
+              <div className="tournament-wrapper">
+                <TournamentList
+                  tournaments={tournament.availableTournaments}
+                  onJoin={tournament.joinTournament}
+                />
+              </div>
+            )}
           </div>
 
           <ChatBox 

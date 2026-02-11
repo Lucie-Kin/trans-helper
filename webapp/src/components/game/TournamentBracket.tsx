@@ -15,6 +15,8 @@ export type TournamentMatch = {
     playerA?: TournamentPlayer;
     playerB?: TournamentPlayer;
     winner?: number;
+    scoreA?: number;
+    scoreB?: number;
 };
 
 type Props = {

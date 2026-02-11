@@ -55,6 +55,10 @@ A React/Vite frontend application with authentication features. A web applicatio
 - **ELO**: Noob (0-1199, K=32), Mid (1200-1599, K=24), Pro (1600+, K=16)
 
 ## Recent Changes
+- 2026-02-11: "Jouer" button starts first unplayed tournament match; TBD players play as AI
+- 2026-02-11: Match results recorded in bracket with winner advancement to next round
+- 2026-02-11: Fixed TournamentMatch shape: fetchTournamentBracket now creates proper playerA/playerB objects
+- 2026-02-11: Added /tournament/list backend endpoint for active tournaments (WAITING + IN_PROGRESS)
 - 2026-02-10: SVG tournament bracket with challonge-style boxes and connector lines
 - 2026-02-10: Tournament name validation (printable, no whitespace, 20 char max)
 - 2026-02-10: Auto-include invite sender in tournament player list

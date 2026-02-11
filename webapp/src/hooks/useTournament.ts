@@ -10,6 +10,15 @@ export type InvitedPlayer = {
     confirmed: boolean;
 };
 
+export type ActiveTournamentMatch = {
+    matchId: number;
+    round: number;
+    position: number;
+    playerAName: string;
+    playerBName: string;
+    isAIOpponent: boolean;
+};
+
 export function useTournament(myUserId: number) {
     const socket = getSocket();
 
@@ -22,6 +31,7 @@ export function useTournament(myUserId: number) {
     const [isOrganizer, setIsOrganizer] = useState(false);
     const [availableTournaments, setAvailableTournaments] = useState<TournamentInfo[]>([]);
     const [activeInviteId, setActiveInviteId] = useState<number | undefined>();
+    const [activeTournamentMatch, setActiveTournamentMatch] = useState<ActiveTournamentMatch | null>(null);
 
     const fetchTournaments = useCallback(async () => {
         try {
@@ -63,16 +73,26 @@ export function useTournament(myUserId: number) {
             ]);
             if (bracketRes.ok) {
                 const bracket = await bracketRes.json();
+                let matchCounter = 1;
                 const matches: TournamentMatch[] = (bracket.matches || []).map((m: any) => ({
-                    id: `${m.roundIndex}-${m.bracketPosition}`,
+                    id: matchCounter++,
                     round: m.roundIndex,
                     position: m.bracketPosition,
-                    playerAId: m.playerA?.playerId ? Number(m.playerA.playerId) : undefined,
-                    playerBId: m.playerB?.playerId ? Number(m.playerB.playerId) : undefined,
-                    winnerId: m.winnerId ? Number(m.winnerId) : undefined,
+                    playerA: m.playerA?.playerId ? {
+                        id: Number(m.playerA.playerId),
+                        name: m.playerA.username || `Player ${m.playerA.playerId}`,
+                        isAI: m.playerA.isAI || false,
+                        confirmed: true,
+                    } : undefined,
+                    playerB: m.playerB?.playerId ? {
+                        id: Number(m.playerB.playerId),
+                        name: m.playerB.username || `Player ${m.playerB.playerId}`,
+                        isAI: m.playerB.isAI || false,
+                        confirmed: true,
+                    } : undefined,
+                    winner: m.winnerId ? Number(m.winnerId) : undefined,
                     scoreA: m.scoreA,
                     scoreB: m.scoreB,
-                    status: m.status,
                 }));
                 setTournamentMatches(matches);
             }
@@ -189,6 +209,65 @@ export function useTournament(myUserId: number) {
         }
     }, [socket, invitedPlayers]);
 
+    const findFirstUnplayedMatch = useCallback((matches: TournamentMatch[]): TournamentMatch | null => {
+        const sorted = [...matches].sort((a, b) => {
+            if (a.round !== b.round) return a.round - b.round;
+            return a.position - b.position;
+        });
+        return sorted.find((m) => m.winner === undefined && (m.playerA || m.playerB)) || null;
+    }, []);
+
+    const startTournamentMatch = useCallback(() => {
+        const matches = tournamentMatches;
+        const match = findFirstUnplayedMatch(matches);
+        if (!match) return;
+
+        const pA = match.playerA;
+        const pB = match.playerB;
+
+        const aIsMissing = !pA;
+        const bIsMissing = !pB;
+        const isAI = aIsMissing || bIsMissing || (pA?.isAI ?? false) || (pB?.isAI ?? false);
+
+        setActiveTournamentMatch({
+            matchId: match.id,
+            round: match.round,
+            position: match.position,
+            playerAName: pA ? pA.name : "AI",
+            playerBName: pB ? pB.name : "AI",
+            isAIOpponent: isAI,
+        });
+    }, [tournamentMatches, findFirstUnplayedMatch]);
+
+    const handleTournamentMatchEnd = useCallback((winnerSide: 1 | 2, scoreA: number, scoreB: number) => {
+        if (!activeTournamentMatch) return;
+        const { matchId, round, position } = activeTournamentMatch;
+
+        setTournamentMatches((prev) => {
+            const currentMatch = prev.find((m) => m.id === matchId);
+            if (!currentMatch) return prev;
+
+            const winnerPlayer = winnerSide === 1 ? currentMatch.playerA : currentMatch.playerB;
+            const winnerId = winnerPlayer?.id ?? -1;
+
+            const nextRound = round + 1;
+            const nextPosition = Math.ceil(position / 2);
+            const slot = position % 2 === 1 ? "playerA" : "playerB";
+
+            return prev.map((m) => {
+                if (m.id === matchId) {
+                    return { ...m, winner: winnerId, scoreA, scoreB };
+                }
+                if (m.round === nextRound && m.position === nextPosition && winnerPlayer) {
+                    return { ...m, [slot]: { ...winnerPlayer } };
+                }
+                return m;
+            });
+        });
+
+        setActiveTournamentMatch(null);
+    }, [activeTournamentMatch]);
+
     const startTournament = useCallback(async () => {
         if (tournamentId) {
             try {
@@ -232,7 +311,8 @@ export function useTournament(myUserId: number) {
                 setGameState(GameState.Tournament);
             }
         }
-    }, [tournamentId, invitedPlayers, tournamentName, myUserId, fetchTournamentBracket, fetchTournaments]);
+        startTournamentMatch();
+    }, [tournamentId, invitedPlayers, tournamentName, myUserId, fetchTournamentBracket, fetchTournaments, startTournamentMatch]);
 
     const changeTournamentName = useCallback((name: string) => {
         setTournamentName(name);
@@ -279,6 +359,7 @@ export function useTournament(myUserId: number) {
         tournamentMatches,
         isOrganizer,
         availableTournaments,
+        activeTournamentMatch,
         addPendingInvite,
         removeInvite,
         confirmInvite,
@@ -286,6 +367,8 @@ export function useTournament(myUserId: number) {
         playRandom,
         playWithPlayer,
         startTournament,
+        startTournamentMatch,
+        handleTournamentMatchEnd,
         changeTournamentName,
         joinTournament,
         exitGame,
