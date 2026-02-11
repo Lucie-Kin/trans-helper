@@ -155,8 +155,7 @@ export default function HomePage() {
   };
 
   const exitGame = () => {
-    if (tournament.activeTournamentMatch) {
-      tournament.handleTournamentMatchEnd(1, 0, 0);
+    if (tournament.activeTournamentMatch || tournament.tournamentMatches.length > 0) {
       setGameState(GameState.Idle);
       return;
     }
@@ -203,7 +202,6 @@ export default function HomePage() {
           player2Name={tournament.activeTournamentMatch.playerBName}
           onGameEnd={(result) => {
             tournament.handleTournamentMatchEnd(result.winner, result.scoreP1, result.scoreP2);
-            setGameState(GameState.Idle);
           }}
         />
       ) : gameState === GameState.Playing && activeCard ? (
@@ -229,6 +227,12 @@ export default function HomePage() {
               onStartTournament={() => {
                 const started = tournament.startTournamentMatch();
                 if (started) setGameState(GameState.Playing);
+              }}
+              onCloseTournament={() => {
+                tournament.clearInvites();
+                setActiveCard(null);
+                setInvitePlayerId(undefined);
+                setGameState(GameState.Idle);
               }}
               onChangeTournamentName={tournament.changeTournamentName}
               tournamentId={tournament.tournamentId}

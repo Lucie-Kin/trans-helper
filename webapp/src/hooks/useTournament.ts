@@ -379,6 +379,7 @@ export function useTournament(myUserId: number) {
         setTournamentMatches([]);
         setIsOrganizer(false);
         setActiveInviteId(undefined);
+        setActiveTournamentMatch(null);
         setGameState(GameState.Idle);
     }, []);
 

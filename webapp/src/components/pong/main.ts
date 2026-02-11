@@ -93,7 +93,7 @@ export function startPong(
   };
   
   const onKeyDown = (e: KeyboardEvent) => {
-    if (e.code === "Space" && waitingForSpace) {
+    if ((e.code === "Space" || e.key === "Enter") && waitingForSpace) {
       e.preventDefault();
       waitingForSpace = false;
       paused = false;
@@ -101,6 +101,8 @@ export function startPong(
       startCountdown(performance.now());
       return;
     }
+
+    if (e.key === "Enter") e.preventDefault();
 
     if (e.key === "w" || e.key === "s") pressed.add(e.key);
     if (e.key === "ArrowUp" || e.key === "ArrowDown") pressed.add(e.key);

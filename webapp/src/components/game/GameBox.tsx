@@ -16,6 +16,7 @@ type Props = {
     invitedPlayers: InvitedPlayer[];
     onPlayCard: (type: GameCardType, playerId?: number) => void;
     onStartTournament: () => void;
+    onCloseTournament: () => void;
     onChangeTournamentName: (name: string) => void;
     tournamentId?: string;
     tournamentName?: string;
@@ -29,6 +30,7 @@ export default function GameBox({
     invitedPlayers,
     onPlayCard,
     onStartTournament,
+    onCloseTournament,
     onChangeTournamentName,
     tournamentId,
     tournamentName,
@@ -73,6 +75,7 @@ export default function GameBox({
                     matches={tournamentMatches}
                     isOrganizer={true}
                     onStart={onStartTournament}
+                    onClose={onCloseTournament}
                     onChangeName={onChangeTournamentName}
                 />
             </div>

@@ -26,6 +26,7 @@ type Props = {
     matches: TournamentMatch[];
     isOrganizer: boolean;
     onStart: () => void;
+    onClose: () => void;
     onChangeName: (name: string) => void;
 };
 
@@ -185,6 +186,7 @@ export default function TournamentBracket({
     players,
     matches,
     onStart,
+    onClose,
     onChangeName,
 }: Props) {
     const [editingName, setEditingName] = useState(false);
@@ -337,7 +339,11 @@ export default function TournamentBracket({
                     </div>
                 )}
 
-                <button className="tournament-start-btn" onClick={onStart}>Jouer</button>
+                {effectiveMatches.length > 0 && effectiveMatches.every((m) => m.winner !== undefined) ? (
+                    <button className="tournament-start-btn close" onClick={onClose}>Fermer le tournoi</button>
+                ) : (
+                    <button className="tournament-start-btn" onClick={onStart}>Jouer</button>
+                )}
         </div>
     );
 }
