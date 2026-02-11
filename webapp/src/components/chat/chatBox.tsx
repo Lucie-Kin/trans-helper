@@ -6,15 +6,18 @@ import MessageInput from "./messageInput";
 import ChatHeader from "./chatHeader";
 import ProfileModal from "./profileModal";
 import TournamentList from "../game/TournamentList";
+import type { TournamentInfo } from "../game/TournamentList";
 import "../../style/chat/chatBox.css";
 
 type Props = {
   myUserId: number;
   onGameInviteSent: (playerId: number, playerLogin: string) => void;
   onGameInviteAccept: (playerId: number, playerLogin: string) => void;
+  availableTournaments?: TournamentInfo[];
+  onJoinTournament?: (id: string) => void;
 };
 
-export default function ChatBox({ myUserId, onGameInviteSent, onGameInviteAccept }: Props) {
+export default function ChatBox({ myUserId, onGameInviteSent, onGameInviteAccept, availableTournaments = [], onJoinTournament }: Props) {
   const socket = getSocket();
 
   const [isConnected, setIsConnected] = useState(socket.connected);
@@ -157,8 +160,8 @@ export default function ChatBox({ myUserId, onGameInviteSent, onGameInviteAccept
           // {/* TOURNAMENT */}
           <div className="tournament-wrapper">
             <TournamentList
-              tournaments={[]}
-              onJoin={(id) => socket.emit("tournament:join", id)}
+              tournaments={availableTournaments}
+              onJoin={(id) => onJoinTournament ? onJoinTournament(id) : socket.emit("tournament:join", id)}
              />
           </div>
         )

@@ -232,6 +232,8 @@ export default function HomePage() {
             myUserId={user.id}
             onGameInviteSent={handleGameInviteSent}
             onGameInviteAccept={handleGameInviteAccept}
+            availableTournaments={tournament.availableTournaments}
+            onJoinTournament={tournament.joinTournament}
           />
         </div>
       )}
