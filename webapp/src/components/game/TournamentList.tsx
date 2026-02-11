@@ -5,7 +5,7 @@ export type TournamentInfo = {
     name: string;
     playerCount: number;
     maxPlayers: number;
-    status: "waiting" | "in_progree" | "finished";
+    status: "waiting" | "in_progress" | "finished";
     organizerName: string;
 };
 
@@ -43,7 +43,7 @@ export default function TournamentList({ tournaments, onJoin }: Props) {
                                 Rejoindre
                             </button>
                         )}
-                        {t.status === "in_progree" && (
+                        {t.status === "in_progress" && (
                             <span className="tournament-status-badge">En cours</span>
                         )}
                     </div>

@@ -31,13 +31,20 @@ export function useTournament(myUserId: number) {
             if (res.ok) {
                 const data = await res.json();
                 if (Array.isArray(data)) {
+                    const normalizeStatus = (s: string) => {
+                        const lower = (s || "").toLowerCase();
+                        if (lower.includes("waiting") || lower === "waiting_for_players") return "waiting" as const;
+                        if (lower.includes("progress") || lower === "in_progress") return "in_progress" as const;
+                        if (lower.includes("finish") || lower === "completed") return "finished" as const;
+                        return "waiting" as const;
+                    };
                     setAvailableTournaments(
                         data.map((t: any) => ({
-                            id: t.id,
-                            name: t.title || `Tournament #${t.id}`,
-                            playerCount: t.playerCount || 0,
+                            id: String(t.id),
+                            name: t.title || t.name || `Tournament #${t.id}`,
+                            playerCount: t.playerCount || t.players?.length || 0,
                             maxPlayers: t.maxPlayers || 8,
-                            status: t.status || "WAITING_FOR_PLAYERS",
+                            status: normalizeStatus(t.status),
                             organizerName: t.organizerName || "Unknown",
                         }))
                     );
@@ -182,14 +189,18 @@ export function useTournament(myUserId: number) {
         }
     }, [socket, invitedPlayers]);
 
-    const startTournament =useCallback(async() => {
+    const startTournament = useCallback(async () => {
         if (tournamentId) {
             try {
-                await fetch(`https://localhost:8443/tournament/${tournamentId}/start`, {
+                const res = await fetch(`https://localhost:8443/tournament/${tournamentId}/start`, {
                     method: "POST",
                     credentials: "include",
                 });
-            } catch(err) {
+                if (res.ok) {
+                    fetchTournamentBracket(tournamentId);
+                    fetchTournaments();
+                }
+            } catch (err) {
                 console.log("Failed to start tournament", err);
             }
         } else if (invitedPlayers.length >= 2) {
@@ -206,16 +217,22 @@ export function useTournament(myUserId: number) {
                 if (res.ok) {
                     const tournamentInfo = await res.json();
                     setTournamentId(tournamentInfo.id);
-                    setTournamentName(tournamentInfo.name);
+                    setTournamentName(tournamentInfo.name || tournamentName);
                     setIsOrganizer(true);
                     setGameState(GameState.Tournament);
                     fetchTournamentBracket(tournamentInfo.id);
+                    fetchTournaments();
                 }
-            } catch(err) {
-                console.log("Failed to create tournament", err);
+            } catch (err) {
+                console.log("Failed to create tournament via API", err);
+                const localId = `local-${Date.now()}`;
+                setTournamentId(localId);
+                setTournamentName(tournamentName || `Tournament #${localId}`);
+                setIsOrganizer(true);
+                setGameState(GameState.Tournament);
             }
         }
-    }, [tournamentId, invitedPlayers, tournamentName, myUserId, fetchTournamentBracket]);
+    }, [tournamentId, invitedPlayers, tournamentName, myUserId, fetchTournamentBracket, fetchTournaments]);
 
     const changeTournamentName = useCallback((name: string) => {
         setTournamentName(name);

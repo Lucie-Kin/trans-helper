@@ -205,10 +205,38 @@ export default function TournamentBracket({
         setEditingName(false);
     };
 
-    const rounds = matches.length > 0 ? Math.max(...matches.map((m) => m.round), 0): 0;
+    const generatePlaceholderMatches = (playerList: TournamentPlayer[]): TournamentMatch[] => {
+        if (playerList.length < 2) return [];
+        const totalSlots = Math.pow(2, Math.ceil(Math.log2(playerList.length)));
+        const totalRounds = Math.log2(totalSlots);
+        const generated: TournamentMatch[] = [];
+        let matchId = 1;
+
+        for (let r = 1; r <= totalRounds; r++) {
+            const matchesInRound = totalSlots / Math.pow(2, r);
+            for (let p = 1; p <= matchesInRound; p++) {
+                const match: TournamentMatch = {
+                    id: matchId++,
+                    round: r,
+                    position: p,
+                };
+                if (r === 1) {
+                    const idxA = (p - 1) * 2;
+                    const idxB = (p - 1) * 2 + 1;
+                    if (idxA < playerList.length) match.playerA = playerList[idxA];
+                    if (idxB < playerList.length) match.playerB = playerList[idxB];
+                }
+                generated.push(match);
+            }
+        }
+        return generated;
+    };
+
+    const effectiveMatches = matches.length > 0 ? matches : generatePlaceholderMatches(players);
+    const rounds = effectiveMatches.length > 0 ? Math.max(...effectiveMatches.map((m) => m.round), 0) : 0;
     const matchesByRound: TournamentMatch[][] = [];
     for (let r = 1; r <= rounds; r++)
-        matchesByRound.push(matches.filter((m) => m.round === r).sort((a, b) => a.position - b.position));
+        matchesByRound.push(effectiveMatches.filter((m) => m.round === r).sort((a, b) => a.position - b.position));
 
     const getRoundName = (round: number, total: number) => {
         if (round === total) return "Finale";
@@ -217,13 +245,13 @@ export default function TournamentBracket({
         return `Tour ${round}`;
     };
 
-    const hasNoMatches = matches.length == 0;
+    const hasNoMatches = effectiveMatches.length === 0;
 
     const layout = useMemo(() => {
         if (matchesByRound.length === 0)
             return [];
         return buildLayout(matchesByRound);
-    }, [matches]);
+    }, [effectiveMatches, players]);
 
     const svgWidth = useMemo(() => {
         if (layout.length === 0)
