@@ -227,10 +227,8 @@ export default function HomePage() {
               invitedPlayers={tournament.invitedPlayers}
               onPlayCard={handlePlayCard}
               onStartTournament={() => {
-                tournament.startTournamentMatch();
-                if (tournament.tournamentMatches.some(m => m.winner === undefined)) {
-                  setGameState(GameState.Playing);
-                }
+                const started = tournament.startTournamentMatch();
+                if (started) setGameState(GameState.Playing);
               }}
               onChangeTournamentName={tournament.changeTournamentName}
               tournamentId={tournament.tournamentId}

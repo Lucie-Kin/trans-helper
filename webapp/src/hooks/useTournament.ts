@@ -217,17 +217,49 @@ export function useTournament(myUserId: number) {
         return sorted.find((m) => m.winner === undefined && (m.playerA || m.playerB)) || null;
     }, []);
 
-    const startTournamentMatch = useCallback(() => {
-        const matches = tournamentMatches;
+    const generateBracketMatches = useCallback((playerList: TournamentPlayer[]): TournamentMatch[] => {
+        if (playerList.length < 2) return [];
+        const totalSlots = Math.pow(2, Math.ceil(Math.log2(playerList.length)));
+        const totalRounds = Math.log2(totalSlots);
+        const generated: TournamentMatch[] = [];
+        let matchId = 1;
+        for (let r = 1; r <= totalRounds; r++) {
+            const matchesInRound = totalSlots / Math.pow(2, r);
+            for (let p = 1; p <= matchesInRound; p++) {
+                const match: TournamentMatch = { id: matchId++, round: r, position: p };
+                if (r === 1) {
+                    const idxA = (p - 1) * 2;
+                    const idxB = (p - 1) * 2 + 1;
+                    if (idxA < playerList.length) match.playerA = playerList[idxA];
+                    if (idxB < playerList.length) match.playerB = playerList[idxB];
+                }
+                generated.push(match);
+            }
+        }
+        return generated;
+    }, []);
+
+    const startTournamentMatch = useCallback((): boolean => {
+        let matches = tournamentMatches;
+
+        if (matches.length === 0 && invitedPlayers.length > 0) {
+            const allPlayers: TournamentPlayer[] = [
+                ...(myUserId ? [{ id: myUserId, name: "Moi", isAI: false, confirmed: true }] : []),
+                ...invitedPlayers
+                    .filter((p) => p.id !== myUserId)
+                    .map((p) => ({ id: p.id, name: p.name, isAI: false, confirmed: p.confirmed })),
+            ];
+            matches = generateBracketMatches(allPlayers);
+            setTournamentMatches(matches);
+        }
+
         const match = findFirstUnplayedMatch(matches);
-        if (!match) return;
+        if (!match) return false;
 
         const pA = match.playerA;
         const pB = match.playerB;
 
-        const aIsMissing = !pA;
-        const bIsMissing = !pB;
-        const isAI = aIsMissing || bIsMissing || (pA?.isAI ?? false) || (pB?.isAI ?? false);
+        const isAI = !pA || !pB || (pA?.isAI ?? false) || (pB?.isAI ?? false);
 
         setActiveTournamentMatch({
             matchId: match.id,
@@ -237,7 +269,8 @@ export function useTournament(myUserId: number) {
             playerBName: pB ? pB.name : "AI",
             isAIOpponent: isAI,
         });
-    }, [tournamentMatches, findFirstUnplayedMatch]);
+        return true;
+    }, [tournamentMatches, invitedPlayers, myUserId, findFirstUnplayedMatch, generateBracketMatches]);
 
     const handleTournamentMatchEnd = useCallback((winnerSide: 1 | 2, scoreA: number, scoreB: number) => {
         if (!activeTournamentMatch) return;
