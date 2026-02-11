@@ -17,13 +17,8 @@ type Props = {
 export default function TournamentList({ tournaments, onJoin }: Props) {
     const activeTournaments = tournaments.filter((t) => t.status !== "finished");
 
-    if (tournaments.length === 0) {
-        return (
-            <div className="tournament-list-empty">
-                <div className="empty-icon">🏆</div>
-                <div className="empty-text">Aucun tournoi en cours</div>
-            </div>
-        );
+    if (tournaments.length === 0 || activeTournaments.length === 0) {
+        return null;
     }
 
     return (
