@@ -24,7 +24,7 @@
 
 .empty-text {
     font-size: 1rem;
-    font-family: "Chakra";
+    font-family: "Chakra", sans-serif;
 }
 
 .tournament-list-title {

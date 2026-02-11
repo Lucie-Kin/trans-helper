@@ -1,5 +1,5 @@
-import React, { useState, useMemo } from "react";
-import "../../style/game/tournamentBracket.css"
+import React, { useMemo, useState } from "react";
+import "../../style/game/tournamentBracket.css";
 
 export type TournamentPlayer = {
     id: number;
@@ -22,7 +22,7 @@ type Props = {
     tournamentName?: string;
     players: TournamentPlayer[];
     matches: TournamentMatch[];
-    isOrganizer?: boolean;
+    isOrganizer: boolean;
     onStart: () => void;
     onChangeName: (name: string) => void;
 };
@@ -61,17 +61,16 @@ function buildLayout(matchesByRound: TournamentMatch[][]) {
             const prevBoxes = boxes[r - 1];
             roundMatches.forEach((match, i) => {
                 const topIdx = i * 2;
-                const botIdx = i * 2 + 1;
+                const botIdx = i * 2;
                 const topBox = prevBoxes[topIdx];
                 const botBox = prevBoxes[botIdx];
                 let y: number;
-                if (topBox && botBox) {
+                if (topBox && botBox)
                     y = (topBox.y + botBox.y + MATCH_H) / 2 - MATCH_H / 2;
-                } else if (topBox) {
+                else if (topBox)
                     y = topBox.y;
-                } else {
+                else
                     y = i * (MATCH_H + MATCH_VGAP);
-                }
                 roundBoxes.push({ match, x, y });
             });
         }
@@ -90,46 +89,47 @@ function MatchSVG({ box }: { box: MatchBox }) {
 
     return (
         <g transform={`translate(${x}, ${y})`}>
-            <rect x={0} y={0} width={MATCH_W} height={MATCH_H}
-                  rx={3} ry={3}
-                  className="svg-match-bg" />
-
-            <rect x={0} y={0} width={SEED_W} height={PLAYER_H}
-                  className="svg-seed-bg" />
+            <rect x ={0} y={0} width={MATCH_W} height={MATCH_H}
+                rx={3} ry={3}
+                className="svg-match-bg"
+            />
+            <rect x ={0} y={0} width={SEED_W} height={PLAYER_H}
+                className="svg-seed-bg"
+            />
             <text x={SEED_W / 2} y={PLAYER_H / 2 + 4}
-                  textAnchor="middle"
-                  className="svg-seed-text">
-                {match.position * 2 - 1}
+                textAnchor="middle" 
+                className="svg-seed-text" >
+              {match.position * 2 - 1}
             </text>
-
-            <rect x={SEED_W} y={0} width={MATCH_W - SEED_W} height={PLAYER_H}
-                  className={`svg-player-bg ${winA ? "winner" : ""}`} />
-            <text x={SEED_W + 6} y={PLAYER_H / 2 + 4}
-                  className={`svg-player-name ${winA ? "winner" : ""} ${pA && !pA.confirmed ? "pending" : ""}`}>
-                {pA ? (pA.isAI ? `🤖 ${pA.name}` : pA.name) : "TBD"}
+            <rect x ={SEED_W} y={0} width={MATCH_W - SEED_W} height={PLAYER_H}
+                className={`svg-player-bg ${winA ? "winner" : ""}`}
+            />
+            <text x ={SEED_W + 6} y={PLAYER_H / 2 + 4}
+                className={`svg-player-name ${winA ? "winner" : ""} ${pA && !pA.confirmed ? "pending" : ""}`} >
+              {pA ? (pA.isAI ? `🤖 ${pA.name}` : pA.name) : "TBD"}
             </text>
-
             <line x1={0} y1={PLAYER_H} x2={MATCH_W} y2={PLAYER_H}
-                  className="svg-player-divider" />
-
-            <rect x={0} y={PLAYER_H} width={SEED_W} height={MATCH_H - PLAYER_H}
-                  className="svg-seed-bg" />
-            <text x={SEED_W / 2} y={PLAYER_H + (MATCH_H - PLAYER_H) / 2 + 4}
-                  textAnchor="middle"
-                  className="svg-seed-text">
-                {match.position * 2}
+                className="svg-player-divider"
+            />
+            <rect x ={0} y={PLAYER_H} width={SEED_W} height={MATCH_H - PLAYER_H}
+                className="svg-seed-bg"
+            />
+            <text x={SEED_W / 2} y={PLAYER_H + (MATCH_H - PLAYER_H)/ 2 + 4}
+                textAnchor="middle" 
+                className="svg-seed-text" >
+              {match.position * 2}
             </text>
-
-            <rect x={SEED_W} y={PLAYER_H} width={MATCH_W - SEED_W} height={MATCH_H - PLAYER_H}
-                  className={`svg-player-bg ${winB ? "winner" : ""}`} />
-            <text x={SEED_W + 6} y={PLAYER_H + (MATCH_H - PLAYER_H) / 2 + 4}
-                  className={`svg-player-name ${winB ? "winner" : ""} ${pB && !pB.confirmed ? "pending" : ""}`}>
-                {pB ? (pB.isAI ? `🤖 ${pB.name}` : pB.name) : "TBD"}
+            <rect x ={SEED_W} y={PLAYER_H} width={MATCH_W - SEED_W} height={MATCH_H - PLAYER_H}
+                className={`svg-player-bg ${winB ? "winner" : ""}`}
+            />
+            <text x ={SEED_W + 6} y={PLAYER_H + (MATCH_H - PLAYER_H) / 2 + 4}
+                className={`svg-player-name ${winB ? "winner" : ""} ${pB && !pB.confirmed ? "pending" : ""}`} >
+              {pB ? (pB.isAI ? `🤖 ${pB.name}` : pB.name) : "TBD"}
             </text>
-
-            <rect x={0} y={0} width={MATCH_W} height={MATCH_H}
-                  rx={3} ry={3}
-                  className="svg-match-border" />
+            <rect x ={0} y={0} width={MATCH_W} height={MATCH_H}
+                rx={3} ry={3}
+                className="svg-match-border"
+            />
         </g>
     );
 }
@@ -158,10 +158,10 @@ function ConnectorLines({ boxes }: { boxes: MatchBox[][] }) {
 
                 lines.push(
                     <g key={`conn-${r}-${i}`}>
-                        <line x1={fromX} y1={topY} x2={midX} y2={topY} className="svg-connector" />
-                        <line x1={fromX} y1={botY} x2={midX} y2={botY} className="svg-connector" />
-                        <line x1={midX} y1={topY} x2={midX} y2={botY} className="svg-connector" />
-                        <line x1={midX} y1={destY} x2={toX} y2={destY} className="svg-connector" />
+                        <line x1={fromX} y1={topY} x2={midX} y2={topY} className="svg-connector"/>
+                        <line x1={fromX} y1={botY} x2={midX} y2={botY} className="svg-connector"/>
+                        <line x1={midX} y1={topY} x2={midX} y2={botY} className="svg-connector"/>
+                        <line x1={midX} y1={destY} x2={toX} y2={destY} className="svg-connector"/>
                     </g>
                 );
             } else if (topBox) {
@@ -169,12 +169,11 @@ function ConnectorLines({ boxes }: { boxes: MatchBox[][] }) {
                 const toX = currBox.x;
                 const lineY = topBox.y + MATCH_H / 2;
                 lines.push(
-                    <line key={`conn-${r}-${i}`} x1={fromX} y1={lineY} x2={toX} y2={lineY} className="svg-connector" />
+                    <line key={`conn-${r}-${i}`} x1={fromX} y1={lineY} x2={toX} y2={lineY} className="svg-connector"/>
                 );
             }
         });
     }
-
     return <>{lines}</>;
 }
 
@@ -192,7 +191,7 @@ export default function TournamentBracket({
     const displayName = tournamentName || `Tournament #${tournamentId}`;
 
     const sanitizeName = (value: string): string => {
-        return value.replace(/\s/g, "").replace(/[^\x21-\x7E]/g, "").slice(0, 20);
+        return value.replace(/[^\x20-\x7E]/g, "").trim().slice(0, 20);
     };
 
     const handleNameChange = (value: string) => {
@@ -201,13 +200,12 @@ export default function TournamentBracket({
 
     const handleNameSubmit = () => {
         const clean = sanitizeName(nameInput);
-        if (clean.length > 0) {
+        if (clean.length > 0)
             onChangeName(clean);
-        }
         setEditingName(false);
     };
 
-    const rounds = matches.length > 0 ? Math.max(...matches.map((m) => m.round), 0) : 0;
+    const rounds = matches.length > 0 ? Math.max(...matches.map((m) => m.round), 0): 0;
     const matchesByRound: TournamentMatch[][] = [];
     for (let r = 1; r <= rounds; r++)
         matchesByRound.push(matches.filter((m) => m.round === r).sort((a, b) => a.position - b.position));
@@ -219,24 +217,28 @@ export default function TournamentBracket({
         return `Tour ${round}`;
     };
 
-    const hasNoMatches = matches.length === 0;
+    const hasNoMatches = matches.length == 0;
 
     const layout = useMemo(() => {
-        if (matchesByRound.length === 0) return [];
+        if (matchesByRound.length === 0)
+            return [];
         return buildLayout(matchesByRound);
     }, [matches]);
 
     const svgWidth = useMemo(() => {
-        if (layout.length === 0) return 0;
+        if (layout.length === 0)
+            return 0;
         return layout.length * (MATCH_W + ROUND_GAP) - ROUND_GAP + 20;
     }, [layout]);
 
     const svgHeight = useMemo(() => {
-        if (layout.length === 0) return 0;
+        if (layout.length === 0)
+            return 0;
         let maxY = 0;
         layout.forEach((round) => {
             round.forEach((box) => {
-                if (box.y + MATCH_H > maxY) maxY = box.y + MATCH_H;
+                if (box.y + MATCH_H > maxY)
+                    maxY = box.y + MATCH_H;
             });
         });
         return maxY + 40;
@@ -247,8 +249,8 @@ export default function TournamentBracket({
             <div className="tournament-header">
                 {editingName ? (
                     <div className="tournament-name-edit">
-                        <input  type="text"
-                                value={nameInput}
+                        <input  type="text" 
+                                value={nameInput} 
                                 onChange={(e) => handleNameChange(e.target.value)}
                                 maxLength={20}
                                 placeholder="Nom du tournoi"
@@ -281,31 +283,31 @@ export default function TournamentBracket({
                     )}
                 </div>
             ) : (
-                <div className="bracket-svg-wrapper">
-                    <div className="bracket-round-headers">
-                        {matchesByRound.map((_, idx) => (
-                            <div key={idx} className="round-title"
-                                 style={{ width: MATCH_W, marginRight: ROUND_GAP }}>
-                                {getRoundName(idx + 1, rounds)}
-                            </div>
-                        ))}
+                    <div className="bracket-svg-wrapper">
+                        <div className="bracket-round-headers">
+                            {matchesByRound.map((_, idx) => (
+                                <div key={idx} className="round-title"
+                                    style={{ width: MATCH_W, marginRight: ROUND_GAP }}>
+                                  {getRoundName(idx + 1, rounds)}
+                                </div>
+                            ))}
+                        </div>
+                        <div className="bracket-svg-scroll">
+                            <svg width={svgWidth} height={svgHeight}
+                                viewBox={`0 0 ${svgWidth} ${svgHeight}`}
+                                className="bracket-svg">
+                              <ConnectorLines boxes={layout}/>
+                              {layout.map((roundBoxes, rIdx) =>
+                                    roundBoxes.map((box, mIdx) =>(
+                                        <MatchSVG key={`${rIdx}-${mIdx}`} box={box}/>
+                                    ))
+                                )}
+                            </svg>
+                        </div>
                     </div>
-                    <div className="bracket-svg-scroll">
-                        <svg width={svgWidth} height={svgHeight}
-                             viewBox={`0 0 ${svgWidth} ${svgHeight}`}
-                             className="bracket-svg">
-                            <ConnectorLines boxes={layout} />
-                            {layout.map((roundBoxes, rIdx) =>
-                                roundBoxes.map((box, mIdx) => (
-                                    <MatchSVG key={`${rIdx}-${mIdx}`} box={box} />
-                                ))
-                            )}
-                        </svg>
-                    </div>
-                </div>
-            )}
+                )}
 
-            <button className="tournament-start-btn" onClick={onStart}>Jouer</button>
+                <button className="tournament-start-btn" onClick={onStart}>Jouer</button>
         </div>
     );
 }

@@ -44,7 +44,7 @@ export default function GameBox({
             name: currentUser.name,
             isAI: false,
             confirmed: true,
-        } : null;
+        }: null;
 
         let allPlayers: TournamentPlayer[];
         if (tournamentPlayers.length > 0) {
@@ -54,13 +54,13 @@ export default function GameBox({
             allPlayers = [
                 ...(meAsPlayer ? [meAsPlayer] : []),
                 ...invitedPlayers
-                    .filter((p) => p.id !== currentUser?.id)
-                    .map((p) => ({
-                        id: p.id,
-                        name: p.name,
-                        isAI: false,
-                        confirmed: p.confirmed,
-                    })),
+                .filter((p) => p.id !== currentUser?.id)
+                .map((p) => ({
+                    id: p.id,
+                    name: p.name,
+                    isAI: false,
+                    confirmed: p.confirmed,
+                })),
             ];
         }
 

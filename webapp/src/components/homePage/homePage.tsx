@@ -9,9 +9,6 @@ import { useTournament } from '../../hooks/useTournament';
 import { connectSocket } from "../../socket";
 import { GameCardType, GameState } from '../share/sharedTypes';
 
-// import { useGameInvites } from '../../hooks/useGameInvites';
-// import { useNotifications } from "../../hooks/useNotifications";
-
 import "../../style/homePage/homepage.css";
 import "../../style/homePage/settings.css";
 
@@ -58,8 +55,6 @@ export default function HomePage() {
   
   const [showSettings, setShowSettings] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  // const gameInvites = useGameInvites();
-  // const { notification, clear } = useNotifications();
 
   const refreshUser = async () => {
     try {
@@ -206,8 +201,6 @@ export default function HomePage() {
             : tournament.invitedPlayers.find(p => p.id === invitePlayerId)?.name || "Adversaire"
           }
           invitePlayerId={invitePlayerId}
-          
-          // onGameEnd={() => { tournament.exitGame(); }}
         />
       ) : (
         <div className="boxes-wrapper">

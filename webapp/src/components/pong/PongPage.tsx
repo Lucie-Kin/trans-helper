@@ -32,12 +32,12 @@ export default function PongPage() {
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onExit();
+      if (e.key === "Escape")
+        onExit();
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
-
 
   return (
     <div style={{ display: "flex", justifyContent: "center", padding: 24 }}>

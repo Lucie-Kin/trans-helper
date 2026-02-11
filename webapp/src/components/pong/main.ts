@@ -106,8 +106,6 @@ export function startPong(
     if (e.key === "ArrowUp" || e.key === "ArrowDown") pressed.add(e.key);
 
     if (e.key === "p" && !gameEnded) paused = !paused;
-    console.log("e.key: \"", e.key,"\"");
-    console.log("e.code: \"", e.code,"\"");
   };
 
   const onKeyUp = (e: KeyboardEvent) => {

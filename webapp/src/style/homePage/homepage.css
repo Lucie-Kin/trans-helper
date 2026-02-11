@@ -108,7 +108,7 @@ h4 {
   z-index: 1000;
   font-size: 1.2rem;
   color: rgb(202, 206, 218);
-  font-family: "Chakra_bold";
+  font-family: "Chakra_bold", sans-serif;
 }
 
 .profile-box {
@@ -157,7 +157,7 @@ h4 {
   border-radius: 12px;
   padding: 0.4rem;
   width: 180px;
-  font-family: "Chakra_bold";
+  font-family: "Chakra_bold", sans-serif;
 }
 
 .profile-menu button {

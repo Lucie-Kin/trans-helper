@@ -31,19 +31,13 @@ export function useTournament(myUserId: number) {
             if (res.ok) {
                 const data = await res.json();
                 if (Array.isArray(data)) {
-                    const normalizeStatus = (s: string): "waiting" | "in_progress" | "finished" => {
-                        const lower = s.toLowerCase();
-                        if (lower.includes("progress") || lower.includes("started")) return "in_progress";
-                        if (lower.includes("finish") || lower.includes("complete") || lower.includes("ended")) return "finished";
-                        return "waiting";
-                    };
                     setAvailableTournaments(
                         data.map((t: any) => ({
                             id: t.id,
                             name: t.title || `Tournament #${t.id}`,
                             playerCount: t.playerCount || 0,
                             maxPlayers: t.maxPlayers || 8,
-                            status: normalizeStatus(t.status || "waiting"),
+                            status: t.status || "WAITING_FOR_PLAYERS",
                             organizerName: t.organizerName || "Unknown",
                         }))
                     );
@@ -62,22 +56,16 @@ export function useTournament(myUserId: number) {
             ]);
             if (bracketRes.ok) {
                 const bracket = await bracketRes.json();
-                const mapPlayer = (p: any): TournamentPlayer | undefined => {
-                    if (!p || !p.playerId) return undefined;
-                    return {
-                        id: Number(p.playerId),
-                        name: p.login || p.displayName || `Player ${p.playerId}`,
-                        isAI: !!p.isAI,
-                        confirmed: true,
-                    };
-                };
                 const matches: TournamentMatch[] = (bracket.matches || []).map((m: any) => ({
                     id: `${m.roundIndex}-${m.bracketPosition}`,
                     round: m.roundIndex,
                     position: m.bracketPosition,
-                    playerA: mapPlayer(m.playerA),
-                    playerB: mapPlayer(m.playerB),
-                    winner: m.winnerId ? Number(m.winnerId) : undefined,
+                    playerAId: m.playerA?.playerId ? Number(m.playerA.playerId) : undefined,
+                    playerBId: m.playerB?.playerId ? Number(m.playerB.playerId) : undefined,
+                    winnerId: m.winnerId ? Number(m.winnerId) : undefined,
+                    scoreA: m.scoreA,
+                    scoreB: m.scoreB,
+                    status: m.status,
                 }));
                 setTournamentMatches(matches);
             }

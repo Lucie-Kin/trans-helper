@@ -5,7 +5,7 @@ export type TournamentInfo = {
     name: string;
     playerCount: number;
     maxPlayers: number;
-    status: "waiting" | "in_progress" | "finished";
+    status: "waiting" | "in_progree" | "finished";
     organizerName: string;
 };
 
@@ -17,7 +17,7 @@ type Props = {
 export default function TournamentList({ tournaments, onJoin }: Props) {
     const activeTournaments = tournaments.filter((t) => t.status !== "finished");
 
-    if (activeTournaments.length === 0) {
+    if (tournaments.length === 0) {
         return (
             <div className="tournament-list-empty">
                 <div className="empty-icon">🏆</div>
@@ -43,7 +43,7 @@ export default function TournamentList({ tournaments, onJoin }: Props) {
                                 Rejoindre
                             </button>
                         )}
-                        {t.status === "in_progress" && (
+                        {t.status === "in_progree" && (
                             <span className="tournament-status-badge">En cours</span>
                         )}
                     </div>

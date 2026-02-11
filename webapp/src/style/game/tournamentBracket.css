@@ -38,7 +38,7 @@
 
 .tournament-name-edit{
     display: flex;
-    font-family: "Chakra_bold";
+    font-family: "Chakra_bold", sans-serif;
     gap: 0.5rem;
 }
 
@@ -49,7 +49,7 @@
     background: rgba(255, 255, 255, 0.1);
     color: white;
     font-size: 1rem;
-    font-family: "Chakra_bold";
+    font-family: "Chakra_bold", sans-serif;
 }
 
 .tournament-name-edit button{
@@ -63,11 +63,13 @@
 
 .tournament-players-count{
     font-size: 1rem;
-    font-family: "Chakra";
+    font-family: "Chakra", sans-serif;
     color: rgba(200, 220, 255, 0.7);
 }
 
-.bracket-svg-wrapper{
+/* SVG */
+
+.bracket-svg-wrapper {
     display: flex;
     flex-direction: column;
     flex: 1;
@@ -75,7 +77,7 @@
     overflow: hidden;
 }
 
-.bracket-round-headers{
+.bracket-round-headers {
     display: flex;
     padding-bottom: 0.4rem;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
@@ -87,7 +89,7 @@
     font-weight: 600;
     color: rgba(180, 200, 255, 0.8);
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.5rem;
     text-align: center;
     flex-shrink: 0;
 }
@@ -98,64 +100,66 @@
     min-height: 0;
 }
 
-.bracket-svg{
+.bracket-svg {
     display: block;
 }
 
-.svg-match-bg{
+.svg-match-bg {
     fill: rgba(30, 32, 48, 0.95);
 }
 
-.svg-match-border{
+.svg-match-border {
     fill: none;
     stroke: rgba(80, 110, 170, 0.4);
     stroke-width: 1;
 }
 
-.svg-seed-bg{
+.svg-seed-bg {
     fill: rgba(50, 55, 80, 0.9);
 }
 
-.svg-seed-text{
+.svg-seed-text {
     fill: rgba(180, 200, 255, 0.6);
     font-size: 10px;
     font-family: "Chakra", sans-serif;
 }
 
-.svg-player-bg{
+.svg-player-bg {
     fill: rgba(35, 38, 55, 0.9);
 }
 
-.svg-player-bg.winner{
+.svg-player-bg.winner {
     fill: rgba(40, 80, 55, 0.8);
 }
 
-.svg-player-name{
+.svg-player-name {
     fill: rgba(220, 225, 240, 0.9);
     font-size: 11px;
     font-family: "Chakra", sans-serif;
 }
 
-.svg-player-name.winner{
+.svg-player-name.winner {
     fill: rgba(100, 255, 150, 1);
     font-weight: 600;
 }
 
-.svg-player-name.pending{
+.svg-player-name.pending {
     fill: rgba(180, 190, 210, 0.5);
     font-style: italic;
 }
 
-.svg-player-divider{
+.svg-player-divider {
     stroke: rgba(80, 110, 170, 0.25);
     stroke-width: 1;
 }
 
-.svg-connector{
+.svg-connector {
     stroke: rgba(100, 140, 200, 0.35);
     stroke-width: 1.5;
     fill: none;
 }
+
+/* SVG */
 
 .tournament-start-btn{
     margin-top: 1rem;
@@ -165,7 +169,7 @@
     border-radius: 10px;
     color: white;
     font-size: 1.4rem;
-    font-family: "Chakra_bold";
+    font-family: "Chakra_bold", sans-serif;
     cursor: pointer;
     transition: all 0.2s ease;
     align-self: center;
@@ -196,14 +200,14 @@
 
 .bracket-empty-text{
     font-size: 1.2rem;
-    font-family: "Chakra_bold";
+    font-family: "Chakra_bold", sans-serif;
     color: rgba(255, 255, 255, 0.8);
     margin-bottom: 0.5rem;
 }
 
 .bracket-empty-hint{
     font-size: 1rem;
-    font-family: "Chakra";
+    font-family: "Chakra", sans-serif;
     color: rgba(180, 190, 210, 0.6);
     margin-bottom: 1rem;
 }
@@ -221,7 +225,7 @@
     background: rgba(60, 70, 100, 0.6);
     border-radius: 6px;
     font-size: 0.8rem;
-    font-family: "Chakra_bold";
+    font-family: "Chakra_bold", sans-serif;
     color: rgba(255, 255, 255, 0.85);
 }
 
@@ -232,6 +236,6 @@
 .player-tag.pending{
     opacity: 0.5;
     font-style: italic;
-    font-family: "Chakra_bold";
+    font-family: "Chakra_bold", sans-serif;
     font-size: 0.85rem;
 }

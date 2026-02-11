@@ -55,12 +55,12 @@
   background: #33ad60f8; 
   color: #ffffff;
   border-bottom-right-radius: 6px;
-  font-family: "Chakra"
+  font-family: "Chakra", sans-serif;
 }
 
 .message-bubble.other {
   background: #ffffff;
   color: #0f172a;
   border-bottom-left-radius: 6px;
-  font-family: "Chakra"
+  font-family: "Chakra", sans-serif;
 }

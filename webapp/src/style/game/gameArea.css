@@ -28,7 +28,6 @@
     background: yellow;
 }
 
-/* background: linear-gradient(135deg, rgba(20, 60, 120, 0.9), rbga(10, 40, 80, 0.95)); */
 .game-placeholder{
     width: min(90vw, 1100px);
     height: min(75vw, 650px);
