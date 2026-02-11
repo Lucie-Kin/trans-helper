@@ -27,29 +27,35 @@ export default function GameArea({
         if (!canvasRef.current) return;
 
         const canvas = canvasRef.current;
-        
-        const rect = canvas.getBoundingClientRect();
-        canvas.width = rect.width;
-        canvas.height = rect.height;
+        let game: ReturnType<typeof startPong>;
+        let cancelled = false;
 
-        const game = startPong(canvas, gameCardType, player1Name, player2Name, invitePlayerId, onGameEnd);
-        if (!game) return;
+        const init = async () => {
+            await document.fonts.ready;
+            if (cancelled) return;
 
-        const onBlur = () => game.setPaused(true);
-        const onFocus = () => game.setPaused(false);
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
 
+            game = startPong(canvas, gameCardType, player1Name, player2Name, invitePlayerId, onGameEnd);
+        };
+
+        const onBlur = () => game?.setPaused(true);
+        const onFocus = () => game?.setPaused(false);
         const onVisibilityChange = () => {
-            if (document.hidden)
-                game.setPaused(true);
-            else
-                game.setPaused(false);
+            if (document.hidden) game?.setPaused(true);
+            else game?.setPaused(false);
         };
 
         window.addEventListener("blur", onBlur);
         window.addEventListener("focus", onFocus);
         document.addEventListener("visibilitychange", onVisibilityChange);
 
+        init();
+
         return () => {
+            cancelled = true;
             game?.cleanup();
             window.removeEventListener("blur", onBlur);
             window.removeEventListener("focus", onFocus);

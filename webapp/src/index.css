@@ -61,11 +61,11 @@ button:focus-visible {
 }
 
 @font-face {
-  font-family: "Chakra", sans-serif;
+  font-family: "Chakra";
   src: url(./assets/font/ChakraPetch-Regular.ttf);
 }
 @font-face {
-  font-family: "Chakra_bold", sans-serif;
+  font-family: "Chakra_bold";
   src: url(./assets/font/ChakraPetch-Bold.ttf);
 }
 
