@@ -55,6 +55,9 @@ A React/Vite frontend application with authentication features. A web applicatio
 - **ELO**: Noob (0-1199, K=32), Mid (1200-1599, K=24), Pro (1600+, K=16)
 
 ## Recent Changes
+- 2026-02-11: "Fermer le tournoi" button replaces "Jouer" when all matches done; clears tournament state
+- 2026-02-11: Fixed exitGame clearing tournament state prematurely (checks tournamentMatches.length)
+- 2026-02-11: Victory screen (renderGameOver) now displays for all tournament matches including final
 - 2026-02-11: "Jouer" button starts first unplayed tournament match; TBD players play as AI
 - 2026-02-11: Match results recorded in bracket with winner advancement to next round
 - 2026-02-11: Fixed TournamentMatch shape: fetchTournamentBracket now creates proper playerA/playerB objects
