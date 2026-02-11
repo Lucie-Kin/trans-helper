@@ -156,7 +156,6 @@ export default function HomePage() {
 
   const exitGame = () => {
     if (tournament.activeTournamentMatch || tournament.tournamentMatches.length > 0) {
-      tournament.clearActiveTournamentMatch();
       setGameState(GameState.Idle);
       return;
     }

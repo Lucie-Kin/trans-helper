@@ -314,6 +314,9 @@ export function useTournament(myUserId: number) {
             });
         });
 
+        setTimeout(() => {
+            setActiveTournamentMatch(null);
+        }, 5000);
     }, [activeTournamentMatch]);
 
     const startTournament = useCallback(async () => {
@@ -384,10 +387,6 @@ export function useTournament(myUserId: number) {
 
     const exitGame = useCallback(() => {
         setGameState(GameState.Idle);
-    }, []);
-
-    const clearActiveTournamentMatch = useCallback(() => {
-        setActiveTournamentMatch(null);
     }, []);
 
     const clearInvites = useCallback(() => {
