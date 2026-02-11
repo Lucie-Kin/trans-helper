@@ -8,7 +8,12 @@ export async function tournamentRoutes(fastify: FastifyInstance) {
     });
 
     fastify.post('/', { preHandler: [fastify.authenticate] }, createTournament);
-    
+
+    fastify.get('/list', async (_request, reply) => {
+        const tournaments = await tournamentManager.listActiveTournaments();
+        return reply.send(tournaments);
+    });
+
     fastify.get('/:id', getTournament);
 
     fastify.get('/:id/bracket', async (request, reply) => {

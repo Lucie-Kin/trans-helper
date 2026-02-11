@@ -163,8 +163,9 @@ export class TournamentRepository {
     }
     async getActiveTournaments() {
         return this.db.all(
-            `SELECT * FROM tournament WHERE status = ?`,
-            TournamentStatus.WAITING_FOR_PLAYERS
+            `SELECT * FROM tournament WHERE status IN (?, ?)`,
+            TournamentStatus.WAITING_FOR_PLAYERS,
+            TournamentStatus.IN_PROGRESS
         );
     }
     async getTournamentsByPlayer(playerId: string) {

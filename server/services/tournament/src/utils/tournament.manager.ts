@@ -19,6 +19,22 @@ export class TournamentManager {
     async getTournament(id:string) {
         return this.repo.getTournamentById(id);
     }
+    async listActiveTournaments() {
+        const tournaments = await this.repo.getActiveTournaments();
+        const result = [];
+        for (const t of tournaments) {
+            const playerCount = await this.repo.getParticipantCount(t.id);
+            result.push({
+                id: t.id,
+                title: t.title,
+                organizerId: t.organizerId ?? t.organizer_id,
+                status: t.status,
+                playerCount,
+                maxPlayers: 8,
+            });
+        }
+        return result;
+    }
     async getTournamentInfo(id: string) {
         const t = await this.repo.getTournamentById(id);
         if (!t)
