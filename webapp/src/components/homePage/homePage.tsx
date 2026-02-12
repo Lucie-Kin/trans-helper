@@ -235,7 +235,7 @@ export default function HomePage() {
                 setGameState(GameState.Idle);
               }}
               onChangeTournamentName={tournament.changeTournamentName}
-              onNameSubmit={(_matchId, _player, name) => tournament.addGuestPlayer(name)}
+              onNameSubmit={tournament.handleNameSubmit}
               tournamentId={tournament.tournamentId}
               tournamentName={tournament.tournamentName}
               tournamentPlayers={tournament.tournamentPlayers}

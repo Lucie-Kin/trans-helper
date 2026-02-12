@@ -67,8 +67,6 @@ export default function GameBox({
                 })),
             ];
         }
-        
-        console.log("PLAYERS SENT TO BRACKET:", allPlayers.map(p => p.name));
 
         return (
             <div className="game-box-container">
