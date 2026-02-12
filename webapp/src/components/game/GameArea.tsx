@@ -44,8 +44,11 @@ export default function GameArea({
         const onBlur = () => game?.setPaused(true);
         const onFocus = () => game?.setPaused(false);
         const onVisibilityChange = () => {
-            if (document.hidden) game?.setPaused(true);
-            else game?.setPaused(false);
+            if (document.hidden)
+                game?.setPaused(true);
+            else
+                game?.setPaused(false);
+
         };
 
         window.addEventListener("blur", onBlur);
@@ -70,14 +73,6 @@ export default function GameArea({
                     className="pong-canvas"
                 />
             </div>
-            {/* <button className="game-exit-btn"
-                onClick={() => {
-                    const el = document.querySelector(".game-area");
-                    el?.requestFullscreen();
-                }}
-            >
-                Fullscreen
-            </button> */}
             <button className="game-exit-btn" onClick={onExit}>
                 Quitter la partie
             </button>

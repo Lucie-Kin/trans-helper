@@ -5,7 +5,7 @@
     height: 100%;
     min-width: 0;
     padding: 1rem;
-    overflow: hidden;
+    overflow: auto;
 }
 
 .tournament-header{

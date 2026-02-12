@@ -26,6 +26,7 @@
         0 0 30px rgba(168, 85, 247, 0.4),
         inset 0 0 20px rgba(0, 0, 0, 0.8);
     background: yellow;
+    font-family: "Chakra_bold";
 }
 
 .game-placeholder{

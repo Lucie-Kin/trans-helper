@@ -27,8 +27,6 @@ export default function ChatBox({ myUserId, onGameInviteSent, onGameInviteAccept
   const [blockedByMe, setBlockedByMe] = useState<number[]>([]);
   const [blockedMe, setBlockedMe] = useState<number[]>([]);
 
-  //const [isVisible] = useState<boolean>; //PROP
-
   useEffect(() => {
     const s = getSocket();
 
@@ -68,28 +66,6 @@ export default function ChatBox({ myUserId, onGameInviteSent, onGameInviteAccept
     activeUserId !== null && blockedByMe.includes(activeUserId);
   const isBlockedByThem =
     activeUserId !== null && blockedMe.includes(activeUserId);
-
-  // const handleInvite = (userId: number) => {
-  //   setUsers((prev) =>
-  //     prev.map((u) =>
-  //       u.id === userId
-  //         ? {
-  //             ...u,
-  //             inviteStatus:
-  //               u.inviteStatus === "none" || u.inviteStatus === "rejected"
-  //                 ? "inviting"
-  //                 : "none",
-  //         }
-  //         : u
-  //     )
-  //   );
-  //   const user = users.find((u) => u.id === userId);
-  //   if (!user) return;
-  //   if (user.inviteStatus === "none" || user.inviteStatus === "rejected")
-  //     socket.emit("game:invite", { targetId: userId });
-  //   else
-  //     socket.emit("game:invite:cancel", { targetId: userId });
-  // };
 
   if (!isConnected) {
     return <div className="chat-placeholder">Connexion au chat...</div>;

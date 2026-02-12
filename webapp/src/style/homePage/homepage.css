@@ -81,6 +81,7 @@ h4 {
   display: flex;
   gap: 2rem;
   padding: 2rem;
+  margin-bottom: 0.5rem;
   justify-content: center;
   align-items: stretch;
   min-height: 0;

@@ -57,8 +57,7 @@ services:
       - "8081:8080" #dashboard
     volumes:
       # - /var/run/docker.sock:/var/run/docker.sock:ro
-      # - /var/run/docker.sock:/var/run/docker.sock:ro,z
-      - ${DOCKER_SOCK}:/var/run/docker.sock:ro,z
+      - $DOCKER_SOCK:/var/run/docker.sock:ro
       - ./reverse-proxy/certs:/certs:ro
       - ./reverse-proxy/dynamics:/dynamics:ro
       - ./reverse-proxy/auth:/auth:ro
@@ -75,11 +74,9 @@ services:
       - "3001"
     labels:
       - "traefik.enable=true"
-
       - "traefik.http.routers.auth.rule=Host(`localhost`) && PathPrefix(`/auth`)"
       - "traefik.http.routers.auth.entrypoints=websecure"
       - "traefik.http.routers.auth.tls=true"
-
       - "traefik.http.routers.auth.priority=100"
       - "traefik.http.services.auth.loadbalancer.server.port=3001"
       - "traefik.http.middlewares.metrics-auth.basicauth.users=prometheus:$$apr1$$qwerty$$mU8gq/R4L.0ZVmZJKzzWb0"

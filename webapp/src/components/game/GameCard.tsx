@@ -71,11 +71,10 @@ export default function GameCard({
                         )}
                         <div className={`game-card-banner ${type}`}>
                             <div className="game-card-title">{getTitle()}</div>
-                            <div className="game-card-subtitle">{getSubtitle()}</div>
+                            <div className={`game-card-${waiting ? "waiting" : "subtitle"}`}>
+                                {waiting ? "En attente de confirmation...": getSubtitle()}
+                            </div>
                         </div>
-                        {waiting && (
-                            <div className="game-card-waiting">En attente de confirmation...</div>
-                        )}
                     </div>
                     <div className="game-card-fx">
                         <span className="spark s1"></span>

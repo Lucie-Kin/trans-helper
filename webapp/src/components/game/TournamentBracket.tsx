@@ -1,11 +1,15 @@
-import React, { useMemo, useState } from "react";
+import { useMemo } from "react";
+// import React from "react";
+// import { useState } from "react";
 import "../../style/game/tournamentBracket.css";
+import { useEditableName } from "../../hooks/useEditableName";
 
 export type TournamentPlayer = {
     id: number;
     name: string;
     isAI: boolean;
     confirmed: boolean;
+    isGuest?: boolean;
 };
 
 export type TournamentMatch = {
@@ -28,6 +32,7 @@ type Props = {
     onStart: () => void;
     onClose: () => void;
     onChangeName: (name: string) => void;
+    onNameSubmit: (matchId: number, player: "A" | "B", name: string) => void;
 };
 
 const MATCH_W = 200;
@@ -82,7 +87,10 @@ function buildLayout(matchesByRound: TournamentMatch[][]) {
     return boxes;
 }
 
-function MatchSVG({ box }: { box: MatchBox }) {
+function MatchSVG({
+    box, 
+    onNameSubmit,
+}: { box: MatchBox; onNameSubmit?: (matchId: number, player: "A" | "B", name: string) => void }) {
     const { match, x, y } = box;
     const pA = match.playerA;
     const pB = match.playerB;
@@ -90,8 +98,29 @@ function MatchSVG({ box }: { box: MatchBox }) {
     const winA = match.winner !== undefined && match.winner === pA?.id;
     const winB = match.winner !== undefined && match.winner === pB?.id;
 
+    const editableA = match.round === 1 && (!pA || pA.isGuest);
+    const editableB = match.round === 1 && (!pB || pB.isGuest);
+
+    const nameA = useEditableName("", (newName) => {
+        if (onNameSubmit)
+            onNameSubmit(match.id, "A", newName);
+    });
+    
+    const nameB = useEditableName("", (newName) => {
+        if (onNameSubmit)
+            onNameSubmit(match.id, "B", newName);
+    });
+
     return (
-        <g transform={`translate(${x}, ${y})`}>
+        <g
+            transform={`translate(${x}, ${y})`}
+            onMouseDown={() => {
+                if (nameA.editing)
+                    nameA.handleSubmit();
+                if (nameB.editing)
+                    nameB.handleSubmit();
+            }}
+        >
             <rect x ={0} y={0} width={MATCH_W} height={MATCH_H}
                 rx={3} ry={3}
                 className="svg-match-bg"
@@ -107,10 +136,45 @@ function MatchSVG({ box }: { box: MatchBox }) {
             <rect x ={SEED_W} y={0} width={MATCH_W - SEED_W} height={PLAYER_H}
                 className={`svg-player-bg ${winA ? "winner" : ""}`}
             />
-            <text x ={SEED_W + 6} y={PLAYER_H / 2 + 4}
-                className={`svg-player-name ${winA ? "winner" : ""} ${pA && !pA.confirmed ? "pending" : ""}`} >
-              {pA ? (pA.isAI ? `🤖 ${pA.name}` : pA.name) : "TBD"}
-            </text>
+
+            {editableA && nameA.editing ? (
+                <foreignObject
+                    x={SEED_W + 2}
+                    y={2}
+                    width={MATCH_W - SEED_W - 4}
+                    height={PLAYER_H - 4}
+                >
+                    <input
+                        style={{
+                            width: "100%",
+                            height: "100%",
+                            border: "none",
+                            padding: "1px 4px",
+                            fontSize: 12,
+                        }}
+                        autoFocus
+                        placeholder="Alias"
+                        value={nameA.input}
+                        onChange={(e) => nameA.handleChange(e.target.value)}
+                        onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                                e.preventDefault();
+                                nameA.handleSubmit();
+                            }
+                        }}
+                        onMouseDown={(e) => e.stopPropagation()}
+                    />
+                </foreignObject>
+            ) : (
+                <text x ={SEED_W + 6} y={PLAYER_H / 2 + 4}
+                    className={`svg-player-name ${winA ? "winner" : ""} ${pA && !pA.confirmed ? "pending" : ""}`}
+                    onClick={() => editableA && nameA.setEditing(true)}
+                    style={{ cursor: editableA ? "pointer" : "" }}
+                >
+                  {pA ? (pA.isAI ? `🤖 ${pA.name}` : pA.isGuest ? `👤 ${pA.name}` : pA.name) : "TBD"}
+                </text>
+            )}
+
             <line x1={0} y1={PLAYER_H} x2={MATCH_W} y2={PLAYER_H}
                 className="svg-player-divider"
             />
@@ -125,10 +189,39 @@ function MatchSVG({ box }: { box: MatchBox }) {
             <rect x ={SEED_W} y={PLAYER_H} width={MATCH_W - SEED_W} height={MATCH_H - PLAYER_H}
                 className={`svg-player-bg ${winB ? "winner" : ""}`}
             />
-            <text x ={SEED_W + 6} y={PLAYER_H + (MATCH_H - PLAYER_H) / 2 + 4}
-                className={`svg-player-name ${winB ? "winner" : ""} ${pB && !pB.confirmed ? "pending" : ""}`} >
-              {pB ? (pB.isAI ? `🤖 ${pB.name}` : pB.name) : "TBD"}
-            </text>
+
+            {editableB && nameB.editing ? (
+                <foreignObject
+                    x={SEED_W + 2}
+                    y={PLAYER_H + 2}
+                    width={MATCH_W - SEED_W - 4}
+                    height={PLAYER_H - 4}
+                >
+                    <input
+                        style={{
+                            width: "100%",
+                            height: "100%",
+                            border: "none",
+                            padding: "0 4px",
+                            fontSize: 12,
+                        }}
+                        autoFocus
+                        placeholder="Alias"
+                        value={nameB.input}
+                        onChange={(e) => nameB.handleChange(e.target.value)}
+                        onBlur={nameB.handleSubmit}
+                        onKeyDown={(e) => e.key === "Enter" && nameB.handleSubmit()}
+                    />
+                </foreignObject>
+            ) : (
+                <text x ={SEED_W + 6} y={PLAYER_H + (MATCH_H - PLAYER_H) / 2 + 4}
+                    className={`svg-player-name ${winB ? "winner" : ""} ${pB && !pB.confirmed ? "pending" : ""}`}
+                    onClick={() => editableB && nameB.setEditing(true)}
+                    style={{ cursor: editableB ? "pointer" : "" }}
+                >
+                  {pB ? (pB.isAI ? `🤖 ${pB.name}` : pB.isGuest ? `👤 ${pB?.name}`: pB.name) : "TBD"}
+                </text>
+            )}
             <rect x ={0} y={0} width={MATCH_W} height={MATCH_H}
                 rx={3} ry={3}
                 className="svg-match-border"
@@ -188,26 +281,10 @@ export default function TournamentBracket({
     onStart,
     onClose,
     onChangeName,
+    onNameSubmit,
 }: Props) {
-    const [editingName, setEditingName] = useState(false);
-    const [nameInput, setNameInput] = useState(tournamentName || "");
 
-    const displayName = tournamentName || `Tournament #${tournamentId}`;
-
-    const sanitizeName = (value: string): string => {
-        return value.replace(/[^\x20-\x7E]/g, "").trim().slice(0, 20);
-    };
-
-    const handleNameChange = (value: string) => {
-        setNameInput(sanitizeName(value));
-    };
-
-    const handleNameSubmit = () => {
-        const clean = sanitizeName(nameInput);
-        if (clean.length > 0)
-            onChangeName(clean);
-        setEditingName(false);
-    };
+    const displayNameHook = useEditableName(tournamentName || "", onChangeName);
 
     const generatePlaceholderMatches = (playerList: TournamentPlayer[]): TournamentMatch[] => {
         if (playerList.length < 2) return [];
@@ -236,7 +313,27 @@ export default function TournamentBracket({
         return generated;
     };
 
-    const effectiveMatches = matches.length > 0 ? matches : generatePlaceholderMatches(players);
+    const playersFromMatches = useMemo(() => {
+        const map = new Map<number, TournamentPlayer>();
+
+        matches.forEach((m) => {
+            if (m.playerA)
+                map.set(m.playerA.id, m.playerA);
+            if (m.playerB)
+                map.set(m.playerB.id, m.playerB);
+        });
+
+        return Array.from(map.values());
+    }, [matches]);
+
+    const effectiveMatches = useMemo(() => {
+        if (matches.length > 0)
+            return matches;
+        if (players.length >= 2)
+            return generatePlaceholderMatches(players);
+        return [];
+    }, [matches, players]);
+
     const rounds = effectiveMatches.length > 0 ? Math.max(...effectiveMatches.map((m) => m.round), 0) : 0;
     const matchesByRound: TournamentMatch[][] = [];
     for (let r = 1; r <= rounds; r++)
@@ -279,24 +376,24 @@ export default function TournamentBracket({
     return (
         <div className="tournament-bracket">
             <div className="tournament-header">
-                {editingName ? (
+                {displayNameHook.editing ? (
                     <div className="tournament-name-edit">
                         <input  type="text" 
-                                value={nameInput} 
-                                onChange={(e) => handleNameChange(e.target.value)}
+                                value={displayNameHook.input} 
+                                onChange={(e) => displayNameHook.handleChange(e.target.value)}
                                 maxLength={20}
                                 placeholder="Nom du tournoi"
                                 autoFocus
                         />
-                        <button onClick={handleNameSubmit}>OK</button>
+                        <button onClick={displayNameHook.handleSubmit}>OK</button>
                     </div>
                 ) : (
-                    <h3 className="tournament-name" onClick={() => setEditingName(true)}>
-                        {displayName}
+                    <h3 className="tournament-name" onClick={() => displayNameHook.setEditing(true)}>
+                        {displayNameHook.input || `Tournament #${tournamentId}`}
                         <span className="edit-hint">✏️</span>
                     </h3>
                 )}
-                <div className="tournament-players-count">{players.length} joueurs</div>
+                <div className="tournament-players-count">{playersFromMatches.length || players.length} joueurs</div>
             </div>
 
             {hasNoMatches ? (
@@ -331,7 +428,11 @@ export default function TournamentBracket({
                               <ConnectorLines boxes={layout}/>
                               {layout.map((roundBoxes, rIdx) =>
                                     roundBoxes.map((box, mIdx) =>(
-                                        <MatchSVG key={`${rIdx}-${mIdx}`} box={box}/>
+                                        <MatchSVG
+                                            key={`${rIdx}-${mIdx}`}
+                                            box={box}
+                                            onNameSubmit={onNameSubmit}
+                                        />
                                     ))
                                 )}
                             </svg>

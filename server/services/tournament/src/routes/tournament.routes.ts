@@ -13,7 +13,7 @@ export async function tournamentRoutes(fastify: FastifyInstance) {
         const tournaments = await tournamentManager.listActiveTournaments();
         return reply.send(tournaments);
     });
-
+    
     fastify.get('/:id', getTournament);
 
     fastify.get('/:id/bracket', async (request, reply) => {

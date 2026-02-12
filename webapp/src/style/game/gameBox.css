@@ -33,7 +33,7 @@
   z-index: 0;
 }
 
-/* pour le reflet sur la card */
+/* card reflection */
 .game-box>* {
   position: relative;
   z-index: 1;

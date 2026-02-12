@@ -65,6 +65,26 @@ export function useTournament(myUserId: number) {
         }
     }, []);
 
+    const addManualPlayerToMatch = useCallback(
+        (matchId: number, slot: "A" | "B", name: string) => {
+
+            const newPlayer: TournamentPlayer = {
+                id: Date.now(),
+                name,
+                isAI: false,
+                confirmed: true,
+                isGuest: true,
+            };
+
+            setTournamentPlayers(prev => {
+                if (prev.find(p => p.id === newPlayer.id))
+                    return prev;
+                return [...prev, newPlayer];
+            });
+        },
+        []
+    );
+
     const fetchTournamentBracket = useCallback(async (id: string) => {
         try {
             const [bracketRes, infoRes] = await Promise.all([
@@ -239,54 +259,128 @@ export function useTournament(myUserId: number) {
         return generated;
     }, []);
 
+    const addGuestPlayer = useCallback((name: string) => {
+        const clean = name.trim();
+        if (!clean) return;
+
+        const newPlayer: TournamentPlayer = {
+            id: Date.now(),
+            name: clean,
+            isAI: false,
+            confirmed: true,
+            isGuest: true,
+        };
+
+        setInvitedPlayers(prev => {
+            if (prev.some(p => p.name === clean))
+                return prev;
+            return [...prev, newPlayer];
+        });
+
+        setTournamentPlayers(prev => {
+            if (prev.some(p => p.id === newPlayer.id))
+                return prev;
+            return [...prev, newPlayer];
+        });
+
+    }, []);
+
     const startTournamentMatch = useCallback((): boolean => {
-        let matches = tournamentMatches;
+        if (tournamentMatches.length === 0)
+            return false;
 
-        if (matches.length === 0 && invitedPlayers.length > 0) {
-            const allPlayers: TournamentPlayer[] = [
-                ...(myUserId ? [{ id: myUserId, name: "Moi", isAI: false, confirmed: true }] : []),
-                ...invitedPlayers
-                    .filter((p) => p.id !== myUserId)
-                    .map((p) => ({ id: p.id, name: p.name, isAI: false, confirmed: p.confirmed })),
-            ];
-            matches = generateBracketMatches(allPlayers);
-            setTournamentMatches(matches);
-        }
-
-        const match = findFirstUnplayedMatch(matches);
-        if (!match) return false;
+        const match = findFirstUnplayedMatch(tournamentMatches);
+        if (!match)
+            return false;
 
         let pA = match.playerA;
         let pB = match.playerB;
 
-        if (!pA || !pB) {
-            const aiPlayerA: TournamentPlayer | undefined = pA ? undefined : { id: -(match.id * 10 + 1), name: "AI", isAI: true, confirmed: true };
-            const aiPlayerB: TournamentPlayer | undefined = pB ? undefined : { id: -(match.id * 10 + 2), name: "AI", isAI: true, confirmed: true };
-
-            if (aiPlayerA || aiPlayerB) {
-                matches = matches.map((m) =>
-                    m.id === match.id
-                        ? { ...m, playerA: aiPlayerA ?? m.playerA, playerB: aiPlayerB ?? m.playerB }
-                        : m
-                );
-                setTournamentMatches(matches);
-                pA = aiPlayerA ?? pA;
-                pB = aiPlayerB ?? pB;
-            }
-        }
-
-        const isAI = (pA?.isAI ?? false) || (pB?.isAI ?? false);
+        if (!pA) pA = {id: -(match.id * 10 + 1), name: "AI", isAI: true, confirmed: true};
+        if (!pB) pB = {id: -(match.id * 10 + 2), name: "AI", isAI: true, confirmed: true};
+       
+        setTournamentMatches(prev => 
+            prev.map(m => m.id === match.id ? {...m, playerA: pA, playerB: pB} : m)
+        );
 
         setActiveTournamentMatch({
             matchId: match.id,
             round: match.round,
             position: match.position,
-            playerAName: pA ? pA.name : "AI",
-            playerBName: pB ? pB.name : "AI",
-            isAIOpponent: isAI,
+            playerAName: pA.name,
+            playerBName: pB.name,
+            isAIOpponent: pA.isAI || pB.isAI,
         });
-        return true;
-    }, [tournamentMatches, invitedPlayers, myUserId, findFirstUnplayedMatch, generateBracketMatches]);
+        return true;  
+    }, [tournamentMatches, findFirstUnplayedMatch]);
+
+    // const startTournamentMatch = useCallback((): boolean => {
+    //     let matches = tournamentMatches;
+
+    //     if (matches.length === 0 && invitedPlayers.length > 0) {
+    //         const allPlayers: TournamentPlayer[] = [
+    //             ...(myUserId ? [{ id: myUserId, name: "Moi", isAI: false, confirmed: true }] : []),
+    //             ...invitedPlayers
+    //                 .filter((p) => p.id !== myUserId)
+    //                 .map((p) => ({ id: p.id, name: p.name, isAI: false, confirmed: p.confirmed })),
+    //         ];
+    //         matches = generateBracketMatches(allPlayers);
+    //         setTournamentMatches(matches);
+    //     }
+
+    //     const match = findFirstUnplayedMatch(matches);
+    //     if (!match) return false;
+
+    //     let pA = match.playerA;
+    //     let pB = match.playerB;
+
+    //     if (!pA || !pB) {
+    //         const aiPlayerA: TournamentPlayer | undefined = pA ? undefined : { id: -(match.id * 10 + 1), name: "AI", isAI: true, confirmed: true };
+    //         const aiPlayerB: TournamentPlayer | undefined = pB ? undefined : { id: -(match.id * 10 + 2), name: "AI", isAI: true, confirmed: true };
+
+    //         if (aiPlayerA || aiPlayerB) {
+    //             matches = matches.map((m) =>
+    //                 m.id === match.id
+    //                     ? { ...m, playerA: aiPlayerA ?? m.playerA, playerB: aiPlayerB ?? m.playerB }
+    //                     : m
+    //             );
+    //             setTournamentMatches(matches);
+    //             pA = aiPlayerA ?? pA;
+    //             pB = aiPlayerB ?? pB;
+    //         }
+    //     }
+
+    //     const isAI = (pA?.isAI ?? false) || (pB?.isAI ?? false);
+
+    //     setActiveTournamentMatch({
+    //         matchId: match.id,
+    //         round: match.round,
+    //         position: match.position,
+    //         playerAName: pA ? pA.name : "AI",
+    //         playerBName: pB ? pB.name : "AI",
+    //         isAIOpponent: isAI,
+    //     });
+    //     return true;
+    // }, [tournamentMatches, invitedPlayers, myUserId, findFirstUnplayedMatch, generateBracketMatches]);
+
+    const handleNameSubmit = (_matchId: number, _slot: "A" | "B", name: string) => {
+        const clean = name.trim();
+        if (!clean) return;
+
+        setInvitedPlayers(prev => {
+            if (prev.some(p => p.name === clean))
+                return prev;
+
+            const newGuest: TournamentPlayer = {
+                id: Date.now(),
+                name: clean,
+                isAI: false,
+                confirmed: true,
+                isGuest: true,
+            };
+            return [...prev, newGuest];
+        });
+    };
 
     const handleTournamentMatchEnd = useCallback((winnerSide: 1 | 2, scoreA: number, scoreB: number) => {
         if (!activeTournamentMatch) return;
@@ -297,7 +391,10 @@ export function useTournament(myUserId: number) {
             if (!currentMatch) return prev;
 
             const winnerPlayer = winnerSide === 1 ? currentMatch.playerA : currentMatch.playerB;
-            const winnerId = winnerPlayer?.id ?? -1;
+            if (!winnerPlayer) return prev;
+            
+            // const winnerId = winnerPlayer?.id ?? -1;
+            const winnerId = winnerPlayer.id;
 
             const nextRound = round + 1;
             const nextPosition = Math.ceil(position / 2);
@@ -307,16 +404,14 @@ export function useTournament(myUserId: number) {
                 if (m.id === matchId) {
                     return { ...m, winner: winnerId, scoreA, scoreB };
                 }
-                if (m.round === nextRound && m.position === nextPosition && winnerPlayer) {
+                if (m.round === nextRound && m.position === nextPosition) {
                     return { ...m, [slot]: { ...winnerPlayer } };
                 }
                 return m;
             });
         });
 
-        setTimeout(() => {
-            setActiveTournamentMatch(null);
-        }, 5000);
+        setTimeout(() => setActiveTournamentMatch(null), 3000);
     }, [activeTournamentMatch]);
 
     const startTournament = useCallback(async () => {
@@ -333,14 +428,15 @@ export function useTournament(myUserId: number) {
             } catch (err) {
                 console.log("Failed to start tournament", err);
             }
-        } else if (invitedPlayers.length >= 2) {
+        } else if (tournamentPlayers.length >= 2) {
             try {
+                const playerIds = tournamentPlayers.map(p => p.id);
                 const res = await fetch("https://localhost:8443/tournament", {
                     method: "POST",
                     credentials: "include",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
-                        playerIds: [myUserId, ...invitedPlayers.map((p) => p.id)],
+                        playerIds,
                         name: tournamentName || undefined,
                     }),
                 });
@@ -354,16 +450,25 @@ export function useTournament(myUserId: number) {
                     fetchTournaments();
                 }
             } catch (err) {
-                console.log("Failed to create tournament via API", err);
+                console.log("Failed to create tournament via API, creating locally", err);
                 const localId = `local-${Date.now()}`;
                 setTournamentId(localId);
                 setTournamentName(tournamentName || `Tournament #${localId}`);
                 setIsOrganizer(true);
                 setGameState(GameState.Tournament);
+                const matches = generateBracketMatches(tournamentPlayers);
+                setTournamentMatches(matches);
             }
         }
         startTournamentMatch();
-    }, [tournamentId, invitedPlayers, tournamentName, myUserId, fetchTournamentBracket, fetchTournaments, startTournamentMatch]);
+    }, [
+        tournamentId,
+        tournamentName,
+        tournamentPlayers,
+        fetchTournamentBracket,
+        fetchTournaments,
+        startTournamentMatch,
+    ]);
 
     const changeTournamentName = useCallback((name: string) => {
         setTournamentName(name);
@@ -420,10 +525,13 @@ export function useTournament(myUserId: number) {
         playWithPlayer,
         startTournament,
         startTournamentMatch,
+        handleNameSubmit,
         handleTournamentMatchEnd,
         changeTournamentName,
         joinTournament,
         exitGame,
         clearInvites,
+        addManualPlayerToMatch,
+        addGuestPlayer
     };
 }

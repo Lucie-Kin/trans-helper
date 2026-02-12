@@ -18,6 +18,7 @@ type Props = {
     onStartTournament: () => void;
     onCloseTournament: () => void;
     onChangeTournamentName: (name: string) => void;
+    onNameSubmit: (matchId: number, player: "A" | "B", name: string) => void;
     tournamentId?: string;
     tournamentName?: string;
     tournamentPlayers?: TournamentPlayer[];
@@ -32,6 +33,7 @@ export default function GameBox({
     onStartTournament,
     onCloseTournament,
     onChangeTournamentName,
+    onNameSubmit,
     tournamentId,
     tournamentName,
     tournamentPlayers = [],
@@ -65,6 +67,8 @@ export default function GameBox({
                 })),
             ];
         }
+        
+        console.log("PLAYERS SENT TO BRACKET:", allPlayers.map(p => p.name));
 
         return (
             <div className="game-box-container">
@@ -77,6 +81,7 @@ export default function GameBox({
                     onStart={onStartTournament}
                     onClose={onCloseTournament}
                     onChangeName={onChangeTournamentName}
+                    onNameSubmit={onNameSubmit}
                 />
             </div>
         );
