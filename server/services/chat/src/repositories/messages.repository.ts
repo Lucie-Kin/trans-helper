@@ -1,4 +1,3 @@
-// chat/src/repositories/messages.repository.ts
 import { db } from "../db.js";
 
 // Saves a direct message to the database

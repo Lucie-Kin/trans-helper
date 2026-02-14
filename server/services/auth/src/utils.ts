@@ -1,5 +1,3 @@
-
-
 export type DisplayNameValidation =
     | { ok: true; value: string }
     | { ok: false; error: "invalid_type" | "invalid_length" | "invalid_characters" };

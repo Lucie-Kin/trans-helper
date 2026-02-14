@@ -1,4 +1,3 @@
-
 .chat-header {
     display: flex;
     align-items: center;
@@ -42,11 +41,11 @@
   }
   
   .status-dot.online {
-    background: #22c55e; /* green */
+    background: #22c55e;
   }
   
   .status-dot.offline {
-    background: #941d1d; /* gray */
+    background: #941d1d;
   }
   
   .chat-header-info {

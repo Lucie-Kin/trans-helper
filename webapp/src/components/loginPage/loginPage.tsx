@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "../../style/loginPage/loginpage.css";
-//import { Link } from "react-router-dom";
 import Login from './login/Login'
 import { IoMailOutline } from "react-icons/io5";
 import { IoLockClosedOutline } from "react-icons/io5";
@@ -39,7 +38,7 @@ export default function loginPage() {
         return;
       }
 
-      // Successful login - check if 2FA is needed
+      // successful login - check if 2FA is needed
       if (data.user?.is2faEnabled && !data.user?.twofaPassed) {
         navigate("/2fa");
       } else {

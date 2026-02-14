@@ -25,7 +25,7 @@ export const authDbQueryDuration = new client.Histogram({
   name: "auth_db_query_duration_seconds",
   help: "Duration of sqlite operations in seconds",
   labelNames: ["op"],
-  // buckets raisonnables : 1ms -> 2s
+  // buckets : 1ms -> 2s
   buckets: [0.001, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2],
   registers: [register],
 });
@@ -38,7 +38,7 @@ export const authDbErrorsTotal = new client.Counter({
 });
 
 
- // polling stats fichier DB
+ // polling stats file DB
  
 export function startDbFileStatsPolling(dbPath: string, intervalMs = 5000) {
   const tick = async () => {
@@ -47,7 +47,7 @@ export function startDbFileStatsPolling(dbPath: string, intervalMs = 5000) {
       authDbSizeBytes.set(st.size);
       authDbMtimeSeconds.set(Math.floor(st.mtimeMs / 1000));
     } catch {
-      // fichier pas encore créé, ou path incorrect
+      // file not created or incorrect path
       authDbSizeBytes.set(0);
       authDbMtimeSeconds.set(0);
     }

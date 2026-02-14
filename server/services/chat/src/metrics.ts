@@ -5,21 +5,21 @@ export const register = new client.Registry();
 client.collectDefaultMetrics({ register });
 
 
-// co actives
+// actives connexions
 export const chatWsConnections = new client.Gauge({
   name: "chat_ws_connections",
   help: "Number of active Socket.IO connections",
   registers: [register],
 });
 
-// co totales
+// total co 
 export const chatWsConnectionsTotal = new client.Counter({
   name: "chat_ws_connections_total",
   help: "Total number of Socket.IO connections",
   registers: [register],
 });
 
-// déco totales 
+// total deco 
 export const chatWsDisconnectsTotal = new client.Counter({
   name: "chat_ws_disconnects_total",
   help: "Total number of Socket.IO disconnects",
@@ -27,7 +27,7 @@ export const chatWsDisconnectsTotal = new client.Counter({
   registers: [register],
 });
 
-// messages (in/out) par event
+// messages (in/out) by event
 export const chatWsMessagesTotal = new client.Counter({
   name: "chat_ws_messages_total",
   help: "Total number of Socket.IO messages",
@@ -35,7 +35,7 @@ export const chatWsMessagesTotal = new client.Counter({
   registers: [register],
 });
 
-// taille des messages
+// messages weight
 export const chatWsMessageSizeBytes = new client.Histogram({
   name: "chat_ws_message_size_bytes",
   help: "Estimated Socket.IO message size in bytes",

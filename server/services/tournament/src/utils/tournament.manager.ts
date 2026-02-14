@@ -4,7 +4,6 @@ import { TournamentInvitation } from '../types/tournament';
 import { BracketMatchView, MatchStatus, TournamentBracketView } from '../types/tournament.view';
 import { BracketStructure, generateBracket, getNextMatchSlot } from './bracket';
 
-
 export class TournamentManager {
     constructor(private readonly repo: TournamentRepository) {};
 
@@ -120,6 +119,7 @@ export class TournamentManager {
                 return false;
             if (![match.playerAId, match.playerBId].includes(winnerId))
                 return false;
+            const completedAt = new Date();
             await this.repo.updateMatchResult(matchId, winnerId, new Date());
             const thisRound = match.roundIndex;
             if (!thisRound)
@@ -128,6 +128,56 @@ export class TournamentManager {
             const nextMatch = await this.repo.getMatchByPosition(match.tournamentId, nextRoundIndex, nextBracketPosition);
             if (nextMatch)
                 await this.repo.updateMatchPlayer(nextMatch.id, winnerId, slot);
+            const db = this.repo.getDb();
+            const matchDetails = await db.get<{
+                player_a_id: string | null;
+                player_b_id: string | null;
+                score_a: number | null;
+                score_b: number | null;
+            }>(
+                `
+                SELECT 
+                    pa.player_id AS player_a_id,
+                    pb.player_id AS player_b_id,
+                    tm.score_a,
+                    tm.score_b
+                FROM tournament_match tm
+                LEFT JOIN tournament_participant pa ON tm.player_a_id = pa.id
+                LEFT JOIN tournament_participant pb ON tm.player_b_id = pb.id
+                WHERE tm.id = ?
+                `,
+                matchId
+            );
+
+            if (matchDetails && matchDetails.player_a_id && matchDetails.player_b_id) {
+                const isAWin = winnerId === match.playerAId;
+                const winnerUserId = isAWin ? matchDetails.player_a_id : matchDetails.player_b_id;
+                const loserUserId = isAWin ? matchDetails.player_b_id : matchDetails.player_a_id;
+                const scoreWinner = isAWin ? (matchDetails.score_a ?? 0) : (matchDetails.score_b ?? 0);
+                const scoreLoser = isAWin ? (matchDetails.score_b ?? 0) : (matchDetails.score_a ?? 0);
+
+                await this.repo.addMatchHistory(
+                    winnerUserId,
+                    loserUserId,
+                    'WIN',
+                    scoreWinner,
+                    scoreLoser,
+                    'TOURNAMENT',
+                    completedAt,
+                    matchId
+                );
+
+                await this.repo.addMatchHistory(
+                    loserUserId,
+                    winnerUserId,
+                    'LOSE',
+                    scoreLoser,
+                    scoreWinner,
+                    'TOURNAMENT',
+                    completedAt,
+                    matchId
+                );
+            }
             const remainingMatches = await this.repo.countPendingMatches(match.tournamentId);
             if (remainingMatches === 0)
                 await this.repo.updateTournament(match.tournamentId, TournamentStatus.COMPLETED, winnerId, new Date());

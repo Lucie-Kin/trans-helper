@@ -1,4 +1,3 @@
-// chat/src/services/relationship.service.ts
 import {
   getRelationship,
   createRelationship,

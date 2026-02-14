@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   App.tsx                                            :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: morgane <morgane@student.42.fr>            +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/09/08 16:28:16 by mobonill          #+#    #+#             */
-/*   Updated: 2026/01/11 20:18:22 by morgane          ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 import './App.css'
 import { Routes, Route, Navigate } from 'react-router-dom';
 import LoginPage from './components/loginPage/loginPage';

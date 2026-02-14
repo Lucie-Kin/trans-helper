@@ -70,3 +70,17 @@ CREATE TABLE tournament_match (
 );
 CREATE INDEX idx_match_tournament_id ON tournament_match(tournament_id);
 CREATE INDEX idx_round ON tournament_match(round_index);
+
+CREATE TABLE match_history (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  opponent_id TEXT NOT NULL,
+  played_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  result TEXT NOT NULL CHECK (result IN ('WIN','LOSE')),
+  score_for INTEGER DEFAULT 0,
+  score_against INTEGER DEFAULT 0,
+  match_type TEXT NOT NULL CHECK (match_type IN ('TOURNAMENT','NORMAL')),
+  source_match_id TEXT
+);
+
+CREATE INDEX idx_match_history_user ON match_history(user_id);

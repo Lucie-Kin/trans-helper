@@ -215,6 +215,7 @@ fastify.get("/auth/session", async (req, reply) => {
 				displayName: user.display_name || user.login,
 				is2faEnabled: user.is_2fa_enabled === 1,
 				twofaPassed: payload.twofaPassed === true,
+				preferredLanguage: user.preferred_language,
 			},
 		});
 	} catch {
@@ -256,7 +257,19 @@ fastify.get("/auth/api/profile/:id", async (req, reply) => {
 	});
 });
 
+fastify.patch("/auth/language", { preHandler: requireAuth }, async (req, reply) => {
+	const { preferred_language } = req.body as { preferred_language?: string };
 
+	if (!preferred_language || !["fr", "en", "es"].includes(preferred_language)) {
+	  return reply.code(400).send({ error: "invalid_language" });
+	}
+
+	// update en DB
+	db.prepare(`UPDATE user SET preferred_language = ? WHERE id = ?`)
+	  .run(preferred_language, req.user.id);
+
+	return reply.send({ ok: true, preferred_language });
+  });
 
 fastify.post("/auth/2fa/setup", async (req, reply) => {
 	await req.jwtVerify({ onlyCookie: true });
@@ -370,18 +383,18 @@ fastify.post("/auth/avatar", { preHandler: requireAuth }, async (req, reply) => 
 	if (!file)
 		return reply.code(400).send({ error: "no_file" });
 
-	// accepte seulement png/jpg
+	// only allows png/jpg
 	if (file.mimetype !== "image/png" && file.mimetype !== "image/jpeg") {
 		return reply.code(400).send({ error: "unsupported_type" });
 	}
 
-	// limite taille (2MB)
+	// limits weight (2MB)
 	const buf = await file.toBuffer();
 	if (buf.length > 2 * 1024 * 1024) {
 		return reply.code(400).send({ error: "file_too_large" });
 	}
 
-	// controle nom fichier
+	// controls file name
 	const ext = file.mimetype === "image/png" ? ".png" : ".jpg";
 	//const filename = `avatar_${user.id}${ext}`;
 	const filename = `avatar_${user.id}_${Date.now()}${ext}`;
@@ -390,7 +403,7 @@ fastify.post("/auth/avatar", { preHandler: requireAuth }, async (req, reply) => 
 	fs.mkdirSync(uploadDir, { recursive: true });
 	fs.writeFileSync(path.join(uploadDir, filename), buf);
 
-	//  stocker le chemin en DB
+	//  stocks path in DB
 	const publicPath = `/auth/avatars/${filename}`;
 	updateUserAvatar(user.id, publicPath);
 
@@ -480,7 +493,7 @@ fastify.post("/auth/profile", { preHandler: requireAuth }, async (req, reply) =>
 		if (!user)
 			return reply.code(401).send({ error: "user_not_found" });
 
-		// JWT renouv avec les valeurs DB
+		// JWT renew with DB values
 		const newJwt = fastify.jwt.sign(
 			{
 				id: user.id,
@@ -512,7 +525,7 @@ fastify.post("/auth/profile", { preHandler: requireAuth }, async (req, reply) =>
 });
 
 
-// Password 
+// Password
 
 
 async function hashPassword(password: string): Promise<string> {
@@ -577,26 +590,26 @@ fastify.post("/auth/register", async (req, reply) => {
 		// Create user
 		const result = createLocalUser(login, email, passwordHash);
 		const userId = result.lastInsertRowid as number;
-		
+
 		// Check that user is created and password_hash is saved
 		const createdUser = findUserById(userId);
-		console.log("User created:", { 
-			id: createdUser?.id, 
-			login: createdUser?.login, 
+		console.log("User created:", {
+			id: createdUser?.id,
+			login: createdUser?.login,
 			hasPasswordHash: !!createdUser?.password_hash,
-			authProvider: createdUser?.auth_provider 
+			authProvider: createdUser?.auth_provider
 		});
 
 		// Initialize display_name
 		initDisplayNameIfNull(userId);
 
-		return reply.code(201).send({ 
-			ok: true, 
-			message: "User successfully registered" 
+		return reply.code(201).send({
+			ok: true,
+			message: "User successfully registered"
 		});
 	} catch (err: any) {
 		console.error("Registration error:", err);
-		
+
 		// Handle uniqueness errors
 		if (err.code === "SQLITE_CONSTRAINT") {
 			if (err.message.includes("login")) {
@@ -674,7 +687,7 @@ fastify.post("/auth/login", async (req, reply) => {
 			sameSite: "none",
 		});
 
-		return reply.send({ 
+		return reply.send({
 			ok: true,
 			user: {
 				id: updatedUser.id,

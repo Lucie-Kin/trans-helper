@@ -20,4 +20,4 @@ export class Ball {
 	}
 }
 
-export const BASE_KICKOFF_SPEED = 4.2;
+export const BASE_KICKOFF_SPEED = 7 * 60;

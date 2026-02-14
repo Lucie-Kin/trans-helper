@@ -14,7 +14,7 @@ export class Player {
 	) {
 		this.x = x;
 		this.y = y;
-		this.speed = speed;
+		this.speed = speed * 60;
 		this.width = width;
 		this.height = height;
 	}

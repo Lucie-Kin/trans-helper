@@ -1,4 +1,3 @@
-// chat/src/handlers/messages.ts
 import {
   saveMessage,
   getConversation,

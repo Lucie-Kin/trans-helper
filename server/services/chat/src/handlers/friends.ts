@@ -1,4 +1,3 @@
-// chat/src/handlers/friends.ts
 import { relationships } from "../services/relationship.service.js";
 import { getSocketIds } from "../socketRegistry.js";
 import { getRelationship } from "../repositories/relationships.repository.js";

@@ -1,4 +1,3 @@
-// chat/src/handlers/notify.ts
 import { getSocketIds } from "../socketRegistry.js";
 import { saveNotification } from "../repositories/notifications.repository.js";
 

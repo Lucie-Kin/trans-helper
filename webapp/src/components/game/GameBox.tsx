@@ -4,6 +4,7 @@ import TournamentBracket from "./TournamentBracket";
 import type { TournamentPlayer, TournamentMatch } from "./TournamentBracket";
 import type { GameState } from "../share/sharedTypes";
 import { GameCardType } from "../share/sharedTypes";
+import { useLanguage } from "../../language/LanguageContext";
 
 export type InvitedPlayer = {
     id:number;
@@ -18,7 +19,6 @@ type Props = {
     onStartTournament: () => void;
     onCloseTournament: () => void;
     onChangeTournamentName: (name: string) => void;
-    onNameSubmit: (matchId: number, player: "A" | "B", name: string) => void;
     tournamentId?: string;
     tournamentName?: string;
     tournamentPlayers?: TournamentPlayer[];
@@ -33,7 +33,6 @@ export default function GameBox({
     onStartTournament,
     onCloseTournament,
     onChangeTournamentName,
-    onNameSubmit,
     tournamentId,
     tournamentName,
     tournamentPlayers = [],
@@ -79,17 +78,17 @@ export default function GameBox({
                     onStart={onStartTournament}
                     onClose={onCloseTournament}
                     onChangeName={onChangeTournamentName}
-                    onNameSubmit={onNameSubmit}
                 />
             </div>
         );
     }
 
     const singleInvite = invitedPlayers.length === 1 ? invitedPlayers[0] : null;
+	const { translate } = useLanguage();
 
     return (
         <div className="game-box-container">
-            <h2 className="game-box-title">Choose Game Mode</h2>
+            <h2 className="game-box-title">{translate("game.mode")}</h2>
             <div className="game-card-grid">
                 {singleInvite ? (
                     <GameCard

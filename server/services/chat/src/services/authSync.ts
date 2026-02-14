@@ -1,4 +1,3 @@
-// chat/src/services/authSync.ts
 import { upsertUser } from "../repositories/users.repository.js";
 
 type AuthUser = {

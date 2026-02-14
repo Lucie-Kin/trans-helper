@@ -1,4 +1,3 @@
-// webapp/src/components/chat/profileModal.tsx
 import { useEffect, useState } from "react";
 import { useOnlineUsers } from "../../hooks/useOnlineUsers";
 import "../../style/chat/profileModal.css";
@@ -18,6 +17,7 @@ type Props = {
 
 export default function ProfileModal({ userId, onClose }: Props) {
   const [profile, setProfile] = useState<ProfileInfo | null>(null);
+  const [stats, setStats] = useState<{ wins: number; losses: number } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -50,6 +50,14 @@ export default function ProfileModal({ userId, onClose }: Props) {
       });
   }, [userId]);
 
+
+    useEffect(() => {
+    fetch(`/tournament/match-history/stats?userId=${userId}`, { credentials: "include" })
+      .then((r) => (r.ok ? r.json() : { wins: 0, losses: 0 }))
+      .then(setStats)
+      .catch(() => setStats({ wins: 0, losses: 0 }));
+  }, [userId]);
+
   return (
     <div className="profile-overlay" onClick={onClose}>
       <div
@@ -65,20 +73,34 @@ export default function ProfileModal({ userId, onClose }: Props) {
         {error && <div className="empty">{error}</div>}
 
         {!loading && profile && (
-          <div className="profile-header">
-            <img
-              src={profile.avatar || "/avatar.png"}
-              alt={profile.login}
-              className="profile-avatar"
-            />
+          <>
+            <div className="profile-header">
+              <img
+                src={profile.avatar || "/avatar.png"}
+                alt={profile.login}
+                className="profile-avatar"
+              />
 
-            <div>
-              <h2>{profile.login}</h2>
-              <span className={isOnline ? "online" : "offline"}>
-                {isOnline ? "online" : "offline"}
-              </span>
+              <div>
+                <h2>{profile.login}</h2>
+                <span className={isOnline ? "online" : "offline"}>
+                  {isOnline ? "online" : "offline"}
+                </span>
+              </div>
             </div>
-          </div>
+            {stats !== null && (
+              <div className="profile-stats">
+                <div>
+                  <strong>{stats.wins}</strong>
+                  <span>Wins</span>
+                </div>
+                <div>
+                  <strong>{stats.losses}</strong>
+                  <span>Losses</span>
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

@@ -8,9 +8,12 @@ import SettingsModal from './settingsModal';
 import { useTournament } from '../../hooks/useTournament';
 import { connectSocket } from "../../socket";
 import { GameCardType, GameState } from '../share/sharedTypes';
+import { useLanguage } from "../../language/LanguageContext.tsx";
+import MatchHistory from '../matchHistory/MatchHistory.tsx';
 
 import "../../style/homePage/homepage.css";
 import "../../style/homePage/settings.css";
+import { LanguageDropdown } from '../../language/LanguageMenu.tsx';
 
 ////////////
 const DEV_MODE = false;
@@ -23,7 +26,7 @@ const DEV_USER: User = {
   is2faEnabled: false,
   twofaPassed: true,
 };
-//////////// 
+////////////
 
 type AcceptedInvite = {
   playerId: number;
@@ -54,8 +57,11 @@ export default function HomePage() {
   const [acceptedInvite, setAcceptedInvite] = useState<AcceptedInvite | null>(null);
 
   const [showSettings, setShowSettings] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-
+  const [normalGameSessionId, setNormalGameSessionId] = useState<string | null>(null);
+  
+  const { translate, language, setLanguage } = useLanguage();
   const refreshUser = async () => {
     try {
       const res = await fetch('https://localhost:8443/auth/session', {
@@ -65,6 +71,7 @@ export default function HomePage() {
       const { user } = await res.json();
       const defaultAvatar = "/avatar.png";
       if (!user.image) user.image = defaultAvatar;
+	  setLanguage(user.preferredLanguage ?? "fr");
       setUser(user);
     } catch (err) {
       console.error("Failed to refresh user",err);
@@ -90,6 +97,7 @@ export default function HomePage() {
           const { user } = await res.json();
           if (!user.image)
             user.image = defaultAvatar;
+		  setLanguage(user.preferredLanguage ?? "fr");
           if (user.is2faEnabled && !user.twofaPassed) {
             setLoading(false);
             navigate("/2fa");
@@ -143,6 +151,8 @@ export default function HomePage() {
     setActiveCard(type);
     if (playerId)
       setInvitePlayerId(playerId);
+    if (type === GameCardType.Invite && playerId)
+      setNormalGameSessionId(crypto.randomUUID());
     setGameState(GameState.Playing);
   };
 
@@ -161,6 +171,8 @@ export default function HomePage() {
     }
     setActiveCard(null);
     setInvitePlayerId(undefined);
+    setNormalGameSessionId(null);
+    
     setGameState(GameState.Idle);
     if (tournament.tournamentId)
       tournament.exitGame();
@@ -168,8 +180,8 @@ export default function HomePage() {
       tournament.clearInvites();
   };
 
-  if (loading) return <div>Chargement…</div>;
-  if (!user) return <div>Accès refusé. <a href="/">Connecte-toi</a>.</div>;
+  if (loading) return <div>{translate("home.loading")}</div>;
+  if (!user) return <div>{translate("home.denied")} <a href="/">{translate("home.loginLink")}</a>.</div>;
 
   return (
     <div className="homepage">
@@ -188,10 +200,14 @@ export default function HomePage() {
           refreshUser={refreshUser}
         />
       )}
+      {showHistory && (
+        <MatchHistory onClose={() => setShowHistory(false)} />
+      )}
+
 
       <div className={`title-container ${gameState === GameState.Playing ? 'compact' : ''}`}>
-        <h3>Transcendance</h3>
-        <h4>Bienvenue, {user.displayName}</h4>
+        <h3>{translate("home.title")}</h3>
+        <h4>{translate("home.welcome", { name: user.login })}</h4>
       </div>
 
       {gameState === GameState.Playing && tournament.activeTournamentMatch ? (
@@ -210,11 +226,31 @@ export default function HomePage() {
           gameCardType={activeCard}
           player1Name={user.displayName || user.login}
           player2Name={
-            activeCard === GameCardType.AI 
+            activeCard === GameCardType.AI
             ? "AI"
             : tournament.invitedPlayers.find(p => p.id === invitePlayerId)?.name || "Adversaire"
           }
           invitePlayerId={invitePlayerId}
+
+          onGameEnd={async (result) => {
+            if (activeCard === GameCardType.AI) return;
+            if (!invitePlayerId || !normalGameSessionId) return;
+            await fetch('https://localhost:8443/tournament/match-history/normal/complete', {
+              method: 'POST',
+              credentials: 'include',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                player1Id: String(user.id),
+                player2Id: String(invitePlayerId),
+                winner: result.winner,
+                scoreP1: result.scoreP1,
+                scoreP2: result.scoreP2,
+                playedAt: new Date().toISOString(),
+                sourceMatchId: normalGameSessionId,
+              }),
+            });
+            setNormalGameSessionId(null);
+          }}
         />
       ) : (
         <div className="boxes-wrapper">
@@ -235,7 +271,6 @@ export default function HomePage() {
                 setGameState(GameState.Idle);
               }}
               onChangeTournamentName={tournament.changeTournamentName}
-              onNameSubmit={tournament.handleNameSubmit}
               tournamentId={tournament.tournamentId}
               tournamentName={tournament.tournamentName}
               tournamentPlayers={tournament.tournamentPlayers}
@@ -252,7 +287,7 @@ export default function HomePage() {
             )}
           </div>
 
-          <ChatBox 
+          <ChatBox
             myUserId={user.id}
             onGameInviteSent={handleGameInviteSent}
             onGameInviteAccept={handleGameInviteAccept}
@@ -271,17 +306,54 @@ export default function HomePage() {
         </div>
       </div>
 
-      {menuOpen && (
-        <div className="profile-menu">
-          <button type="button" onClick={() => { setMenuOpen(false); setShowSettings(true); }}>
-            Settings
-          </button>
+	  {menuOpen && (
+  <div className="profile-menu">
+    <button
+      type="button"
+      onClick={() => {
+        setMenuOpen(false);
+        setShowSettings(true);
+      }}
+    >
+      {translate("menu.settings")}
+    </button>
 
-          <button type="button" onClick={logout}>
-            Déconnexion
-          </button>
-        </div>
-      )}
+    <button
+      type="button"
+      onClick={() => {
+        setMenuOpen(false);
+        setShowHistory(true);
+      }}
+    >
+      Match History
+    </button>
+
+    <button type="button" onClick={logout}>
+      {translate("menu.logout")}
+    </button>
+
+    <div style={{ marginTop: 10 }}>
+  <LanguageDropdown
+    language={language}
+    onChange={async (newLang) => {
+      setLanguage(newLang);
+
+      // persist DB
+      await fetch("/auth/language", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ preferred_language: newLang }),
+      });
+    }}
+  />
+</div>
+
+    <div style={{ marginTop: 6, fontSize: 12, opacity: 0.7 }}>
+      {translate("home.language")} {language}
+    </div>
+  </div>
+)}
 
     </div>
   );

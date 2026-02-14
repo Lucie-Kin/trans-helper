@@ -1,4 +1,3 @@
-// chat/src/repositories/users.repository.ts
 import { db } from "../db.js";
 
 type SnapshotUser = {

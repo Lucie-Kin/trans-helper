@@ -1,6 +1,7 @@
 // webapp/src/components/chat/userRow.tsx
 import "../../style/chat/userRow.css";
 import type {GameInviteLifecycleStatus, FriendStatus, RealtimeGameInviteStatus } from "../share/sharedTypes";
+import { useLanguage } from "../../language/LanguageContext";
 
 type Props = {
   id: number;
@@ -47,7 +48,7 @@ export default function UserRow({
           : status === "friend"
             ? "friend-confirmed"
             : "friend-default";
-  
+
   const gameInviteStatusClass =
     realtimeGameInvite === "outgoing"
       ? "game-invite-outgoing"
@@ -57,13 +58,14 @@ export default function UserRow({
 
   const isInviteDisabled =
     inviteStatus === "accepted" || inviteStatus === "rejected";
-      
+
+  const { translate } = useLanguage();
   return (
     <div
       className={`chat-user-item ${selected ? "selected" : ""}`}
       onClick={onSelect}
     >
-      <span 
+      <span
         className={`user-login ${online ? "online" : "offline"}`}
         title={online ? "Online" : "Offline"}
         onClick={onProfile}
@@ -80,7 +82,7 @@ export default function UserRow({
           <>
             <button
               className={`action-icon ${statusClass}`}
-              title="Accept friend request"
+              title={translate("chat.accept_friend")}
               onClick={onFriend}
             >
               ✅
@@ -88,7 +90,7 @@ export default function UserRow({
 
             <button
               className="action-icon"
-              title="Reject friend request"
+              title={translate("chat.decline_friend")}
               onClick={onReject}
             >
               ❌
@@ -97,7 +99,7 @@ export default function UserRow({
         ) : (
           <button
             className={`action-icon ${statusClass}`}
-            title="Friend action"
+            title={translate("chat.friend_request")}
             onClick={onFriend}
           >
 
@@ -110,7 +112,7 @@ export default function UserRow({
           <>
             <button
               className="action-icon game-invite-accept"
-              title="Accept game invite"
+              title={translate("chat.accept_invite")}
               onClick={onGameInviteAccept}
             >
               ✅
@@ -118,7 +120,7 @@ export default function UserRow({
 
             <button
               className="action-icon game-invite-reject"
-              title="Reject game invite"
+              title={translate("chat.decline_invite")}
               onClick={onGameInviteReject}
             >
               ❌
@@ -131,8 +133,8 @@ export default function UserRow({
             disabled={isInviteDisabled}
             title={
               realtimeGameInvite === "outgoing"
-                ? "Annuler l'invitation"
-                : "Inviter à jouer"
+                ? translate("chat.cancel_invite")
+                : translate("chat.invite_game")
             }
           >
             <img src="src/assets/game.png" alt="Inviter à jouer" />

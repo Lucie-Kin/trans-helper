@@ -8,6 +8,7 @@ import ProfileModal from "./profileModal";
 import TournamentList from "../game/TournamentList";
 import type { TournamentInfo } from "../game/TournamentList";
 import "../../style/chat/chatBox.css";
+import { useLanguage } from "../../language/LanguageContext";
 
 type Props = {
   myUserId: number;
@@ -26,6 +27,7 @@ export default function ChatBox({ myUserId, onGameInviteSent, onGameInviteAccept
   const [showProfile, setShowProfile] = useState(false);
   const [blockedByMe, setBlockedByMe] = useState<number[]>([]);
   const [blockedMe, setBlockedMe] = useState<number[]>([]);
+  const { translate } = useLanguage();
 
   useEffect(() => {
     const s = getSocket();
@@ -44,23 +46,23 @@ export default function ChatBox({ myUserId, onGameInviteSent, onGameInviteAccept
       setBlockedMe(data?.blockedMe ?? []);
     };
 
-    //  co uniquement si pas déjà co
+    //  co only if not co
     if (!s.connected) s.connect();
 
     s.on("connect", onConnect);
     s.on("disconnect", onDisconnect);
     s.on("blocks:list", onBlocksList);
 
-    // fermeture le composant est démonté
+    // closing : component is destroyed
     return () => {
       s.off("connect", onConnect);
       s.off("disconnect", onDisconnect);
       s.off("blocks:list", onBlocksList);
 
-      // forcer une seule socket partagée :
+      // force one shared socket
       if (s.connected) s.disconnect();
     };
-  }, []); // ← dépendances vides, exécuté UNE SEULE FOIS
+  }, []); // dependancies empty, executed ONCE
 
   const isBlockedByMe =
     activeUserId !== null && blockedByMe.includes(activeUserId);
@@ -75,8 +77,8 @@ export default function ChatBox({ myUserId, onGameInviteSent, onGameInviteAccept
     <div className="chat-box">
       <div className="chat-left">
         <div className={`chat-box-top ${activeUserId ? "compact": ""}`}>
-          <div className="chat-box-title">Messages</div>
-          <div className="chat-box-subtitle">Sélectionnez une conversation</div>
+          <div className="chat-box-title">{translate("chat.message")}</div>
+          <div className="chat-box-subtitle">{translate("chat.select")}</div>
         </div>
         <UserList
           myUserId={myUserId}

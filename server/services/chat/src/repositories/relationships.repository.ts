@@ -1,4 +1,3 @@
-//chat/src/repositories/relationships.repository.ts
 import { db } from "../db.js";
 
 // Retrieves the relationship record between two users

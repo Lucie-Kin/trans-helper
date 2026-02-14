@@ -1,143 +1,222 @@
-// core/AIController.ts
-import { Player } from '../entities/player';
-import { Ball } from '../entities/ball';
-import { GameField } from './gameField';
+import { Player } from '../entities/player.js';
+import { Ball } from '../entities/ball.js';
+import { GameField } from './gameField.js';
 
 export class AIController {
-  public player!: Player;     // P2 (IA)
-  public oppenent!: Player;   // P1
-  public ball!: Ball;
-  public field: GameField;
+	public player!: Player; // AI paddle (P2)
+	public opponent!: Player; // Opponent paddle (P1)
+	public ball!: Ball;
+	public field: GameField;
 
-  // --- décision (1 fois / seconde)
-  private lastDecisionMs = -Infinity;
-  private decisionCooldownMs = 1000;
+	private lastDecisionMs = -Infinity;
+	private decisionCooldownMs = 1000;
 
-  // cible en pixels (centre Y visé)
-  private targetCenterY = 0;
+	private targetCenterY = 0;
+	private deadZonePx = 0;
 
-  // réglages difficulté
-  private aimNoisePx = 0;         // ex: 10..40 pour rendre l'IA moins parfaite
-  private deadZonePx = 8;         // seuil pour éviter tremblements
-  private fallbackCenter = true;  // si balle part vers P1: revenir centre
+	private shootOffsetPx = 0;
+	private shotLocked = false;
 
-  constructor(field: GameField) {
-    this.field = field;
-    this.targetCenterY = field.height / 2;
-  }
+	constructor(field: GameField) {
+		this.field = field;
+		this.targetCenterY = field.height / 2;
+	}
 
-  attach(player: Player, oppenent: Player, ball: Ball) {
-    this.player = player;
-    this.oppenent = oppenent;
-    this.ball = ball;
-    this.targetCenterY = player.y + player.height / 2;
-  }
+	attach(player: Player, opponent: Player, ball: Ball) {
+		this.player = player;
+		this.opponent = opponent;
+		this.ball = ball;
+		this.targetCenterY = player.y + player.height / 2;
+		this.deadZonePx = player.height * 0.08; // 8% de la raquette
+	}
 
-  /**
-   * Appelé au kickoff / resetBall : décision immédiate (pas de cooldown)
-   */
-  onKickoff() {
-    this.decideTarget(true);
-  }
+	onKickoff() {
+		this.shotLocked = false;
+		this.shootOffsetPx = 0;
+		this.lastDecisionMs = -Infinity;
+	}
 
-  /**
-   * Appelé en boucle (chaque frame), mais ne recalculera la cible
-   * qu'une fois par seconde max.
-   */
-  tick(nowMs: number) {
-    this.decideTarget(false, nowMs);
-  }
+	moveAI(nowMs: number) {
+		if (nowMs - this.lastDecisionMs < this.decisionCooldownMs) return;
+		this.lastDecisionMs = nowMs;
 
-  getMoveAction(): 'up' | 'down' | 'stay' {
-    const center = this.player.y + this.player.height / 2;
-    const dy = this.targetCenterY - center;
+		if (this.ball.speedX <= 0) {
+			this.shotLocked = false;
+			return;
+		}
 
-    if (dy < -this.deadZonePx) return 'up';
-    if (dy > this.deadZonePx) return 'down';
-    return 'stay';
-  }
+		// Ball is coming toward the AI: choose the "aim offset" once per rally.
+		// The idea is: don't always hit the ball with the paddle center.
+		// Hitting above/below center changes the bounce angle, making it harder for P1.
+		if (!this.shotLocked) {
+			this.shootOffsetPx = this.chooseBestPunishOffset();
+			this.shotLocked = true;
+		}
 
-  // ----------------- core logic -----------------
+		const impactY = this.predictImpactY(this.ball, this.player.x);
 
-  private decideTarget(force: boolean, nowMs: number = performance.now()) {
-    if (!force) {
-      if ((nowMs - this.lastDecisionMs) < this.decisionCooldownMs) return;
-    }
-    this.lastDecisionMs = nowMs;
+		// Desired paddle center is the predicted impact plus the chosen offset.
+		const desired = impactY + this.shootOffsetPx;
 
-    // Si la balle va vers P2 : on prédit l'impact
-    if (this.ball.speedX > 0) {
-      const impactY = this.predictImpactY(this.ball, this.player.x);
-      const noisy = impactY + this.randomNoise(this.aimNoisePx);
-      this.targetCenterY = this.clamp(noisy, this.player.height / 2, this.field.height - this.player.height / 2);
-      return;
-    }
+		this.targetCenterY = this.clamp(
+			desired,
+			this.player.height / 2,
+			this.field.height - this.player.height / 2
+		);
+	}
 
-    // Si la balle s'éloigne (vers P1) : comportement simple
-    if (this.fallbackCenter) {
-      this.targetCenterY = this.field.height / 2;
-    } else {
-      // sinon: rester où on est
-      this.targetCenterY = this.player.y + this.player.height / 2;
-    }
-  }
+	getMoveAction(): 'up' | 'down' | 'stay' {
+		const center = this.player.y + this.player.height / 2;
+		const dy = this.targetCenterY - center;
 
-  /**
-   * Prédit Y quand la balle atteindra targetX (ex: x de P2)
-   * en simulant rebonds haut/bas. (Sans tenir compte des raquettes)
-   */
-  private predictImpactY(ball: Ball, targetX: number): number {
-    const r = ball.radius;
+		// Dead zone prevents jitter: if we're close enough to the target, don't move.
+		if (dy < -this.deadZonePx) return 'up';
+		if (dy > this.deadZonePx) return 'down';
+		return 'stay';
+	}
 
-    let x = ball.x;
-    let y = ball.y;
-    let vx = ball.speedX;
-    let vy = ball.speedY;
+	setDifficulty(opts: { deadZonePx?: number; decisionCooldownMs?: number }) {
+		if (opts.deadZonePx !== undefined) this.deadZonePx = opts.deadZonePx;
+		if (opts.decisionCooldownMs !== undefined) this.decisionCooldownMs = opts.decisionCooldownMs;
+	}
 
-    // Si vx <= 0, on n'a pas d'impact vers targetX
-    if (vx <= 0) return this.field.height / 2;
+	public predictImpactY(ball: Ball, targetX: number): number {
+		const radius = ball.radius;
+		const { x: ballX, y: ballY, speedX: velX, speedY: velY } = ball;
 
-    // temps pour atteindre targetX
-    const dx = targetX - x;
-    const t = dx / vx;
+		// If there is no horizontal velocity, we cannot compute a time to reach targetX.
+		// Fallback to mid-field.
+		if (velX === 0) return this.field.height / 2;
 
-    // y "brut" sans rebond
-    let yRaw = y + vy * t;
+		// Time to reach targetX using linear motion: targetX = ballX + velX * t
+		const timeToTarget = (targetX - ballX) / velX;
 
-    // rebonds haut/bas (miroir)
-    const top = r;
-    const bot = this.field.height - r;
-    const span = bot - top;
+		if (timeToTarget < 0) return ballY;
 
-    // on ramène dans [top, bot] avec réflexion
-    // (méthode miroir: period = 2*span)
-    const yShift = yRaw - top;
-    const period = 2 * span;
+		// Raw Y position without considering wall bounces.
+		const yRaw = ballY + velY * timeToTarget;
 
-    let m = yShift % period;
-    if (m < 0) m += period;
+		// ---- Wall-bounce handling (top/bottom) via "mirror mapping" ----
+		//
+		// The ball is constrained to [top, bot] where:
+		//   top = radius
+		//   bot = field.height - radius
+		//
+		// If we let the ball move freely, yRaw can be outside that range.
+		// Instead of simulating multiple bounces, we fold yRaw into that segment
+		// by using a periodic mirrored function:
+		//   - one "down" traversal length is travelRange
+		//   - a full down+up cycle is period = 2 * travelRange
+		//
+		// Then:
+		//   offset in [0, travelRange]  => moving down:  y = top + offset
+		//   offset in (travelRange, 2*travelRange] => moving up: y = bot - (offset - travelRange)
+		const top = radius;
+		const bot = this.field.height - radius;
+		const travelRange = bot - top;
+		const period = 2 * travelRange;
 
-    let yIn;
-    if (m <= span) yIn = top + m;
-    else yIn = bot - (m - span);
+		// Map yRaw into a single bounce period (handle negatives too).
+		let offset = (yRaw - top) % period;
+		if (offset < 0) offset += period;
 
-    return yIn;
-  }
+		// Convert the folded offset back to an in-bounds Y coordinate.
+		return offset <= travelRange ? top + offset : bot - (offset - travelRange);
+	}
 
-  private clamp(n: number, min: number, max: number) {
-    return Math.max(min, Math.min(max, n));
-  }
+	private chooseBestPunishOffset(): number {
+		// Max offset we allow from the paddle center.
+		const maxOffset = (this.player.height / 2) * 0.85;
 
-  private randomNoise(px: number) {
-    if (px <= 0) return 0;
-    return (Math.random() * 2 - 1) * px; // [-px, +px]
-  }
+		const impactY = this.predictImpactY(this.ball, this.player.x);
 
-  // (optionnel) réglages
-  setDifficulty(opts: { aimNoisePx?: number; deadZonePx?: number; fallbackCenter?: boolean}) {
-    if (opts.aimNoisePx !== undefined) this.aimNoisePx = opts.aimNoisePx;
-    if (opts.deadZonePx !== undefined) this.deadZonePx = opts.deadZonePx;
-    if (opts.fallbackCenter !== undefined) this.fallbackCenter = opts.fallbackCenter;
-  }
+		const minCenter = this.player.height / 2;
+		const maxCenter = this.field.height - this.player.height / 2;
 
+		// We brute-force a small number of candidate offsets and keep the best-scoring one.
+		const samples = 11;
+		let bestOffset = 0;
+		let bestScore = -Infinity;
+
+		for (let i = 0; i < samples; i++) {
+			// normalizedOffset in [0,1]
+			const normalizedOffset = i / (samples - 1);
+
+			// rawOffset in [-maxOffset, +maxOffset]
+			const rawOffset = (normalizedOffset * 2 - 1) * maxOffset;
+
+			// Clamp desired paddle center Y so it's physically reachable (within field bounds).
+			const desiredCenter = this.clamp(impactY + rawOffset, minCenter, maxCenter);
+
+			// Actual applied offset after clamping (could be smaller than rawOffset).
+			const offset = desiredCenter - impactY;
+
+			// Score this shot by estimating how hard it will be for P1 to reach the return.
+			const score = this.scoreShotAgainstP1(impactY, desiredCenter);
+
+			if (score > bestScore) {
+				bestScore = score;
+				bestOffset = offset;
+			}
+		}
+
+		return bestOffset;
+	}
+
+	private scoreShotAgainstP1(impactY: number, desiredP2CenterY: number): number {
+		// We approximate the bounce physics similarly to GameEngine.calculateBounce:
+		// - compute normalized hit position
+		// - convert to angle in [-maxAngle, +maxAngle]
+		// - boost speed a bit and cap it
+		const maxAngle = Math.PI / 3; // 60 degrees
+		const maxSpeed = 14 * 60;
+
+		// relativeY: where the ball hits relative to the paddle center
+		const relativeY = impactY - desiredP2CenterY;
+
+		// Normalize to [-1, +1] based on half paddle height
+		let normalizedY = relativeY / (this.player.height / 2);
+		normalizedY = Math.max(-1, Math.min(1, normalizedY));
+
+		// Convert normalized hit position to an outgoing angle.
+		const angle = normalizedY * maxAngle;
+
+		// Increase speed slightly (like a rally gets faster), but cap it.
+		const speed = Math.min(Math.hypot(this.ball.speedX, this.ball.speedY) * 1.05, maxSpeed);
+
+		// The return should go toward P1, so X velocity is negative.
+		const ballSpeedX = -Math.abs(speed * Math.cos(angle));
+		const ballSpeedY = speed * Math.sin(angle);
+
+		// If X speed is near zero, the ball would move almost vertically (bad/invalid).
+		if (Math.abs(ballSpeedX) < 1e-6) return -Infinity;
+
+		// Build a "virtual ball" right after bouncing off P2.
+		const startX = this.player.x - this.ball.radius;
+		const startBall = { ...this.ball, x: startX, y: impactY, speedX: ballSpeedX, speedY: ballSpeedY } as Ball;
+
+		// X coordinate where the ball would "contact" P1 (right face of P1 + ball radius).
+		const p1ContactX = this.opponent.x + this.opponent.width + this.ball.radius;
+
+		// Predict where the returned ball will be (in Y) when it reaches P1 (with wall bounces).
+		const yAtP1 = this.predictImpactY(startBall, p1ContactX);
+
+		// Time for the ball to travel from P2 to P1 along X.
+		const timeToP1 = (startX - p1ContactX) / Math.abs(ballSpeedX);
+
+		// Approximate how far P1 can move in that time.
+		const p1Center = this.opponent.y + this.opponent.height / 2;
+		const p1Half = this.opponent.height / 2;
+		const p1Reach = this.opponent.speed * timeToP1;
+
+		// Score interpretation:
+		// Distance from P1 center to ball arrival minus what P1 can cover (reach + half paddle).
+		// Positive => ball lands outside P1's reachable area (good shot).
+		// Negative => P1 can probably reach it (bad shot).
+		return Math.abs(yAtP1 - p1Center) - (p1Reach + p1Half);
+	}
+
+	private clamp(n: number, min: number, max: number) {
+		return Math.max(min, Math.min(max, n));
+	}
 }

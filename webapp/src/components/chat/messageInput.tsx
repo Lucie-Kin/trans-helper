@@ -1,7 +1,7 @@
-// webapp/src/components/chat/messageInput.tsx
 import { useState, useEffect } from "react";
 import { getSocket } from "../../socket";
 import "../../style/chat/messageInput.css";
+import { useLanguage } from "../../language/LanguageContext";
 
 type Props = {
   activeUserId: number | null;
@@ -22,7 +22,7 @@ export default function MessageInput({
   const [text, setText] = useState("");
 
   const disabled = isBlockedByMe || isBlockedByThem || !activeUserId;
-
+  const { translate } = useLanguage();
     //clear text on block
   useEffect(() => {
     if (isBlockedByMe || isBlockedByThem) {
@@ -45,10 +45,10 @@ export default function MessageInput({
   };
 
   const placeholder = isBlockedByMe
-    ? "Utilisateur bloqué..."
+    ? translate("chat.block")
     : isBlockedByThem
-    ? "Vous êtes bloqué."
-    : "Tapez un message...";
+    ? translate("chat.blocked")
+    : translate("chat.text_zone");
 
   return (
     <div className="message-input-bar">

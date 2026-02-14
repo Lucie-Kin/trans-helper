@@ -1,6 +1,7 @@
 import "../../style/game/gameCard.css";
 import "../../style/game/particules.css";
 import { GameCardType } from "../share/sharedTypes";
+import { useLanguage } from "../../language/LanguageContext";
 
 type Props = {
     type: GameCardType;
@@ -17,6 +18,9 @@ export default function GameCard({
     disabled = false,
     onClick
 }: Props) {
+
+	const { translate } = useLanguage();
+
     const getIcon = () => {
         switch(type) {
             case "ai":
@@ -35,7 +39,7 @@ export default function GameCard({
             case "ai":
                 return "VS IA";
             case "random":
-                return "Random Match";
+                return translate("game.title");
             case "invite":
                 return `Challenge ${playerName}`;
             default:
@@ -46,9 +50,9 @@ export default function GameCard({
     const getSubtitle = () => {
         switch(type) {
             case "ai":
-                return "Joue contre l'ordi";
+                return translate("game.ai");
             case "random":
-                return "Trouve un adversaire au hasard";
+                return translate("game.random");
             case "invite":
                 return playerName ? `Joue avec ${playerName}`: "Invite un ami";
             default:

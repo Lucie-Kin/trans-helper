@@ -1,4 +1,3 @@
-// chat/src/handlers/index.ts
 import { registerBlockHandlers } from "./block.js";
 import { registerFriendHandlers } from "./friends.js";
 import { registerMessageHandlers } from "./messages.js";

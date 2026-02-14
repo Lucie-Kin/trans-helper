@@ -1,4 +1,3 @@
-// chat/src/repositories/invites.repository.ts
 import { db } from "../db.js";
 
 // Creates a new game invite between two users

@@ -7,10 +7,19 @@ AUTH_DIR      = server/services/auth
 
 SCRIPT        = ./setup.sh
 
+SHELL := /bin/bash
+
+ELK_EXPORT_SCRIPT=./ELK/kibana/scripts/export_shared_objects.sh
+ELK_IMPORT_SCRIPT=./ELK/kibana/scripts/import_shared_objects.sh
+
 # =================== RÈGLES ===================
 
 all: network
-	 $(COMPOSE) -f $(COMPOSE_FILE) up --build -d
+	$(COMPOSE) -f $(COMPOSE_FILE) up --build -d
+	@$(MAKE) wait-kibana
+	@$(MAKE) elk-import
+
+
 
 down:
 	$(COMPOSE) -f $(COMPOSE_FILE) down
@@ -59,6 +68,17 @@ npm-clean:
 	@sudo rm -rf "$(WEBAPP_DIR)/node_modules" || true
 	@sudo rm -rf "$(AUTH_DIR)/node_modules" || true
 	@echo "OK."
+
+
+wait-kibana:
+	@./ELK/kibana/scripts/wait_kibana.sh
+
+
+elk-import:
+	@bash $(ELK_IMPORT_SCRIPT)
+
+elk-export:
+	@bash $(ELK_EXPORT_SCRIPT)
 
 
 .PHONY: all up down restart logs ps clean fclean re script npm-clean npm-install npm-install-docker

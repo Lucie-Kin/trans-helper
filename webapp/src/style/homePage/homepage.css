@@ -190,3 +190,93 @@ h4 {
   display: block;
   object-fit: cover;
 }
+
+.lang { position: relative; }
+
+.lang__btn{
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  padding: 10px 12px;
+  border-radius: 12px;
+
+  font: inherit;
+  color: rgba(255,255,255,0.92);
+
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.10);
+  cursor: pointer;
+
+  transition: background .15s ease, border-color .15s ease, transform .05s ease;
+}
+
+.lang__btn:hover{
+  background: rgba(255,255,255,0.09);
+  border-color: rgba(255,255,255,0.16);
+}
+
+
+.lang__flag{
+  width: 22px;
+  display: inline-flex;
+  justify-content: center;
+  font-size: 16px;
+}
+
+.lang__label{
+  flex: 1;
+  text-align: left;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
+
+.lang__code{
+  font-size: 12px;
+  opacity: 0.75;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(0,0,0,0.25);
+  border: 1px solid rgba(255,255,255,0.10);
+}
+
+
+.lang__panel{
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+
+  padding: 6px;
+  border-radius: 14px;
+
+  background: rgba(10,10,12,0.92);
+  border: 1px solid rgba(255,255,255,0.10);
+  backdrop-filter: blur(10px);
+
+  box-shadow: 0 14px 30px rgba(0,0,0,0.35);
+  z-index: 50;
+}
+
+.lang__item{
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  padding: 10px 10px;
+  border-radius: 10px;
+
+  background: transparent;
+  border: none;
+  color: rgba(255,255,255,0.92);
+  font: inherit;
+  cursor: pointer;
+}
+
+
+.lang__item.is-active{
+  background: rgba(140, 90, 255, 0.18); /* léger accent violet */
+  border: 1px solid rgba(140, 90, 255, 0.30);
+}

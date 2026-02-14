@@ -292,4 +292,36 @@ export class TournamentRepository {
             tournamentId
         );
     }
+    async addMatchHistory(
+        userId: string,
+        opponentId: string,
+        result: 'WIN' | 'LOSE',
+        scoreFor: number,
+        scoreAgainst: number,
+        matchType: 'TOURNAMENT' | 'NORMAL',
+        playedAt?: Date,
+        sourceMatchId?: string
+    ) {
+        const id = uuidv4();
+        const playedAtValue = playedAt ?? new Date();
+
+        await this.db.run(
+            `
+            INSERT INTO match_history (
+                id, user_id, opponent_id, played_at, result,
+                score_for, score_against, match_type, source_match_id
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            `,
+            id,
+            userId,
+            opponentId,
+            playedAtValue,
+            result,
+            scoreFor,
+            scoreAgainst,
+            matchType,
+            sourceMatchId ?? null
+        );
+    }
 }

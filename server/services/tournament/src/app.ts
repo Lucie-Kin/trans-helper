@@ -20,6 +20,10 @@ async function  main() {
     
     app.register(fastifyJwt, {
         secret: process.env.JWT_SECRET!,
+        cookie: {
+            cookieName: 'appToken',
+            signed: false,
+        },
     });
 
     app.register(fastifyStatic, {

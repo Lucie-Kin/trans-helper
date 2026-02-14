@@ -14,6 +14,7 @@
     linear-gradient(160deg,
       rgba(40,10,70,.95),
       rgba(20,5,40,.98));
+    padding: 1rem;
 }
 
 .game-card-inner::before {

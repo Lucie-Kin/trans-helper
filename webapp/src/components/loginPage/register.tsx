@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "../../style/loginPage/loginpage.css";
-//import { Link } from "react-router-dom";
 import { IoMailOutline } from "react-icons/io5";
 import { IoLockClosedOutline } from "react-icons/io5";
 import { IoPersonOutline } from "react-icons/io5";
@@ -42,7 +41,7 @@ export default function inscriptionPage() {
         return;
       }
 
-      // Successful registration - redirect to login page
+      // successful registration - redirect to login page
       navigate("/");
     } catch (err) {
       setError("Connection error");

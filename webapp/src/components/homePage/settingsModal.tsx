@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "../../style/chat/profileModal.css";
+import { useLanguage, type Language } from "../../language/LanguageContext.tsx";
 
 type User = {
   id: number;
@@ -26,6 +27,7 @@ export default function SettingsModal({
   const [uploading, setUploading] = useState(false);
   const [displayName, setDisplayName] = useState(user.displayName || user.login || "");
   const [savingName, setSavingName] = useState(false);
+  const { translate } = useLanguage();
 
   // Update displayName when user.displayName changes
   useEffect(() => {
@@ -71,7 +73,7 @@ export default function SettingsModal({
   };
 
 
-  // avatar par defaut
+  // avatar by default
   const setDefaultAvatar = async (imageUrl: string) => {
     setError(null);
     setUploading(true);
@@ -128,7 +130,7 @@ export default function SettingsModal({
   };
 
 
-  // Display name function
+  // display name function
   const saveDisplayName = async () => {
     setError(null);
 
@@ -173,7 +175,7 @@ export default function SettingsModal({
   return (
     <div className="settings-overlay" onClick={onClose}>
       <div className="settings-modal" onClick={(e) => e.stopPropagation()}>
-        <h3>Settings</h3>
+        <h3>{translate("settings.title")}</h3>
         <button className="close-btn" onClick={onClose}>
           ✕
         </button>
@@ -220,7 +222,7 @@ export default function SettingsModal({
 
         {/* ===== DISPLAY NAME ===== */}
         <div className="display-name-section">
-          <label>Display name (actuel: {user.displayName || user.login})</label>
+          <label>{translate("settings.subtitle")} ({translate("settings.current")}: {user.displayName || user.login})</label>
           <input
             type="text"
             value={displayName}
@@ -234,7 +236,7 @@ export default function SettingsModal({
             onClick={saveDisplayName}
             disabled={savingName || uploading || displayName.length < 3}
           >
-            {savingName ? "Enregistrement..." : "Enregistrer le display name"}
+            {savingName ? translate("settings.registering") : translate("settings.register")}
           </button>
         </div>
 
@@ -245,7 +247,7 @@ export default function SettingsModal({
             onClick={enable2FA}
             disabled={loading || uploading}
           >
-            {loading ? "Chargement..." : "Activer 2FA"}
+            {loading ? translate("settings.loading") : translate("settings.twofa")}
           </button>
         )}
 

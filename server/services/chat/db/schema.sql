@@ -1,4 +1,3 @@
--- chat/db/schema.sql
 -- SQLite schema for Chat microservice (DM, friends, blocks, invites, notifications)
 
 PRAGMA foreign_keys = ON;

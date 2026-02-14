@@ -1,4 +1,3 @@
-// chat/src/repositories/blocks.repository.ts
 import { db } from "../db.js";
 
 // Blocks a user by creating a block record in the database

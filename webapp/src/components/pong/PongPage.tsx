@@ -1,9 +1,11 @@
 import { useEffect, useRef } from "react";
 import { startPong } from "./main";
 import { GameCardType } from "../share/sharedTypes";
+import { useLanguage } from "../../language/LanguageContext";
 
 export default function PongPage() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const { translate } = useLanguage();
 
   const onExit = () => {
     window.location.href = "/home";
@@ -11,7 +13,6 @@ export default function PongPage() {
 
   useEffect(() => {
     if (!canvasRef.current) return;
-
     const game = startPong(
       canvasRef.current,
       GameCardType.AI,
@@ -22,13 +23,14 @@ export default function PongPage() {
         console.log("Game ended: ", result);
       },
       1000,
-      1000
+      1000,
+	  translate
     );
 
     return () => {
       game?.cleanup();
     };
-  }, []);
+  }, [translate]);
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {

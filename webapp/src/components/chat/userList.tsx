@@ -1,4 +1,3 @@
-// webapp/src/components/chat/userList.tsx
 import { useEffect, useState } from "react";
 import UserRow from "./userRow";
 import { getSocket } from "../../socket";

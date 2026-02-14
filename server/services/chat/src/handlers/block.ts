@@ -1,4 +1,3 @@
-// chat/src/handlers/block.ts
 import {
   blockUser,
   unblockUser,

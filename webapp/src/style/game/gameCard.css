@@ -65,6 +65,8 @@
     justify-content: center;
     flex: 1;
     z-index: 4;
+    width: 120%;
+    min-height: 9rem;
 
     border-radius: 12px;
     background: rgba(15, 20, 40, 0.55);
@@ -73,7 +75,6 @@
     font-weight: 700;
     letter-spacing: 1px;
     text-shadow: 0 2px 8px rgba(192, 132, 255, 0.8);
-    box-shadow: rgba(168, 85, 247, 0.4);
 }
 
 /* AI CARD - PURPLE */

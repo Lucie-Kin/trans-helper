@@ -1,4 +1,3 @@
-// chat/src/handlers/invite.ts
 import {
   createGameInvite,
   getInviteById,

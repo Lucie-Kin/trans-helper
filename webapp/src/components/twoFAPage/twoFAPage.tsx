@@ -1,4 +1,3 @@
-// components/twoFAPage/twoFAPage.tsx
 /**
 
  * 

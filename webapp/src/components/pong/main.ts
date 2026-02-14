@@ -42,7 +42,8 @@ export function startPong(
   invitePlayerId?: number,
   onGameEnd?: (result: MatchResult) => void,
   player1Elo: number = 1000,
-  player2Elo: number = 1000
+  player2Elo: number = 1000,
+  translate?: (key: string, vars?: Record<string, string | number>) => string
 ) {
   if (invitePlayerId) console.log("invite player id: ", invitePlayerId);
   const ctx = canvas.getContext("2d");
@@ -56,7 +57,6 @@ export function startPong(
   let player2: Player;
   let ai: AIController | undefined;
   const ball = new Ball(field.width / 2, field.height / 2, 0, 0, 10);
-
   const p2Name = mode === GameCardType.AI ? "AI" : player2Name;
 
   switch (mode) {
@@ -91,7 +91,7 @@ export function startPong(
     countdown = COUTDOWN_DURATION;
     countdownStart = now;
   };
-  
+
   const onKeyDown = (e: KeyboardEvent) => {
     if ((e.code === "Space" || e.key === "Enter") && waitingForSpace) {
       e.preventDefault();
@@ -133,13 +133,13 @@ export function startPong(
     window.removeEventListener("keyup", onKeyUp);
   };
 
-  const handleInput = () => {
-    if (pressed.has("w")) engine.movePlayer(player1, "up");
-    if (pressed.has("s")) engine.movePlayer(player1, "down");
+  const handleInput = (dt: number) => {
+    if (pressed.has("w")) engine.movePlayer(player1, "up", dt);
+    if (pressed.has("s")) engine.movePlayer(player1, "down", dt);
 
     if (mode !== GameCardType.AI) {
-      if (pressed.has("ArrowUp")) engine.movePlayer(player2, "up");
-      if (pressed.has("ArrowDown")) engine.movePlayer(player2, "down");
+      if (pressed.has("ArrowUp")) engine.movePlayer(player2, "up", dt);
+      if (pressed.has("ArrowDown")) engine.movePlayer(player2, "down", dt);
     }
   };
 
@@ -168,7 +168,8 @@ export function startPong(
     ctx.font = "42px Chakra_bold";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText("VICTOIRE", cx, cy - 100);
+	const victoryText = translate ? translate("game.victory") : "VICTOIRE";
+    ctx.fillText(victoryText, cx, cy - 100);
     ctx.shadowBlur = 0;
 
     ctx.shadowColor = "#ffd700";
@@ -189,7 +190,8 @@ export function startPong(
 
     ctx.fillStyle = winnerRank === "Pro" ? "#ffd700" : winnerRank === "Mid" ? "#87ceeb" : "#aaaaaa";
     ctx.font = "20px Chakra_bold";
-    ctx.fillText(`Rank: ${winnerRank}`, cx, cy + 50);
+	const rankText = translate ? translate("game.rank") : "Classement: ";
+    ctx.fillText(rankText, cx, cy + 50);
 
     ctx.fillStyle = "#888888";
     ctx.font = "16px Chakra";
@@ -199,7 +201,7 @@ export function startPong(
   const renderWaitingForSpace = () => {
     ctx.fillStyle = "black";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-    
+
     ctx.fillStyle = "white";
     ctx.fillRect(player1.x, player1.y, player1.width, player1.height);
     ctx.fillRect(player2.x, player2.y, player2.width, player2.height);
@@ -220,7 +222,8 @@ export function startPong(
 
     ctx.fillStyle = "#cccccc";
     ctx.font = "18px Chakra";
-    ctx.fillText("Appuyez sur Espace pour commencer", cx, cy + 20);
+	const startText = translate ? translate("game.start") : "Appuyez sur Espace pour commencer";
+    ctx.fillText(startText, cx, cy + 20);
   };
 
   const render = () => {
@@ -321,17 +324,25 @@ export function startPong(
   };
 
   const loop = (now: number) => {
-    const dt = now - last;
+    const dtMs = now - last;
     last = now;
+	const dt = Math.min(dtMs, 50) / 1000;
 
     if (!waitingForSpace)
-      handleInput();
+      handleInput(dt);
 
-    if (countdown > 0) {
-      const elapsed = (now - countdownStart) / 1000;
-      countdown = Math.max(COUTDOWN_DURATION - Math.floor(elapsed), 0);
-    } else if (!paused && !externallyPaused && !engine.gameOver)
-      engine.update(dt);
+    const wasCounting = countdown > 0;
+
+	if (countdown > 0) {
+	const elapsed = (now - countdownStart) / 1000;
+	countdown = Math.max(COUTDOWN_DURATION - Math.floor(elapsed), 0);
+
+	if (wasCounting && countdown === 0) {
+		engine.kickoff();
+	}
+	} else if (!paused && !externallyPaused && !engine.gameOver) {
+	engine.update(dt);
+}
 
     render();
     rafId = requestAnimationFrame(loop);

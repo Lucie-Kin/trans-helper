@@ -1,4 +1,3 @@
-// chat/src/handlers/auth.ts
 import { unregisterSocket, getAllUsers } from "../socketRegistry.js";
 
 export function registerAuthHandlers(io: any, socket: any) {

@@ -1,10 +1,10 @@
--- server/services/auth/db/schema.sql
 CREATE TABLE IF NOT EXISTS user (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
 
   login TEXT UNIQUE NOT NULL,
   email TEXT UNIQUE,
   image TEXT DEFAULT '/default-avatar.png',
+  preferred_language TEXT NOT NULL DEFAULT 'fr',
   --online INTEGER NOT NULL DEFAULT 0,
 
   -- public profile
