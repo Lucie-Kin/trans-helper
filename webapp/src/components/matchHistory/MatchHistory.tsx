@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import "../../style/chat/profileModal.css";
 import { useMatchHistory } from "../../hooks/useMatchHistory";
+import { API_BASE } from "../../api";
 
 type User = {
   id: number;
@@ -15,7 +16,7 @@ export default function MatchHistory({ onClose }: { onClose: () => void }) {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const res = await fetch("https://localhost:8443/auth/api/users", {
+        const res = await fetch(`${API_BASE}/auth/api/users`, {
           credentials: "include",
         });
         if (res.ok) {

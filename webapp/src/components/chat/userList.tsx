@@ -204,8 +204,6 @@ export default function UserList({
 
   const displayedUsers = users.filter((u) => u.id !== myUserId);
 
-  console.log(displayedUsers[0]);
-
   return (
     <>
       <div className="user-list">
