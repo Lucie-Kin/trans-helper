@@ -47,6 +47,9 @@ A React/Vite frontend application with authentication features. A web applicatio
 - Output directory: `webapp/dist`
 
 ## Tournament System
+- **Fixed 4 players**: Tournaments always have exactly 4 players (2 semi-finals + 1 final = 3 matches)
+- **No AI in tournaments**: AI players are not used in tournament mode, only real accounts or human guests
+- **"Jouer" disabled**: Button is greyed out and unclickable until all 4 player slots are filled
 - **Name validation**: Printable ASCII only, no whitespace, max 20 characters
 - **Sender auto-included**: Invite sender is automatically a tournament member (2 invites = 3 players)
 - **Open access**: Any participant can edit name, start tournament, and invite more players

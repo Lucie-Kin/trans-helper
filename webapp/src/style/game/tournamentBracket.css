@@ -241,6 +241,14 @@
     font-size: 0.85rem;
 }
 
+.tournament-start-btn.disabled{
+    background: rgba(80, 80, 80, 0.6);
+    border-color: rgba(120, 120, 120, 0.3);
+    color: rgba(255, 255, 255, 0.4);
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
 .tournament-start-btn.close{
     background: rgba(180, 60, 60, 0.7);
     border-color: rgba(220, 80, 80, 0.4);

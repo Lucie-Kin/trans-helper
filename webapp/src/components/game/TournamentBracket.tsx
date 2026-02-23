@@ -105,7 +105,7 @@ function MatchSVG({
         if (onNameSubmit)
             onNameSubmit(match.id, "A", newName);
     });
-    
+
     const nameB = useEditableName("", (newName) => {
         if (onNameSubmit)
             onNameSubmit(match.id, "B", newName);
@@ -287,29 +287,23 @@ export default function TournamentBracket({
     const displayNameHook = useEditableName(tournamentName || "", onChangeName);
 
     const generatePlaceholderMatches = (playerList: TournamentPlayer[]): TournamentMatch[] => {
-        if (playerList.length < 2) return [];
-        const totalSlots = Math.pow(2, Math.ceil(Math.log2(playerList.length)));
-        const totalRounds = Math.log2(totalSlots);
+        const slots = playerList.slice(0, 4);
         const generated: TournamentMatch[] = [];
-        let matchId = 1;
 
-        for (let r = 1; r <= totalRounds; r++) {
-            const matchesInRound = totalSlots / Math.pow(2, r);
-            for (let p = 1; p <= matchesInRound; p++) {
-                const match: TournamentMatch = {
-                    id: matchId++,
-                    round: r,
-                    position: p,
-                };
-                if (r === 1) {
-                    const idxA = (p - 1) * 2;
-                    const idxB = (p - 1) * 2 + 1;
-                    if (idxA < playerList.length) match.playerA = playerList[idxA];
-                    if (idxB < playerList.length) match.playerB = playerList[idxB];
-                }
-                generated.push(match);
-            }
-        }
+        generated.push({
+            id: 1, round: 1, position: 1,
+            playerA: slots[0],
+            playerB: slots[1],
+        });
+        generated.push({
+            id: 2, round: 1, position: 2,
+            playerA: slots[2],
+            playerB: slots[3],
+        });
+        generated.push({
+            id: 3, round: 2, position: 1,
+        });
+
         return generated;
     };
 
@@ -329,7 +323,7 @@ export default function TournamentBracket({
     const effectiveMatches = useMemo(() => {
         if (matches.length > 0)
             return matches;
-        if (players.length >= 2)
+        if (players.length >= 1)
             return generatePlaceholderMatches(players);
         return [];
     }, [matches, players]);
@@ -442,9 +436,19 @@ export default function TournamentBracket({
 
                 {effectiveMatches.length > 0 && effectiveMatches.every((m) => m.winner !== undefined) ? (
                     <button className="tournament-start-btn close" onClick={onClose}>Fermer le tournoi</button>
-                ) : (
-                    <button className="tournament-start-btn" onClick={onStart}>Jouer</button>
-                )}
+                ) : (() => {
+                    const filledSlots = effectiveMatches
+                        .filter((m) => m.round === 1)
+                        .reduce((count, m) => count + (m.playerA ? 1 : 0) + (m.playerB ? 1 : 0), 0);
+                    const ready = filledSlots >= 4;
+                    return (
+                        <button
+                            className={`tournament-start-btn${!ready ? " disabled" : ""}`}
+                            onClick={ready ? onStart : undefined}
+                            disabled={!ready}
+                        >Jouer</button>
+                    );
+                })()}
         </div>
     );
 }
