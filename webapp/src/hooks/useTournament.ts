@@ -249,26 +249,45 @@ export function useTournament(myUserId: number) {
                 return matches.length > 0 ? matches : prev;
             }
 
+            const validIds = new Set(allPlayers.map((p) => p.id));
+            const toPlace = [...allPlayers];
+
             const existingIds = new Set<number>();
             prev.forEach((m) => {
                 if (m.playerA) existingIds.add(m.playerA.id);
                 if (m.playerB) existingIds.add(m.playerB.id);
             });
+            const newPlayers = toPlace.filter((p) => !existingIds.has(p.id));
 
-            const toPlace = allPlayers.filter((p) => !existingIds.has(p.id));
-            if (toPlace.length === 0) return prev;
-
-            return prev.map((m) => {
-                if (m.round !== 1 || toPlace.length === 0) return m;
-                const newA = !m.playerA && toPlace.length > 0 ? toPlace.shift() : undefined;
-                const newB = !m.playerB && toPlace.length > 0 ? toPlace.shift() : undefined;
-                if (!newA && !newB) return m;
+            let updated = prev.map((m) => {
+                if (m.round !== 1) return m;
+                const keepA = m.playerA && (validIds.has(m.playerA.id) || m.playerA.isGuest);
+                const keepB = m.playerB && (validIds.has(m.playerB.id) || m.playerB.isGuest);
+                if (keepA && keepB) return m;
                 return {
                     ...m,
-                    ...(newA ? { playerA: newA } : {}),
-                    ...(newB ? { playerB: newB } : {}),
+                    ...(keepA ? {} : { playerA: undefined }),
+                    ...(keepB ? {} : { playerB: undefined }),
                 };
             });
+
+            if (newPlayers.length > 0) {
+                const placing = [...newPlayers];
+                updated = updated.map((m) => {
+                    if (m.round !== 1 || placing.length === 0) return m;
+                    const newA = !m.playerA && placing.length > 0 ? placing.shift() : undefined;
+                    const newB = !m.playerB && placing.length > 0 ? placing.shift() : undefined;
+                    if (!newA && !newB) return m;
+                    return {
+                        ...m,
+                        ...(newA ? { playerA: newA } : {}),
+                        ...(newB ? { playerB: newB } : {}),
+                    };
+                });
+            }
+
+            const same = updated.every((m, i) => m === prev[i]);
+            return same ? prev : updated;
         });
     }, [invitedPlayers, myUserId, generateBracketMatches]);
 
