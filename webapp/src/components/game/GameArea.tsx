@@ -26,13 +26,20 @@ export default function GameArea({
 }: Props) {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const gameRef = useRef<ReturnType<typeof startPong> | null>(null);
-	const { translate } = useLanguage();
+    const onGameEndRef = useRef(onGameEnd);
+    const { translate } = useLanguage();
+
+    onGameEndRef.current = onGameEnd;
 
     useEffect(() => {
         if (!canvasRef.current) return;
 
         const canvas = canvasRef.current;
         let cancelled = false;
+
+        const stableOnGameEnd = (result: MatchResult) => {
+            onGameEndRef.current?.(result);
+        };
 
         const init = async () => {
             await document.fonts.ready;
@@ -42,7 +49,7 @@ export default function GameArea({
             canvas.width = rect.width;
             canvas.height = rect.height;
 
-            const g = startPong(canvas, gameCardType, player1Name, player2Name, invitePlayerId, onGameEnd, 1000, 1000, translate);
+            const g = startPong(canvas, gameCardType, player1Name, player2Name, invitePlayerId, stableOnGameEnd, 1000, 1000, translate);
             if (!cancelled) {
                 gameRef.current = g ?? null;
                 if (externalPaused)
@@ -73,7 +80,7 @@ export default function GameArea({
             window.removeEventListener("focus", onFocus);
             document.removeEventListener("visibilitychange", onVisibilityChange);
         };
-	}, [gameCardType, player1Name, player2Name, invitePlayerId, onGameEnd, translate]);
+        }, [gameCardType, player1Name, player2Name, invitePlayerId, translate]);
 
     useEffect(() => {
         gameRef.current?.setPaused(externalPaused);
