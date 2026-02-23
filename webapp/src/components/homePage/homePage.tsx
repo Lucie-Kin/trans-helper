@@ -10,7 +10,7 @@ import { connectSocket } from "../../socket";
 import { GameCardType, GameState } from '../share/sharedTypes';
 import { useLanguage } from "../../language/LanguageContext.tsx";
 import MatchHistory from '../matchHistory/MatchHistory.tsx';
-import tournamentNotification from '../game/TournamentNotification.tsx';
+import TournamentNotification from '../game/TournamentNotification.tsx';
 
 import "../../style/homePage/homepage.css";
 import "../../style/homePage/settings.css";
