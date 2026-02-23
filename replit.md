@@ -55,6 +55,10 @@ A React/Vite frontend application with authentication features. A web applicatio
 - **ELO**: Noob (0-1199, K=32), Mid (1200-1599, K=24), Pro (1600+, K=16)
 
 ## Recent Changes
+- 2026-02-23: Added TournamentNotification component: shows "PLAYER1 VS. PLAYER2" for next match, auto-closes after 5s, pauses game when visible
+- 2026-02-23: Fixed settings/history modal title word-breaking: responsive width with clamp(), word-break: keep-all
+- 2026-02-23: Ball no longer resets to center on unpause (resumeOnly flag in main.ts)
+- 2026-02-23: Game pauses when clicking profile-area/menu (menuOpen added to pause condition)
 - 2026-02-11: Fixed WIN_SCORE from 1 to 11 (games now require 11 points to win)
 - 2026-02-11: Fixed AI/TBD in tournaments: TBD slots now get proper AI player objects (negative IDs), display as "🤖 AI", green highlight works on AI wins
 - 2026-02-11: "Fermer le tournoi" button replaces "Jouer" when all matches done; clears tournament state
