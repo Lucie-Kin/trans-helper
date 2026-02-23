@@ -10,6 +10,7 @@ import { connectSocket } from "../../socket";
 import { GameCardType, GameState } from '../share/sharedTypes';
 import { useLanguage } from "../../language/LanguageContext.tsx";
 import MatchHistory from '../matchHistory/MatchHistory.tsx';
+import TournamentNotification from '../game/TournamentNotification.tsx';
 
 import "../../style/homePage/homepage.css";
 import "../../style/homePage/settings.css";
@@ -197,6 +198,13 @@ export default function HomePage() {
       {showHistory && (
         <MatchHistory onClose={() => setShowHistory(false)} />
       )}
+      {tournament.nextMatchNotification && (
+        <TournamentNotification
+          playerAName={tournament.nextMatchNotification.playerAName}
+          playerBName={tournament.nextMatchNotification.playerBName}
+          onClose={tournament.dismissNextMatchNotification}
+        />
+      )}
 
       <div className={`title-container ${gameState === GameState.Playing ? 'compact' : ''}`}>
         <h3>{translate("home.title")}</h3>
@@ -209,7 +217,7 @@ export default function HomePage() {
           gameCardType={tournament.activeTournamentMatch.isAIOpponent ? GameCardType.AI : GameCardType.Invite}
           player1Name={tournament.activeTournamentMatch.playerAName}
           player2Name={tournament.activeTournamentMatch.playerBName}
-          paused={showSettings || showHistory || menuOpen}
+          paused={showSettings || showHistory || menuOpen || !!tournament.nextMatchNotification}
           onGameEnd={(result) => {
             tournament.handleTournamentMatchEnd(result.winner, result.scoreP1, result.scoreP2);
           }}
@@ -225,7 +233,7 @@ export default function HomePage() {
               : tournament.invitedPlayers.find(p => p.id === invitePlayerId)?.name || "Adversaire"
           }
           invitePlayerId={invitePlayerId}
-          paused={showSettings || showHistory || menuOpen}
+          paused={showSettings || showHistory || menuOpen || !!tournament.nextMatchNotification}
         />
       ) : (
         <div className="boxes-wrapper">

@@ -19,6 +19,11 @@ export type ActiveTournamentMatch = {
     isAIOpponent: boolean;
 };
 
+export type NextMatchNotification = {
+    playerAName: string;
+    playerBName: string;
+};
+
 export function useTournament(myUserId: number) {
     const socket = getSocket();
 
@@ -32,6 +37,7 @@ export function useTournament(myUserId: number) {
     const [availableTournaments, setAvailableTournaments] = useState<TournamentInfo[]>([]);
     const [activeInviteId, setActiveInviteId] = useState<number | undefined>();
     const [activeTournamentMatch, setActiveTournamentMatch] = useState<ActiveTournamentMatch | null>(null);
+    const [nextMatchNotification, setNextMatchNotification] = useState<NextMatchNotification | null>(null);
 
     const fetchTournaments = useCallback(async () => {
         try {
@@ -353,8 +359,20 @@ export function useTournament(myUserId: number) {
             });
         });
 
-        setTimeout(() => setActiveTournamentMatch(null), 2000);
-    }, [activeTournamentMatch]);
+        setTimeout(() => {
+            setActiveTournamentMatch(null);
+
+            setTournamentMatches((latestMatches) => {
+                const nextMatch = findFirstUnplayedMatch(latestMatches);
+                if (nextMatch) {
+                    const pAName = nextMatch.playerA?.name || "AI";
+                    const pBName = nextMatch.playerB?.name || "AI";
+                    setNextMatchNotification({ playerAName: pAName, playerBName: pBName });
+                }
+                return latestMatches;
+            });
+        }, 2000);
+    }, [activeTournamentMatch, findFirstUnplayedMatch]);
 
     const startTournament = useCallback(async () => {
         if (tournamentId) {
@@ -436,6 +454,10 @@ export function useTournament(myUserId: number) {
         setGameState(GameState.Idle);
     }, []);
 
+    const dismissNextMatchNotification = useCallback(() => {
+        setNextMatchNotification(null);
+    }, []);
+
     const clearInvites = useCallback(() => {
         setInvitedPlayers([]);
         setTournamentId(undefined);
@@ -445,6 +467,7 @@ export function useTournament(myUserId: number) {
         setIsOrganizer(false);
         setActiveInviteId(undefined);
         setActiveTournamentMatch(null);
+        setNextMatchNotification(null);
         setGameState(GameState.Idle);
     }, []);
 
@@ -459,6 +482,7 @@ export function useTournament(myUserId: number) {
         isOrganizer,
         availableTournaments,
         activeTournamentMatch,
+        nextMatchNotification,
         addPendingInvite,
         removeInvite,
         confirmInvite,
@@ -473,5 +497,6 @@ export function useTournament(myUserId: number) {
         joinTournament,
         exitGame,
         clearInvites,
+        dismissNextMatchNotification,
     };
 }

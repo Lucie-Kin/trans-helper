@@ -1,0 +1,56 @@
+.notification-modal {
+    background: rgba(20, 20, 20, 0.95);
+    border-radius: 16px;
+    padding: 2rem 3rem;
+    min-width: 28rem;
+    max-width: 90vw;
+    color: white;
+    position: relative;
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.8);
+    text-align: center;
+    animation: notifSlideIn 0.3s ease-out;
+}
+
+@keyframes notifSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-30px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.notification-title {
+    margin: 0 0 1.5rem 0;
+    font-size: 1.2rem;
+    font-family: "Chakra", sans-serif;
+    color: #aaa;
+    letter-spacing: 0.15em;
+}
+
+.notification-versus {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.2rem;
+    flex-wrap: nowrap;
+}
+
+.notification-player {
+    font-family: "Chakra_bold", sans-serif;
+    font-size: clamp(1.4rem, 3vw, 2.2rem);
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 40%;
+}
+
+.notification-vs {
+    font-family: "Chakra_bold", sans-serif;
+    font-size: 1.4rem;
+    color: #ffd700;
+    flex-shrink: 0;
+}
