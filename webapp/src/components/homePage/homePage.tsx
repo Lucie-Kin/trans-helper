@@ -148,10 +148,17 @@ export default function HomePage() {
     setGameState(GameState.Idle);
   };
 
-  const handlePlayCard = (type: GameCardType, playerId?: number) => {
+const handlePlayCard = (type: GameCardType, playerId?: number) => {
     setActiveCard(type);
-    if (playerId)
+    if (playerId) {
       setInvitePlayerId(playerId);
+      setGameState(GameState.Playing);
+    }
+
+    if (type === GameCardType.AI || (type === GameCardType.Invite && playerId)) {
+      setNormalGameSessionId(crypto.randomUUID());
+    }
+
     setGameState(GameState.Playing);
   };
 
@@ -220,7 +227,7 @@ export default function HomePage() {
           player1Name={tournament.activeTournamentMatch.playerAName}
           player2Name={tournament.activeTournamentMatch.playerBName}
           paused={showSettings || showHistory || menuOpen || !!tournament.nextMatchNotification}
-           onGameEnd={async (result) => {
+          onGameEnd={async (result) => {
             const active = tournament.activeTournamentMatch;
             if (!active || !user) return;
       

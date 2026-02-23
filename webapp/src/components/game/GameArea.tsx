@@ -49,7 +49,7 @@ export default function GameArea({
             canvas.width = rect.width;
             canvas.height = rect.height;
 
-            const g = startPong(canvas, gameCardType, player1Name, player2Name, invitePlayerId, stableOnGameEnd, 1000, 1000, translate);
+            const g = startPong(canvas, gameCardType, player1Name, player2Name, invitePlayerId, onGameEnd, 1000, 1000, translate);
             if (!cancelled) {
                 gameRef.current = g ?? null;
                 if (externalPaused)

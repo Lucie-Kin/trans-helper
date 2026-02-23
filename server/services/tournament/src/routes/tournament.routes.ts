@@ -57,6 +57,7 @@ export async function tournamentRoutes(fastify: FastifyInstance) {
   });
 
 
+  
   fastify.post(
     '/match-history/normal/complete',
     { preHandler: [fastify.authenticate] },
