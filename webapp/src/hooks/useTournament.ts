@@ -163,7 +163,7 @@ export function useTournament(myUserId: number) {
             }
         };
 
-        const onTournamentNextMatch = (payload: { playerAName: string; playerBName: string; tournamentId: string }) => {
+        const onTournamentNextMatch = (payload: { playerAName: string, playerBName: string; tournamentId: string }) => {
             setNextMatchNotification({ playerAName: payload.playerAName, playerBName: payload.playerBName });
         };
         socket.on("game:start", onGameStart);
@@ -193,7 +193,7 @@ export function useTournament(myUserId: number) {
             return [...prev, { id: playerId, name: playerName, confirmed: false }];
         });
     }, []);
-    
+
     const removeInvite = useCallback((playerId: number) => {
         setInvitedPlayers((prev) => prev.filter((p) => p.id !== playerId));
     }, []);
@@ -234,18 +234,45 @@ export function useTournament(myUserId: number) {
     }, []);
 
     useEffect(() => {
-        if (tournamentMatches.length === 0 && invitedPlayers.length >= 2) {
-            const allPlayers: TournamentPlayer[] = [
-                ...(myUserId ? [{ id: myUserId, name: "Moi", isAI: false, confirmed: true }] : []),
-                ...invitedPlayers
-                    .filter((p) => p.id !== myUserId)
-                    .map((p) => ({ id: p.id, name: p.name, isAI: false, confirmed: p.confirmed })),
-            ];
+        if (invitedPlayers.length < 2) return;
+
+        const allPlayers: TournamentPlayer[] = [
+            ...(myUserId ? [{ id: myUserId, name: "Moi", isAI: false, confirmed: true }] : []),
+            ...invitedPlayers
+                .filter((p) => p.id !== myUserId)
+                .map((p) => ({ id: p.id, name: p.name, isAI: false, confirmed: p.confirmed })),
+        ];
+
+        if (tournamentMatches.length === 0) {
             const matches = generateBracketMatches(allPlayers);
             if (matches.length > 0)
                 setTournamentMatches(matches);
+        } else {
+            const existingIds = new Set<number>();
+            tournamentMatches.forEach((m) => {
+                if (m.playerA) existingIds.add(m.playerA.id);
+                if (m.playerB) existingIds.add(m.playerB.id);
+            });
+
+            const newPlayers = allPlayers.filter((p) => !existingIds.has(p.id));
+            if (newPlayers.length === 0) return;
+
+            setTournamentMatches((prev) => {
+                const toPlace = [...newPlayers];
+                return prev.map((m) => {
+                    if (m.round !== 1 || toPlace.length === 0) return m;
+                    const newA = !m.playerA && toPlace.length > 0 ? toPlace.shift() : undefined;
+                    const newB = !m.playerB && toPlace.length > 0 ? toPlace.shift() : undefined;
+                    if (!newA && !newB) return m;
+                    return {
+                        ...m,
+                        ...(newA ? { playerA: newA } : {}),
+                        ...(newB ? { playerB: newB } : {}),
+                    };
+                });
+            });
         }
-    }, [invitedPlayers, myUserId, tournamentMatches.length, generateBracketMatches]);
+    }, [invitedPlayers, myUserId, tournamentMatches, generateBracketMatches]);
 
     const playAI = useCallback(() => {
         setGameState(GameState.Playing);
@@ -308,7 +335,7 @@ export function useTournament(myUserId: number) {
             confirmed: true,
             isGuest: true,
         };
-        
+
         setTournamentMatches((prev) =>
             prev.map((m) => {
                 if (m.id !== matchId)
@@ -357,14 +384,14 @@ export function useTournament(myUserId: number) {
                 if (nextMatch) {
                     const pAName = nextMatch.playerA?.name || "AI";
                     const pBName = nextMatch.playerB?.name || "AI";
-                    setNextMatchNotification({ playerAName: pAName, playerBName: pBName });
+                    setNextMatchNotification({playerAName: pAName, playerBName: pBName});
 
                     if (tournamentId) {
                         const participantIds = Array.from(
                             new Set(
                                 latestMatches
                                     .flatMap((m) => [m.playerA, m.playerB])
-                                    .filter((p) => p && !p.isAI && p.id > 0)
+                                    .filter((p) => p && !p.isAI && !p.isGuest && p.id > 0)
                                     .map((p) => p!.id)
                             )
                         );
@@ -377,7 +404,7 @@ export function useTournament(myUserId: number) {
                     }
                 }
                 return latestMatches;
-            });
+            })
         }, 2000);
     }, [activeTournamentMatch, findFirstUnplayedMatch, tournamentId, socket]);
 

@@ -1,6 +1,4 @@
 import { useMemo } from "react";
-// import React from "react";
-// import { useState } from "react";
 import "../../style/game/tournamentBracket.css";
 import { useEditableName } from "../../hooks/useEditableName";
 
@@ -303,7 +301,6 @@ export default function TournamentBracket({
         generated.push({
             id: 3, round: 2, position: 1,
         });
-
         return generated;
     };
 
