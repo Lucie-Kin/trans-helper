@@ -17,7 +17,6 @@ function emitToAllSocketsOf(io: any, userId: number, event: string, payload: any
 export function registerInviteHandlers(io: any, socket: any) {
   // SEND INVITE
   socket.on("game:invite", ({ targetId }) => {
-    console.log("invite in backend", targetId);
     if (!targetId || targetId === socket.user.id) return;
 
     const invite = createGameInvite(socket.user.id, targetId);

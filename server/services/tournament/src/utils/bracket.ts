@@ -18,7 +18,7 @@ export function createAiParticipants(count: number, baseLevel: number = 1): Part
     for (let i = 0; i < count; i++) {
         aiPlayers.push({
             playerId: `AI_${i + 1}`,
-            isAi: true,
+            isAI: true,
             aiLevel: baseLevel
         });
     }

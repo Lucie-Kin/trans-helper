@@ -40,7 +40,6 @@ export async function syncUsersFromAuth(): Promise<boolean> {
     }
 
     if (!authReady) {
-      console.log(`✅ Auth sync OK (${users.length} users)`);
       authReady = true;
     }
 

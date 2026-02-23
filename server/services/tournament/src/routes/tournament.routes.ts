@@ -1,4 +1,3 @@
-// tournament/src/routes/tournament.routes.ts
 import { FastifyInstance } from 'fastify';
 import { createTournament, getTournament } from '../plugins/tournament.controller';
 import { tournamentManager, tournamentRepo } from '../singletons';

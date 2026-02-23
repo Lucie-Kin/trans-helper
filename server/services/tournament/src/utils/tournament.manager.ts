@@ -1,4 +1,3 @@
-// utils/tournament.manager.ts
 import { TournamentRepository } from '../repository/tournament.repository';
 import { TournamentStatus, InvitationStatus, TournamentMatchStatus, ParticipantStatus } from '../types/tournament';
 import { TournamentInvitation } from '../types/tournament';
@@ -14,7 +13,6 @@ export class TournamentManager {
 
     async createTournament(name: string, organizedId: string) {
         const id = await this.repo.createTournament(name, organizedId);
-        console.log(id);
         return this.repo.getTournamentById(id);
     }
     async getTournament(id:string) {
@@ -59,7 +57,7 @@ export class TournamentManager {
         const participants = await this.repo.getParticipants(tournamentId);
         const participantsByPlayerId = new Map<string, string>(participants.map((p: any) => [p.playerId, p.id]));
         const bracket: BracketStructure = generateBracket(
-            participants.map((p: any) => ({ playerId: p.playerId, isAi: p.isAi }))
+            participants.map((p: any) => ({ playerId: p.playerId, isAI: p.isAI }))
         );
         for (const match of bracket.matches) {
             await this.repo.createMatch({
@@ -108,7 +106,7 @@ export class TournamentManager {
             await this.repo.createParticipant({
                 tournamentId,
                 playerId,
-                isAi: false,
+                isAI: false,
                 status: ParticipantStatus.READY
             });
         }

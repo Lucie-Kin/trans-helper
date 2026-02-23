@@ -103,7 +103,7 @@ function MatchSVG({
         if (onNameSubmit)
             onNameSubmit(match.id, "A", newName);
     });
-
+    
     const nameB = useEditableName("", (newName) => {
         if (onNameSubmit)
             onNameSubmit(match.id, "B", newName);

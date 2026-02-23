@@ -16,9 +16,9 @@ export type ActiveTournamentMatch = {
     position: number;
     playerAName: string;
     playerBName: string;
-    playerBId: number;
     isAIOpponent: boolean;
-    isGuestOpponent: boolean;
+    playerAId?: number;// zz
+    playerBId?: number;// zz
 };
 
 export type NextMatchNotification = {
@@ -250,7 +250,6 @@ export function useTournament(myUserId: number) {
                 const matches = generateBracketMatches(allPlayers);
                 return matches.length > 0 ? matches : prev;
             }
-
             const validIds = new Set(allPlayers.map((p) => p.id));
             const toPlace = [...allPlayers];
 
@@ -259,6 +258,7 @@ export function useTournament(myUserId: number) {
                 if (m.playerA) existingIds.add(m.playerA.id);
                 if (m.playerB) existingIds.add(m.playerB.id);
             });
+
             const newPlayers = toPlace.filter((p) => !existingIds.has(p.id));
 
             let updated = prev.map((m) => {
@@ -268,8 +268,8 @@ export function useTournament(myUserId: number) {
                 if (keepA && keepB) return m;
                 return {
                     ...m,
-                    ...(keepA ? {} : { playerA: undefined }),
-                    ...(keepB ? {} : { playerB: undefined }),
+                    ...(keepA ? {} : {playerA: undefined}),
+                    ...(keepB ? {} : {playerB: undefined}),
                 };
             });
 
@@ -285,7 +285,7 @@ export function useTournament(myUserId: number) {
                         ...(newA ? { playerA: newA } : {}),
                         ...(newB ? { playerB: newB } : {}),
                     };
-                });
+                }); 
             }
 
             const same = updated.every((m, i) => m === prev[i]);
@@ -338,9 +338,9 @@ export function useTournament(myUserId: number) {
             position: match.position,
             playerAName: pA.name,
             playerBName: pB.name,
-            playerBId: pB.id,
             isAIOpponent: false,
-            isGuestOpponent: !!pB.isGuest,
+            playerAId: pA?.id, // zz
+            playerBId: pB?.id, // zz
         });
         return true;
     }, [tournamentMatches, invitedPlayers, myUserId, findFirstUnplayedMatch, generateBracketMatches]);

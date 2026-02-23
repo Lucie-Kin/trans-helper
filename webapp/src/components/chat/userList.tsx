@@ -231,7 +231,6 @@ export default function UserList({
             }
 
             onInvite={() => {
-              console.log("invite");
               socket.emit("game:invite", { targetId: u.id });
               handleGameInviteClick(u)
             }}

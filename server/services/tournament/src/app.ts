@@ -45,14 +45,11 @@ async function  main() {
     process.on('SIGHUP', () => shutdown('SIGHUP'));
 
     async function shutdown(signal: string) {
-        console.log('Received ${signal}, shutting down gracefully...');
         await app.close();
-        console.log('Server closed');
         process.exit(0);
     }
 
     await app.listen({ port: 3003, host: '0.0.0.0' });
-    console.log('Server running on ${app.server.address()}');
 }
 
 main().catch((err) => {

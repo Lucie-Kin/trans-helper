@@ -1,5 +1,3 @@
-// chat/src/socketRegistry.ts
-
 export type OnlineUser = {
   id: number;
   login: string;

@@ -19,7 +19,7 @@ export default function tournamentNotification({ playerAName, playerBName, onClo
     return (
         <div className="settings-overlay" onClick={onClose}>
             <div className="notification-modal" onClick={(e) => e.stopPropagation()}>
-                <button className="close-btn" onClick={onClose}>&#x2715;</button>
+                <button className="close-btn" onClick={onClose}>✕</button>
                 <h3 className="notification-title">{translate("tournament.notification")}</h3>
                 <div className="notification-versus">
                     <span className="notification-player">{playerAName}</span>

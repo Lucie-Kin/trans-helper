@@ -1,4 +1,3 @@
-// tournament/src/repository/tournament.repository.ts
 import sqlite3 from 'sqlite3';
 import { Database } from 'sqlite';
 import { getDb } from '../db';
@@ -46,7 +45,6 @@ export class TournamentRepository {
             title,
             organizerId
         );
-        console.log(test);
         return id;
     }
     async createMatch(match: TournamentMatch) {

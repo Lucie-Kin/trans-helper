@@ -95,7 +95,6 @@ const pendingStates = new Map<string, number>();
 
 fastify.get("/auth/42/login", async (_request: any, reply: any) => {
 	const state = generateState();
-	console.log("LOGIN - Generated state:", state);
 	pendingStates.set(state, Date.now() + 5 * 60 * 1000);
 
 	const url = `https://api.intra.42.fr/oauth/authorize` + `?client_id=${process.env.CLIENT_ID}` +
@@ -191,7 +190,6 @@ fastify.get("/auth/callback", async (request: any, reply: any) => {
 fastify.get("/auth/session", async (req, reply) => {
 	const token = (req.cookies)?.appToken;
 	if (!token) {
-		console.log(req);
 		return reply.code(401).send({ error: "no cookie" });
 	}
 
@@ -441,7 +439,6 @@ fastify.post("/auth/avatar/default", { preHandler: requireAuth }, async (req, re
 		return reply.code(400).send({ error: "invalid_avatar" });
 
 	updateUserAvatar(user.id, imageUrl);
-	console.log("avatar/default body:", req.body);
 
 	const newJwt = fastify.jwt.sign(
 		{
@@ -585,20 +582,13 @@ fastify.post("/auth/register", async (req, reply) => {
 	try {
 		// Hash password
 		const passwordHash = await hashPassword(password);
-		console.log("Registration:", { login, email, passwordHashLength: passwordHash.length });
 
 		// Create user
 		const result = createLocalUser(login, email, passwordHash);
 		const userId = result.lastInsertRowid as number;
 
 		// Check that user is created and password_hash is saved
-		const createdUser = findUserById(userId);
-		console.log("User created:", {
-			id: createdUser?.id,
-			login: createdUser?.login,
-			hasPasswordHash: !!createdUser?.password_hash,
-			authProvider: createdUser?.auth_provider
-		});
+		// const createdUser = findUserById(userId);
 
 		// Initialize display_name
 		initDisplayNameIfNull(userId);
@@ -659,9 +649,7 @@ fastify.post("/auth/login", async (req, reply) => {
 		}
 
 		// Verify password
-		console.log("Login attempt:", { login: user.login, hasPasswordHash: !!user.password_hash });
 		const isValidPassword = await verifyPassword(password, user.password_hash);
-		console.log("Password verification result:", isValidPassword);
 		if (!isValidPassword) {
 			return reply.code(401).send({ error: "Invalid login or password" });
 		}

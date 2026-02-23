@@ -15,7 +15,6 @@ import TournamentNotification from '../game/TournamentNotification.tsx';
 import "../../style/homePage/homepage.css";
 import "../../style/homePage/settings.css";
 import { LanguageDropdown } from '../../language/LanguageMenu.tsx';
-import { saveMatchToLocal, generateMatchId } from '../../utils/localMatchHistory';
 
 ////////////
 const DEV_MODE = false;
@@ -61,6 +60,8 @@ export default function HomePage() {
   const [showSettings, setShowSettings] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [normalGameSessionId, setNormalGameSessionId] = useState<string | null>(null);
+
   const { translate, language, setLanguage } = useLanguage();
   const refreshUser = async () => {
     try {
@@ -219,25 +220,46 @@ export default function HomePage() {
           player1Name={tournament.activeTournamentMatch.playerAName}
           player2Name={tournament.activeTournamentMatch.playerBName}
           paused={showSettings || showHistory || menuOpen || !!tournament.nextMatchNotification}
-          onGameEnd={(result) => {
+           onGameEnd={async (result) => {
+            const active = tournament.activeTournamentMatch;
+            if (!active || !user) return;
+      
+            const p1Id = active.playerAId;
+            const p2Id = active.playerBId;
+            const matchId = active.matchId;
+      
             tournament.handleTournamentMatchEnd(result.winner, result.scoreP1, result.scoreP2);
-            const am = tournament.activeTournamentMatch;
-            if (am) {
-              const isWin = result.winner === 1;
-              const kind = am.isAIOpponent ? "AI" as const
-                : am.isGuestOpponent ? "GUEST" as const
-                : "USER" as const;
-              saveMatchToLocal({
-                id: generateMatchId(),
-                opponent_id: String(am.playerBId ?? "unknown"),
-                opponent_kind: kind,
-                opponent_name: result.player2Name,
-                played_at: new Date().toISOString(),
-                result: isWin ? "WIN" : "LOSE",
-                score_for: result.scoreP1,
-                score_against: result.scoreP2,
-                match_type: "TOURNAMENT",
+      
+            if (typeof p1Id !== "number" || typeof p2Id !== "number") return;
+      
+            const isP1AI = p1Id < 0;
+            const isP2AI = p2Id < 0;
+      
+            const player1Id = isP1AI ? `AI_${Math.abs(p1Id)}` : String(p1Id);
+            const player2Id = isP2AI ? `AI_${Math.abs(p2Id)}` : String(p2Id);
+      
+           const sourceMatchId = tournament.tournamentId
+              ? `tournament:${tournament.tournamentId}:${matchId}`
+              : `tournament:local:${matchId}:${Date.now()}`;
+      
+            try {
+              await fetch("https://localhost:8443/tournament/match-history/tournament/complete", {
+                method: "POST",
+                credentials: "include",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  player1Id,
+                  player2Id,
+                  winner: result.winner,
+                  scoreP1: result.scoreP1,
+                  scoreP2: result.scoreP2,
+                  playedAt: new Date().toISOString(),
+                  sourceMatchId,
+                  opponentName: (isP1AI || isP2AI) ? "AI" : undefined,
+                }),
               });
+            } catch (e) {
+              console.error("Failed to report TOURNAMENT match result", e);
             }
           }}
         />
@@ -252,26 +274,38 @@ export default function HomePage() {
               : tournament.invitedPlayers.find(p => p.id === invitePlayerId)?.name || "Adversaire"
           }
           invitePlayerId={invitePlayerId}
-          paused={showSettings || showHistory || menuOpen || !!tournament.nextMatchNotification}
-          onGameEnd={(result) => {
-            const isWin = result.winner === 1;
-            const kind = activeCard === GameCardType.AI ? "AI" as const
-              : activeCard === GameCardType.Invite ? "USER" as const
-              : "USER" as const;
-            const oppId = activeCard === GameCardType.AI ? "ai"
-              : activeCard === GameCardType.Invite ? String(invitePlayerId ?? "unknown")
-              : "random";
-            saveMatchToLocal({
-              id: generateMatchId(),
-              opponent_id: oppId,
-              opponent_kind: kind,
-              opponent_name: result.player2Name,
-              played_at: new Date().toISOString(),
-              result: isWin ? "WIN" : "LOSE",
-              score_for: result.scoreP1,
-              score_against: result.scoreP2,
-              match_type: "NORMAL",
-            });
+          onGameEnd={async (result) => {
+            if (!normalGameSessionId) return;
+      
+            const isAI = activeCard === GameCardType.AI;
+      
+            const player2Id = isAI
+              ? "AI_1"
+              : (invitePlayerId ? String(invitePlayerId) : null);
+      
+            if (!player2Id) return;
+      
+            try {
+              await fetch("https://localhost:8443/tournament/match-history/normal/complete", {
+                method: "POST",
+                credentials: "include",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  player1Id: String(user.id),
+                  player2Id,
+                  winner: result.winner,
+                  scoreP1: result.scoreP1,
+                  scoreP2: result.scoreP2,
+                  playedAt: new Date().toISOString(),
+                  sourceMatchId: normalGameSessionId,
+                  opponentName: isAI ? "AI" : undefined,
+                }),
+              });
+            } catch (e) {
+              console.error("Failed to report NORMAL match result", e);
+            }
+      
+            setNormalGameSessionId(null);
           }}
         />
       ) : (

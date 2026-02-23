@@ -51,9 +51,6 @@ fclean:
 	docker image prune -af
 
 
-# network:
-# 	docker network inspect transcendance_net >/dev/null 2>&1 || \
-# 	docker network create transcendance_net
 
 
 # =================== SCRIPTS & NPM ===================

@@ -17,7 +17,6 @@ export const createIntraUser = (
   image: string | null
 ) => {
   return timedQuerySync("createIntraUser", () => {
-      console.log("-------------------------------------------------------------[DB_OP] ");
       return getDb()
         .prepare(`
           INSERT INTO user (login, email, image, intra_id, auth_provider, display_name)

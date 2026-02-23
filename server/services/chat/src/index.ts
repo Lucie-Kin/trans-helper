@@ -39,11 +39,6 @@ io.on("connection", (socket: any) => {
     login: socket.user.login,
   };
 
-  console.log("Connected: ", {
-    id: user.id,
-    login: user.login,
-    socketId: socket.id,
-  });
   
   registerSocket(user, socket.id);
   registerAllHandlers(io, socket);
@@ -56,11 +51,6 @@ io.on("connection", (socket: any) => {
     
     socket.onAnyOutgoing((event: string, ...args: unknown[]) => {
       onWsMessage("out", event, args);
-    });
-
-    console.log("Disconnected: ", {
-      id: user.id,
-      socketId: socket.id,
     });
 
     const wentOffline = unregisterSocket(user.id, socket.id);
@@ -76,7 +66,6 @@ fastify.get("/chat/metrics", async (_req, reply) => {
 });
 
 await fastify.listen({ port: 3002, host: "0.0.0.0" });
-console.log("Chat service running on 3002");
 
 // start polling
 setInterval(async () => {

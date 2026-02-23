@@ -1,5 +1,5 @@
 export interface Participant {
     playerId: string;
-    isAi: boolean;
+    isAI: boolean;
     aiLevel?: number;
 }

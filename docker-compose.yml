@@ -1,51 +1,25 @@
 services:
 
-  # docker-proxy:
-  #   image: tecnativa/docker-socket-proxy
-  #   container_name: docker-proxy
-  #   restart: unless-stopped
-  #   environment:
-  #     - CONTAINERS=1
-  #     - SERVICES=1
-  #     - TASKS=1
-  #     - NETWORKS=1
-  #     - EVENTS=1
-  #     - SYSTEM=1
-  #     - VERSION=1
-  #     - INFO=1
-  #   volumes:
-  #     - /var/run/docker.sock:/var/run/docker.sock:ro
-  #     # - /run/user/101968/docker.sock:/var/run/docker.sock:ro
-  #   expose:
-  #     - "2375"
-  #   networks:
-  #     - proxy_net
-
-
   traefik:
     image: docker.io/traefik:v3.6
     container_name: traefik
     restart: unless-stopped
-    # depends_on:
-    #   - docker-proxy
     security_opt:
       - label=disable
     command:
-      - "--providers.docker=true" #repasser sur true si on enleve le docker proxy
-      # - "--providers.docker.endpoint=http://docker-proxy:2375" #a enelever si pu le docker proxy
+      - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
       - "--providers.docker.network=transcendance_net"
-      #- "--providers.docker.endpoint=unix://var/run/docker.sock"
       # entrypoints
       - "--entrypoints.web.address=:80"
       - "--entrypoints.websecure.address=:443"
       # redirection http -> https (global)
       - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
       - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
-      # provider fichier pour le TLS local
+      # provider TLS certs
       - "--providers.file.directory=/dynamics"
       - "--providers.file.watch=true"
-      # dashboard local (HTTP) + metriques
+      # local dashboards + metrics
       - "--api.insecure=true"
       - "--metrics.prometheus=true"
       - "--metrics.prometheus.addrouterslabels=true"
@@ -61,7 +35,6 @@ services:
       - ./reverse-proxy/dynamics:/dynamics:ro,Z
       - ./reverse-proxy/auth:/auth:ro,Z
     networks:
-      # - proxy_net
       - transcendance_net
 
 
@@ -81,9 +54,6 @@ services:
       - "traefik.http.middlewares.metrics-auth.basicauth.users=prometheus:$$apr1$$qwerty$$mU8gq/R4L.0ZVmZJKzzWb0"
       - "traefik.docker.network=transcendance_net"
     volumes:
-      # - ./server/services/auth:/app
-      # - ./server/services/auth:/app:Z  
-      # TBD
       - auth-data:/app/data
     env_file:
       - ./.env
@@ -99,7 +69,6 @@ services:
       options:
         gelf-address: "udp://127.0.0.1:12201"
         tag: "auth"
-    # command: sh -c "cd /app && npm install && npm run dev"
     networks: 
       - transcendance_net
 
@@ -119,10 +88,7 @@ services:
       - "traefik.http.services.tournament.loadbalancer.server.port=3003"
       - "traefik.docker.network=transcendance_net"
     volumes:
-      # - ./server/services/tournament/src:/app/src:Z
-      # - ./server/services/tournament/data:/app/data:Z
       - tournament_data:/app/data:Z
-    # user: "1000:1000"
     env_file:
         - ./.env
     networks:
@@ -138,7 +104,6 @@ services:
       - "3002"
     labels:
       - "traefik.enable=true"
-      # route principale chat
       - "traefik.http.routers.chat.rule=Host(`localhost`) && PathPrefix(`/chat`)"
       - "traefik.http.routers.chat.entrypoints=websecure"
       - "traefik.http.routers.chat.tls=true"
@@ -146,7 +111,6 @@ services:
       - "traefik.http.services.chat.loadbalancer.server.port=3002"
       - "traefik.docker.network=transcendance_net"
 
-      # route séparée pour metrics (bat tout le reste)
       - "traefik.http.routers.chat-metrics.rule=Host(`localhost`) && Path(`/chat/metrics`)"
       - "traefik.http.routers.chat-metrics.entrypoints=websecure"
       - "traefik.http.routers.chat-metrics.tls=true"
@@ -260,10 +224,7 @@ services:
     expose:
       - "9100"
     command:
-     # - "--path.rootfs=/host"
       - "--web.listen-address=:9100"
-    #volumes:
-     # - /:/host:ro,rslave
     networks: 
       - transcendance_net
 
@@ -277,7 +238,6 @@ services:
       - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
       - ES_JAVA_OPTS=-Xms1g -Xmx1g
     volumes:
-      # - ./ELK/data/elasticsearch:/usr/share/elasticsearch/data
       - elastic-data:/usr/share/elasticsearch/data
     expose:
       - "9200"
@@ -314,9 +274,6 @@ services:
       ELASTICSEARCH_HOSTS: "http://elasticsearch:9200"
       SERVER_BASEPATH: "/kibana"
       SERVER_REWRITEBASEPATH: "true"
-      # XPACK_SECURITY_ENCRYPTIONKEY: ${KIBANA_SECURITY_KEY}
-      # XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY: ${KIBANA_SAVED_OBJECTS_KEY}
-      # XPACK_REPORTING_ENCRYPTIONKEY: ${KIBANA_REPORTING_KEY}
       SERVER_PUBLICBASEURL: "https://localhost:8443/kibana"
       ELASTICSEARCH_USERNAME: kibana_system
       ELASTICSEARCH_PASSWORD: ${KIBANA_SYSTEM_PASSWORD}
@@ -352,8 +309,6 @@ services:
       ELASTICSEARCH_HOST: "http://elasticsearch:9200"
       LS_JAVA_OPTS: "-Xms256m -Xmx256m"
       XPACK_MONITORING_ENABLED: false
-    # expose:
-    #   - "5044"
     ports:
       - "127.0.0.1:12201:12201/udp"
     depends_on:

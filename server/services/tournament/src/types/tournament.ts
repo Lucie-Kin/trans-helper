@@ -29,7 +29,7 @@ export interface TournamentParticipant {
     id?: string;
     tournamentId: string;
     playerId: string;
-    isAi: boolean;
+    isAI: boolean;
     aiLevel?: number;
     seed?: number;
     status?: ParticipantStatus;

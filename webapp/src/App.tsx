@@ -15,7 +15,6 @@ export default function App() {
       <Route path="/pong" element={<PongPage />} />
       <Route path="/home" element={<HomePage />} />
       <Route path="/play" element={<PongPage />} />
-      {/* <Route path="/home" element={isAuthenticated ? <HomePage /> : <Navigate to="/" replace />} /> */}
       < Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )

@@ -33,12 +33,10 @@ export default function ChatBox({ myUserId, onGameInviteSent, onGameInviteAccept
     const s = getSocket();
 
     const onConnect = () => {
-      console.log("CHAT SOCKET CONNECTED");
       setIsConnected(true);
       s.emit("blocks:list");
     };
     const onDisconnect = () => {
-      console.log("CHAT SOCKET DISCONNECTED");
       setIsConnected(false);
     };
     const onBlocksList = (data: any) => {

@@ -1,4 +1,3 @@
-// chat/src/db.ts
 import Database from "better-sqlite3";
 import fs from "fs";
 import path from "path";
@@ -24,9 +23,7 @@ export function initDb() {
     const schema = fs.readFileSync(SCHEMA_PATH, "utf-8");
     db.exec(schema);
 
-    console.log("✅ Chat DB initialized");
   } catch (e) {
-    console.error("❌ Chat DB init failed:", e);
     process.exit(1);
   }
 }

@@ -19,7 +19,7 @@ export const TEXTS = {
 		mode: "Choisir un Mode de Jeu",
 		ai: "Jouer contre l'IA",
 		title: "Match 1v1",
-		start: "Appuyez sur Espace pour commencer",
+		start: "Appuyer sur Espace pour commencer",
 		quit: "Quitter la partie",
 		random: "Jouer en local",
 		victory: "VICTOIRE",
@@ -27,7 +27,7 @@ export const TEXTS = {
     },
 	chat: {
 		message: "Messages",
-		select: "Sélectionnez une conversation",
+		select: "Sélectionner une conversation",
 		text_zone: "Ecrire un message",
 		block: "Utilisateur bloqué...",
 		blocked: "Vous avez été bloqué par cet utilisateur",

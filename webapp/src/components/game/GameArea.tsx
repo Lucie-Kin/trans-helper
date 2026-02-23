@@ -27,7 +27,7 @@ export default function GameArea({
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const gameRef = useRef<ReturnType<typeof startPong> | null>(null);
     const onGameEndRef = useRef(onGameEnd);
-    const { translate } = useLanguage();
+	const { translate } = useLanguage();
 
     onGameEndRef.current = onGameEnd;
 
@@ -80,7 +80,7 @@ export default function GameArea({
             window.removeEventListener("focus", onFocus);
             document.removeEventListener("visibilitychange", onVisibilityChange);
         };
-        }, [gameCardType, player1Name, player2Name, invitePlayerId, translate]);
+	}, [gameCardType, player1Name, player2Name, invitePlayerId, translate]);
 
     useEffect(() => {
         gameRef.current?.setPaused(externalPaused);

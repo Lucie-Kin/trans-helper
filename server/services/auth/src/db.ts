@@ -25,8 +25,6 @@ export function initDb() {
 
     const schema = fs.readFileSync(SCHEMA_PATH, "utf-8");
     db.exec(schema);
-
-    console.log("----Auth DB initialized-----");
     return db;
   } catch (e) {
     console.error("----Database initialization failed:", e);

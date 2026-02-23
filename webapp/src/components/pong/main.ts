@@ -44,7 +44,6 @@ export function startPong(
   player2Elo: number = 1000,
   translate?: (key: string, vars?: Record<string, string | number>) => string
 ) {
-  if (invitePlayerId) console.log("invite player id: ", invitePlayerId);
   const ctx = canvas.getContext("2d");
   if (!ctx) return;
 
