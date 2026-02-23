@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import "../../style/game/tournamentNotification.css";
-import { useLanguage } from "../../language/LanguageContext.tsx";
+import { useLanguage } from "../../language/LanguageContext";
 
 type Props = {
     playerAName: string;
@@ -8,7 +8,7 @@ type Props = {
     onClose: () => void;
 };
 
-export default function TournamentNotification({ playerAName, playerBName, onClose }: Props) {
+export default function tournamentNotification({ playerAName, playerBName, onClose }: Props) {
     const { translate } = useLanguage();
 
     useEffect(() => {
@@ -20,10 +20,10 @@ export default function TournamentNotification({ playerAName, playerBName, onClo
         <div className="settings-overlay" onClick={onClose}>
             <div className="notification-modal" onClick={(e) => e.stopPropagation()}>
                 <button className="close-btn" onClick={onClose}>&#x2715;</button>
-                <h3 className="notification-title">{translate("notification.nextMatch")}</h3>
+                <h3 className="notification-title">{translate("tournament.notification")}</h3>
                 <div className="notification-versus">
                     <span className="notification-player">{playerAName}</span>
-                    <span className="notification-vs">VS.</span>
+                    <span className="notification-vs"> VS </span>
                     <span className="notification-player">{playerBName}</span>
                 </div>
             </div>

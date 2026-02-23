@@ -26,7 +26,7 @@ export default function GameArea({
 }: Props) {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const gameRef = useRef<ReturnType<typeof startPong> | null>(null);
-    const { translate } = useLanguage();
+	const { translate } = useLanguage();
 
     useEffect(() => {
         if (!canvasRef.current) return;
@@ -45,7 +45,8 @@ export default function GameArea({
             const g = startPong(canvas, gameCardType, player1Name, player2Name, invitePlayerId, onGameEnd, 1000, 1000, translate);
             if (!cancelled) {
                 gameRef.current = g ?? null;
-                if (externalPaused) g?.setPaused(true);
+                if (externalPaused)
+                    g?.setPaused(true);
             }
         };
 
@@ -56,6 +57,7 @@ export default function GameArea({
                 gameRef.current?.setPaused(true);
             else
                 gameRef.current?.setPaused(false);
+
         };
 
         window.addEventListener("blur", onBlur);
@@ -67,17 +69,15 @@ export default function GameArea({
         return () => {
             cancelled = true;
             gameRef.current?.cleanup();
-            gameRef.current = null;
             window.removeEventListener("blur", onBlur);
             window.removeEventListener("focus", onFocus);
             document.removeEventListener("visibilitychange", onVisibilityChange);
         };
-    }, [gameCardType, player1Name, player2Name, invitePlayerId, onGameEnd, translate]);
+	}, [gameCardType, player1Name, player2Name, invitePlayerId, onGameEnd, translate]);
 
     useEffect(() => {
         gameRef.current?.setPaused(externalPaused);
     }, [externalPaused]);
-
     return (
         <div className="game-area">
             <div className="game-viewport">

@@ -13,7 +13,7 @@
     background: rgba(20, 20, 20, 0.9);
     border-radius: 16px;
     padding: 2rem;
-    width: clamp(22rem, 40vw, 30rem);
+    width: clamp(22rem, 35vw, 26rem);
     max-width: 90vw;
     color: white;
     position: relative;
@@ -24,7 +24,7 @@
     margin-top: 0;
     margin-bottom: 1.5rem;
     text-align: center;
-    font-size: clamp(1.6rem, 2.5vw, 2.4rem);
+    font-size: clamp(1.8rem, 3.3rem, 7rem);
     overflow-wrap: break-word;
     word-break: keep-all;
     hyphens: none;

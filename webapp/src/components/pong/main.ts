@@ -171,7 +171,7 @@ export function startPong(
     ctx.font = "42px Chakra_bold";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-        const victoryText = translate ? translate("game.victory") : "VICTOIRE";
+	const victoryText = translate ? translate("game.victory") : "VICTOIRE";
     ctx.fillText(victoryText, cx, cy - 100);
     ctx.shadowBlur = 0;
 
@@ -193,7 +193,7 @@ export function startPong(
 
     ctx.fillStyle = winnerRank === "Pro" ? "#ffd700" : winnerRank === "Mid" ? "#87ceeb" : "#aaaaaa";
     ctx.font = "20px Chakra_bold";
-        const rankText = translate ? translate("game.rank") : "Classement: ";
+	const rankText = translate ? translate("game.rank") : "Classement: ";
     ctx.fillText(rankText, cx, cy + 50);
 
     ctx.fillStyle = "#888888";
@@ -225,7 +225,7 @@ export function startPong(
 
     ctx.fillStyle = "#cccccc";
     ctx.font = "18px Chakra";
-        const startText = translate ? translate("game.start") : "Appuyez sur Espace pour commencer";
+	const startText = translate ? translate("game.start") : "Appuyez sur Espace pour commencer";
     ctx.fillText(startText, cx, cy + 20);
   };
 
@@ -329,27 +329,27 @@ export function startPong(
   const loop = (now: number) => {
     const dtMs = now - last;
     last = now;
-        const dt = Math.min(dtMs, 50) / 1000;
+	  const dt = Math.min(dtMs, 50) / 1000;
 
     if (!waitingForSpace)
       handleInput(dt);
 
     const wasCounting = countdown > 0;
 
-        if (countdown > 0) {
-        const elapsed = (now - countdownStart) / 1000;
-        countdown = Math.max(COUTDOWN_DURATION - Math.floor(elapsed), 0);
+    if (countdown > 0) {
+      const elapsed = (now - countdownStart) / 1000;
+      countdown = Math.max(COUTDOWN_DURATION - Math.floor(elapsed), 0);
 
-        if (wasCounting && countdown === 0) {
-                if (resumeOnly) {
-                        resumeOnly = false;
-                } else {
-                        engine.kickoff();
-                }
-        }
-        } else if (!paused && !externallyPaused && !engine.gameOver) {
-        engine.update(dt);
-}
+      if (wasCounting && countdown === 0) {
+        if (resumeOnly)
+          resumeOnly = false;
+        else
+          engine.kickoff();
+      }
+      
+    } else if (!paused && !externallyPaused && !engine.gameOver) {
+      engine.update(dt);
+    }
 
     render();
     rafId = requestAnimationFrame(loop);

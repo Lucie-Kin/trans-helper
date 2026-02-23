@@ -367,10 +367,10 @@ export function useTournament(myUserId: number) {
                 if (nextMatch) {
                     const pAName = nextMatch.playerA?.name || "AI";
                     const pBName = nextMatch.playerB?.name || "AI";
-                    setNextMatchNotification({ playerAName: pAName, playerBName: pBName });
+                    setNextMatchNotification({playerAName: pAName, playerBName: pBName});
                 }
                 return latestMatches;
-            });
+            })
         }, 2000);
     }, [activeTournamentMatch, findFirstUnplayedMatch]);
 
