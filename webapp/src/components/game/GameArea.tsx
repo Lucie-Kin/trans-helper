@@ -27,9 +27,11 @@ export default function GameArea({
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const gameRef = useRef<ReturnType<typeof startPong> | null>(null);
     const onGameEndRef = useRef(onGameEnd);
-	const { translate } = useLanguage();
+    const externalPausedRef = useRef(externalPaused);
+    const { translate } = useLanguage();
 
     onGameEndRef.current = onGameEnd;
+    externalPausedRef.current = externalPaused;
 
     useEffect(() => {
         if (!canvasRef.current) return;
@@ -49,7 +51,7 @@ export default function GameArea({
             canvas.width = rect.width;
             canvas.height = rect.height;
 
-            const g = startPong(canvas, gameCardType, player1Name, player2Name, invitePlayerId, onGameEnd, 1000, 1000, translate);
+            const g = startPong(canvas, gameCardType, player1Name, player2Name, invitePlayerId, stableOnGameEnd, 1000, 1000, translate);
             if (!cancelled) {
                 gameRef.current = g ?? null;
                 if (externalPaused)
@@ -58,13 +60,15 @@ export default function GameArea({
         };
 
         const onBlur = () => gameRef.current?.setPaused(true);
-        const onFocus = () => gameRef.current?.setPaused(false);
+        const onFocus = () => {
+            if (!externalPausedRef.current)
+                gameRef.current?.setPaused(false);
+        };
         const onVisibilityChange = () => {
             if (document.hidden)
                 gameRef.current?.setPaused(true);
-            else
+            else if (!externalPausedRef.current)
                 gameRef.current?.setPaused(false);
-
         };
 
         window.addEventListener("blur", onBlur);
@@ -80,7 +84,7 @@ export default function GameArea({
             window.removeEventListener("focus", onFocus);
             document.removeEventListener("visibilitychange", onVisibilityChange);
         };
-	}, [gameCardType, player1Name, player2Name, invitePlayerId, translate]);
+        }, [gameCardType, player1Name, player2Name, invitePlayerId, translate]);
 
     useEffect(() => {
         gameRef.current?.setPaused(externalPaused);
