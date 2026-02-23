@@ -128,9 +128,19 @@ export class GameEngine {
 	private checkScore() {
 		if (this.ball.x + this.ball.radius >= this.field.width) {
 			this.scoreP1++;
+			if (this.scoreP1 >= WIN_SCORE) {
+				this.gameOver = true;
+				this.winner = 1;
+				return;
+			}
 			this.resetBall();
 		} else if (this.ball.x - this.ball.radius <= 0) {
 			this.scoreP2++;
+			if (this.scoreP2 >= WIN_SCORE) {
+				this.gameOver = true;
+				this.winner = 2;
+				return;
+			}
 			this.resetBall();
 		}
 	}

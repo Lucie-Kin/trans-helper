@@ -1,3 +1,4 @@
+// tournament/src/repository/tournament.repository.ts
 import sqlite3 from 'sqlite3';
 import { Database } from 'sqlite';
 import { getDb } from '../db';
@@ -36,7 +37,7 @@ export class TournamentRepository {
     async createTournament(title: string, organizerId: string): Promise<string> {
         const id = uuidv4();
     
-        await this.db.run(
+        const test = await this.db.run(
             `
             INSERT INTO tournament (id, title, organizer_id, status)
             VALUES (?, ?, ?, 'WAITING_FOR_PLAYERS')
@@ -45,6 +46,7 @@ export class TournamentRepository {
             title,
             organizerId
         );
+        console.log(test);
         return id;
     }
     async createMatch(match: TournamentMatch) {
@@ -300,28 +302,39 @@ export class TournamentRepository {
         scoreAgainst: number,
         matchType: 'TOURNAMENT' | 'NORMAL',
         playedAt?: Date,
-        sourceMatchId?: string
-    ) {
+        sourceMatchId?: string,
+        opponentKind: 'USER' | 'AI' | 'GUEST' = 'USER',
+        opponentName?: string
+      ) {
         const id = uuidv4();
         const playedAtValue = playedAt ?? new Date();
-
+      
+        if (!sourceMatchId) {
+          throw new Error('sourceMatchId is required for match history dedup');
+        }
+      
         await this.db.run(
-            `
-            INSERT INTO match_history (
-                id, user_id, opponent_id, played_at, result,
-                score_for, score_against, match_type, source_match_id
-            )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-            `,
-            id,
-            userId,
-            opponentId,
-            playedAtValue,
-            result,
-            scoreFor,
-            scoreAgainst,
-            matchType,
-            sourceMatchId ?? null
+          `
+          INSERT OR IGNORE INTO match_history (
+            id, user_id, opponent_id, opponent_kind, opponent_name,
+            played_at, result,
+            score_for, score_against, match_type, source_match_id
+          )
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          `,
+          id,
+          userId,
+          opponentId,
+          opponentKind,
+          opponentName ?? null,
+          playedAtValue,
+          result,
+          scoreFor,
+          scoreAgainst,
+          matchType,
+          sourceMatchId
         );
-    }
-}
+      }
+      
+      
+      }

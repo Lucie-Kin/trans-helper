@@ -19,7 +19,6 @@ body {
     rgba(10, 32, 49, 0.664) 50%,
     rgba(4, 1, 19, 0.753) 100%
   );
-  /* color: #122538f5; */
 }
 
 .container {
@@ -90,7 +89,7 @@ form {
   font-size: 1rem;
 }
 
-/* email ou mdp*/
+/* email or password */
 .inputbox label {
   position: absolute;
   top: 40%;
@@ -98,7 +97,7 @@ form {
   color: #d3d3d3;
 }
 
-/* Quand on clique sur email ou mdp*/
+/* email or password on-click */
 input:focus~label,
 .inputbox input:not(:placeholder-shown)~label {
   top: -10px;
@@ -111,7 +110,6 @@ input:focus {
   outline: none;
   box-shadow: 0 0 9px rgba(145, 145, 145, 0.808);
 }
-
 
 /* Icone */
 .inputbox svg {

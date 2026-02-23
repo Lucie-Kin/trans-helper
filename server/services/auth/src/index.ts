@@ -61,7 +61,6 @@ declare module "@fastify/jwt" {
 	}
 }
 
-
 fastify.register(fastifyCookie, { secret: process.env.COOKIE_SECRET! });
 fastify.register(fastifyJwt, {
 	secret: process.env.JWT_SECRET!,
@@ -190,8 +189,9 @@ fastify.get("/auth/callback", async (request: any, reply: any) => {
 
 
 fastify.get("/auth/session", async (req, reply) => {
-	const token = (req.cookies as any)?.appToken;
+	const token = (req.cookies)?.appToken;
 	if (!token) {
+		console.log(req);
 		return reply.code(401).send({ error: "no cookie" });
 	}
 

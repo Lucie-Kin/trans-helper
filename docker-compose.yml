@@ -56,11 +56,10 @@ services:
       - "8443:443" #https
       - "8081:8080" #dashboard
     volumes:
-      # - /var/run/docker.sock:/var/run/docker.sock:ro
-      - $DOCKER_SOCK:/var/run/docker.sock:ro
-      - ./reverse-proxy/certs:/certs:ro
-      - ./reverse-proxy/dynamics:/dynamics:ro
-      - ./reverse-proxy/auth:/auth:ro
+      - ${DOCKER_SOCK}:/var/run/docker.sock:ro
+      - ./reverse-proxy/certs:/certs:ro,Z
+      - ./reverse-proxy/dynamics:/dynamics:ro,Z
+      - ./reverse-proxy/auth:/auth:ro,Z
     networks:
       # - proxy_net
       - transcendance_net
@@ -82,8 +81,10 @@ services:
       - "traefik.http.middlewares.metrics-auth.basicauth.users=prometheus:$$apr1$$qwerty$$mU8gq/R4L.0ZVmZJKzzWb0"
       - "traefik.docker.network=transcendance_net"
     volumes:
-      - ./server/services/auth:/app:Z
-      - auth-data:/app/data:Z
+      # - ./server/services/auth:/app
+      # - ./server/services/auth:/app:Z  
+      # TBD
+      - auth-data:/app/data
     env_file:
       - ./.env
     environment:
@@ -91,7 +92,6 @@ services:
       CLIENT_SECRET: ${CLIENT_SECRET}
       REDIRECT_URI: ${REDIRECT_URI}
       CHOKIDAR_USEPOLLING: true
-      DB_PATH: /app/data/auth.db
     depends_on:
         - logstash
     logging:
@@ -99,7 +99,7 @@ services:
       options:
         gelf-address: "udp://127.0.0.1:12201"
         tag: "auth"
-    command: sh -c "cd /app && npm install && npm run dev"
+    # command: sh -c "cd /app && npm install && npm run dev"
     networks: 
       - transcendance_net
 
@@ -108,39 +108,44 @@ services:
     container_name: tournament
     build:
       context: ./server/services/tournament
-    ports:
-      - "3003:3003"
+    expose:
+      - "3003"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.tournament.rule=Host(`localhost`) && PathPrefix(`/tournament`)"
+      - "traefik.http.routers.tournament.entrypoints=websecure"
+      - "traefik.http.routers.tournament.tls=true"
+      - "traefik.http.routers.tournament.priority=200"
+      - "traefik.http.services.tournament.loadbalancer.server.port=3003"
+      - "traefik.docker.network=transcendance_net"
     volumes:
-      - ./server/services/tournament/src:/app/src:Z
-    user: "1000:1000"
+      # - ./server/services/tournament/src:/app/src:Z
+      # - ./server/services/tournament/data:/app/data:Z
+      - tournament_data:/app/data:Z
+    # user: "1000:1000"
     env_file:
-      - ./.env
+        - ./.env
     networks:
       - transcendance_net
+
 
 
   chat:
     container_name: chat
     build:
       context: ./server/services/chat
-    ports:
-      - "3002:3002"
+    expose:
+      - "3002"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.chat.rule=Host(`localhost`) && PathPrefix(`/chat/socket.io`)"
+      # route principale chat
+      - "traefik.http.routers.chat.rule=Host(`localhost`) && PathPrefix(`/chat`)"
       - "traefik.http.routers.chat.entrypoints=websecure"
       - "traefik.http.routers.chat.tls=true"
       - "traefik.http.routers.chat.priority=200"
       - "traefik.http.services.chat.loadbalancer.server.port=3002"
       - "traefik.docker.network=transcendance_net"
-      # route principale chat
-      # - "traefik.enable=true"
-      # - "traefik.http.routers.chat.rule=Host(`localhost`) && PathPrefix(`/chat`)"
-      # - "traefik.http.routers.chat.entrypoints=websecure"
-      # - "traefik.http.routers.chat.tls=true"
-      # - "traefik.http.routers.chat.priority=200"
-      # - "traefik.http.services.chat.loadbalancer.server.port=3002"
-      # - "traefik.docker.network=ft_transcendance_transcendance_net"
+
       # route séparée pour metrics (bat tout le reste)
       - "traefik.http.routers.chat-metrics.rule=Host(`localhost`) && Path(`/chat/metrics`)"
       - "traefik.http.routers.chat-metrics.entrypoints=websecure"
@@ -160,12 +165,13 @@ services:
       - transcendance_net
 
 
+
   webapp:
     container_name: webapp
     build:
       context: ./webapp
     ports:
-      - "5173:5173"
+      - "5173:5000"
     volumes:
       - ./webapp/src:/app/src:Z
       - ./webapp/index.html:/app/index.html:Z
@@ -182,7 +188,7 @@ services:
       - "traefik.http.routers.front.entrypoints=websecure"
       - "traefik.http.routers.front.tls=true"
       - "traefik.http.routers.front.priority=1"
-      - "traefik.http.services.front.loadbalancer.server.port=5173"
+      - "traefik.http.services.front.loadbalancer.server.port=5000"
     depends_on:
         - logstash
     logging:
@@ -207,9 +213,9 @@ services:
       - "--storage.tsdb.path=/prometheus"
       - "--storage.tsdb.retention.time=30d"
     volumes:
-      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-      - ./monitoring/prometheus/alerting.yml:/etc/prometheus/alerting.yml:ro
-      - ./monitoring/data/prometheus:/prometheus
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro,Z
+      - ./monitoring/prometheus/alerting.yml:/etc/prometheus/alerting.yml:ro,Z
+      - ./monitoring/data/prometheus:/prometheus:Z
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.prom.rule=Host(`localhost`) && PathPrefix(`/prometheus`)"
@@ -239,9 +245,9 @@ services:
       - "traefik.http.routers.grafana.priority=200"
       - "traefik.http.services.grafana.loadbalancer.server.port=3000"
     volumes:
-      - ./monitoring/data/grafana:/var/lib/grafana
-      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
-      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards
+      - ./monitoring/data/grafana:/var/lib/grafana:Z
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:Z
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:Z
     env_file:
       - ./.env
     networks:
@@ -268,6 +274,7 @@ services:
     environment:
       - discovery.type=single-node
       - xpack.security.enabled=false
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
       - ES_JAVA_OPTS=-Xms1g -Xmx1g
     volumes:
       # - ./ELK/data/elasticsearch:/usr/share/elasticsearch/data
@@ -276,8 +283,28 @@ services:
       - "9200"
     env_file:
       - ./.env
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s http://localhost:9200 >/dev/null || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
     networks:
       - transcendance_net
+      - elk
+    
+  es-init:
+    image: curlimages/curl:8.5.0
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    environment:
+      - ES_URL=http://elasticsearch:9200
+    volumes:
+      - ./ELK/policies:/policies:ro,Z
+    command: ["sh", "/policies/apply-policies.sh"]
+    restart: "no"
+    networks:
+      - elk
 
 
   kibana:
@@ -291,8 +318,14 @@ services:
       # XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY: ${KIBANA_SAVED_OBJECTS_KEY}
       # XPACK_REPORTING_ENCRYPTIONKEY: ${KIBANA_REPORTING_KEY}
       SERVER_PUBLICBASEURL: "https://localhost:8443/kibana"
+      ELASTICSEARCH_USERNAME: kibana_system
+      ELASTICSEARCH_PASSWORD: ${KIBANA_SYSTEM_PASSWORD}
     depends_on:
-      - elasticsearch
+      elasticsearch:
+        condition: service_healthy
+      es-init:
+        condition: service_completed_successfully
+
     labels:
       - traefik.enable=true
       - traefik.http.routers.kibana.rule=Host(`localhost`) && PathPrefix(`/kibana`)
@@ -313,8 +346,8 @@ services:
     image: docker.elastic.co/logstash/logstash:7.17.18
     container_name: logstash
     volumes:
-      - ./ELK/logstash/logs:/var/log/app
-      - ./ELK/logstash/pipeline/logstash.conf:/usr/share/logstash/pipeline/logstash.conf:ro
+      - ./ELK/logstash/logs:/var/log/app:Z
+      - ./ELK/logstash/pipeline/logstash.conf:/usr/share/logstash/pipeline/logstash.conf:ro,Z
     environment:
       ELASTICSEARCH_HOST: "http://elasticsearch:9200"
       LS_JAVA_OPTS: "-Xms256m -Xmx256m"
@@ -324,41 +357,27 @@ services:
     ports:
       - "127.0.0.1:12201:12201/udp"
     depends_on:
-      - elasticsearch
+      elasticsearch:
+        condition: service_healthy
+      es-init:
+        condition: service_completed_successfully
     networks:
       - transcendance_net
 
 
-  # filebeat:
-  #   image: docker.elastic.co/beats/filebeat:7.17.18
-  #   container_name: filebeat
-  #   user: root
-  #   command: ["filebeat", "-e", "--strict.perms=false", "-c", "/usr/share/filebeat/filebeat.yml"]
-  #   volumes:
-  #     - ./ELK/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
-  #     - $DOCKER_SOCK:/var/run/docker.sock:ro
-  #     # - $USER_PATH/.local/share/docker/containers:/var/lib/docker/containers:ro
-  #     - ./ELK/data/filebeat:/usr/share/filebeat/data
-  #   depends_on:
-  #     - elasticsearch
-  #   env_file:
-  #     - ./.env
-  #   networks:
-  #     - transcendance_net
   
 volumes:
   elastic-data:
   prometheus-data:
   grafana-data:
-  # elastic-data:
   auth-data:
     driver: local
+  tournament_data:
 
 
 networks:
-  # proxy_net:
-  #   name: proxy_net
-  #   driver: bridge
   transcendance_net:
     name: transcendance_net
+    driver: bridge
+  elk:
     driver: bridge

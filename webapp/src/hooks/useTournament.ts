@@ -192,23 +192,6 @@ export function useTournament(myUserId: number) {
         );
     }, []);
 
-    const playAI = useCallback(() => {
-        setGameState(GameState.Playing);
-    }, []);
-
-    const playRandom = useCallback(() => {
-        socket.emit("game:queue:join");
-        setGameState(GameState.Playing);
-    }, [socket]);
-
-    const playWithPlayer = useCallback((playerId: number) => {
-        const player = invitedPlayers.find((p) => p.id === playerId);
-        if (player?.confirmed) {
-            socket.emit("game:start:with", { targetId: playerId });
-            setGameState(GameState.Playing);
-        }
-    }, [socket, invitedPlayers]);
-
     const findFirstUnplayedMatch = useCallback((matches: TournamentMatch[]): TournamentMatch | null => {
         const sorted = [...matches].sort((a, b) => {
             if (a.round !== b.round) return a.round - b.round;
@@ -238,6 +221,37 @@ export function useTournament(myUserId: number) {
         }
         return generated;
     }, []);
+
+    useEffect(() => {
+        if (tournamentMatches.length === 0 && invitedPlayers.length >= 2) {
+            const allPlayers: TournamentPlayer[] = [
+                ...(myUserId ? [{ id: myUserId, name: "Moi", isAI: false, confirmed: true }] : []),
+                ...invitedPlayers
+                    .filter((p) => p.id !== myUserId)
+                    .map((p) => ({ id: p.id, name: p.name, isAI: false, confirmed: p.confirmed })),
+            ];
+            const matches = generateBracketMatches(allPlayers);
+            if (matches.length > 0)
+                setTournamentMatches(matches);
+        }
+    }, [invitedPlayers, myUserId, tournamentMatches.length, generateBracketMatches]);
+
+    const playAI = useCallback(() => {
+        setGameState(GameState.Playing);
+    }, []);
+
+    const playRandom = useCallback(() => {
+        socket.emit("game:queue:join");
+        setGameState(GameState.Playing);
+    }, [socket]);
+
+    const playWithPlayer = useCallback((playerId: number) => {
+        const player = invitedPlayers.find((p) => p.id === playerId);
+        if (player?.confirmed) {
+            socket.emit("game:start:with", { targetId: playerId });
+            setGameState(GameState.Playing);
+        }
+    }, [socket, invitedPlayers]);
 
     const startTournamentMatch = useCallback((): boolean => {
         let matches = tournamentMatches;
@@ -288,6 +302,29 @@ export function useTournament(myUserId: number) {
         return true;
     }, [tournamentMatches, invitedPlayers, myUserId, findFirstUnplayedMatch, generateBracketMatches]);
 
+    const handleNameSubmit = useCallback((matchId: number, slot: "A" | "B", name: string) => {
+        const clean = name.trim();
+        if (!clean) return;
+
+        const guestPlayer: TournamentPlayer = {
+            id: Date.now(),
+            name: clean,
+            isAI: false,
+            confirmed: true,
+            isGuest: true,
+        };
+        
+        setTournamentMatches((prev) =>
+            prev.map((m) => {
+                if (m.id !== matchId)
+                    return m;
+                if (slot === "A")
+                    return { ...m, playerA: guestPlayer };
+                return { ...m, playerB: guestPlayer };
+            })
+        );
+    }, []);
+
     const handleTournamentMatchEnd = useCallback((winnerSide: 1 | 2, scoreA: number, scoreB: number) => {
         if (!activeTournamentMatch) return;
         const { matchId, round, position } = activeTournamentMatch;
@@ -297,7 +334,9 @@ export function useTournament(myUserId: number) {
             if (!currentMatch) return prev;
 
             const winnerPlayer = winnerSide === 1 ? currentMatch.playerA : currentMatch.playerB;
-            const winnerId = winnerPlayer?.id ?? -1;
+            if (!winnerPlayer) return prev;
+
+            const winnerId = winnerPlayer.id;
 
             const nextRound = round + 1;
             const nextPosition = Math.ceil(position / 2);
@@ -307,16 +346,14 @@ export function useTournament(myUserId: number) {
                 if (m.id === matchId) {
                     return { ...m, winner: winnerId, scoreA, scoreB };
                 }
-                if (m.round === nextRound && m.position === nextPosition && winnerPlayer) {
+                if (m.round === nextRound && m.position === nextPosition) {
                     return { ...m, [slot]: { ...winnerPlayer } };
                 }
                 return m;
             });
         });
 
-        setTimeout(() => {
-            setActiveTournamentMatch(null);
-        }, 5000);
+        setTimeout(() => setActiveTournamentMatch(null), 2000);
     }, [activeTournamentMatch]);
 
     const startTournament = useCallback(async () => {
@@ -333,14 +370,15 @@ export function useTournament(myUserId: number) {
             } catch (err) {
                 console.log("Failed to start tournament", err);
             }
-        } else if (invitedPlayers.length >= 2) {
+        } else if (tournamentPlayers.length >= 2) {
             try {
+                const playerIds = tournamentPlayers.map(p => p.id);
                 const res = await fetch("https://localhost:8443/tournament", {
                     method: "POST",
                     credentials: "include",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
-                        playerIds: [myUserId, ...invitedPlayers.map((p) => p.id)],
+                        playerIds,
                         name: tournamentName || undefined,
                     }),
                 });
@@ -354,16 +392,25 @@ export function useTournament(myUserId: number) {
                     fetchTournaments();
                 }
             } catch (err) {
-                console.log("Failed to create tournament via API", err);
+                console.log("Failed to create tournament via API, creating locally", err);
                 const localId = `local-${Date.now()}`;
                 setTournamentId(localId);
                 setTournamentName(tournamentName || `Tournament #${localId}`);
                 setIsOrganizer(true);
                 setGameState(GameState.Tournament);
+                const matches = generateBracketMatches(tournamentPlayers);
+                setTournamentMatches(matches);
             }
         }
         startTournamentMatch();
-    }, [tournamentId, invitedPlayers, tournamentName, myUserId, fetchTournamentBracket, fetchTournaments, startTournamentMatch]);
+    }, [
+        tournamentId,
+        tournamentName,
+        tournamentPlayers,
+        fetchTournamentBracket,
+        fetchTournaments,
+        startTournamentMatch,
+    ]);
 
     const changeTournamentName = useCallback((name: string) => {
         setTournamentName(name);
@@ -420,6 +467,7 @@ export function useTournament(myUserId: number) {
         playWithPlayer,
         startTournament,
         startTournamentMatch,
+        handleNameSubmit,
         handleTournamentMatchEnd,
         changeTournamentName,
         joinTournament,

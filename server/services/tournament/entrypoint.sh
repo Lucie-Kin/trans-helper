@@ -1,5 +1,9 @@
 #!/bin/sh
 set -e
-npx tsc
-cp -r src/public dist
-exec node dist/app.js
+
+mkdir -p /app/data
+chown -R node:node /app/data
+
+sqlite3 /app/data/tournament.sqlite < /app/sql/schema.sql
+
+exec su node -s /bin/sh -c "node /app/dist/app.js"

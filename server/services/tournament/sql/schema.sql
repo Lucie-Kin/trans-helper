@@ -1,4 +1,4 @@
-CREATE TABLE tournament (
+CREATE TABLE IF NOT EXISTS tournament (
   id TEXT PRIMARY KEY,
   organizer_id TEXT NOT NULL,
   title TEXT NOT NULL,
@@ -10,12 +10,13 @@ CREATE TABLE tournament (
   current_round INTEGER DEFAULT 0,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   started_at DATETIME,
-  completed_at DATETIME
+  completed_at DATETIME,
+  winner_id TEXT
 );
-CREATE INDEX idx_tournament_organizer_id ON tournament(organizer_id);
-CREATE INDEX idx_tournament_status ON tournament(status);
+CREATE INDEX IF NOT EXISTS idx_tournament_organizer_id ON tournament(organizer_id);
+CREATE INDEX IF NOT EXISTS idx_tournament_status ON tournament(status);
 
-CREATE TABLE tournament_invitation (
+CREATE TABLE IF NOT EXISTS tournament_invitation (
   id TEXT PRIMARY KEY,
   tournament_id TEXT NOT NULL,
   invitee_id TEXT NOT NULL,
@@ -28,9 +29,9 @@ CREATE TABLE tournament_invitation (
   UNIQUE (tournament_id, invitee_id),
   FOREIGN KEY (tournament_id) REFERENCES tournament(id)
 );
-CREATE INDEX idx_tournament_invitee_id ON tournament_invitation(invitee_id);
+CREATE INDEX IF NOT EXISTS idx_tournament_invitee_id ON tournament_invitation(invitee_id);
 
-CREATE TABLE tournament_participant (
+CREATE TABLE IF NOT EXISTS tournament_participant (
   id TEXT PRIMARY KEY,
   tournament_id TEXT NOT NULL,
   player_id TEXT NOT NULL,
@@ -44,9 +45,9 @@ CREATE TABLE tournament_participant (
   UNIQUE (tournament_id, player_id),
   FOREIGN KEY (tournament_id) REFERENCES tournament(id)
 );
-CREATE INDEX idx_participant_tournament_id ON tournament_participant(tournament_id);
+CREATE INDEX IF NOT EXISTS idx_participant_tournament_id ON tournament_participant(tournament_id);
 
-CREATE TABLE tournament_match (
+CREATE TABLE IF NOT EXISTS tournament_match (
   id TEXT PRIMARY KEY,
   tournament_id TEXT NOT NULL,
   round_index INTEGER,
@@ -68,19 +69,25 @@ CREATE TABLE tournament_match (
   FOREIGN KEY (player_b_id) REFERENCES tournament_participant(id),
   FOREIGN KEY (winner_id) REFERENCES tournament_participant(id)
 );
-CREATE INDEX idx_match_tournament_id ON tournament_match(tournament_id);
-CREATE INDEX idx_round ON tournament_match(round_index);
+CREATE INDEX IF NOT EXISTS idx_match_tournament_id ON tournament_match(tournament_id);
+CREATE INDEX IF NOT EXISTS idx_round ON tournament_match(round_index);
 
-CREATE TABLE match_history (
+
+CREATE TABLE IF NOT EXISTS match_history (
   id TEXT PRIMARY KEY,
   user_id TEXT NOT NULL,
   opponent_id TEXT NOT NULL,
+  opponent_kind TEXT NOT NULL DEFAULT 'USER'
+    CHECK (opponent_kind IN ('USER','AI','GUEST')),
+  opponent_name TEXT,
   played_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   result TEXT NOT NULL CHECK (result IN ('WIN','LOSE')),
   score_for INTEGER DEFAULT 0,
   score_against INTEGER DEFAULT 0,
   match_type TEXT NOT NULL CHECK (match_type IN ('TOURNAMENT','NORMAL')),
-  source_match_id TEXT
+  source_match_id TEXT NOT NULL
 );
 
-CREATE INDEX idx_match_history_user ON match_history(user_id);
+CREATE INDEX IF NOT EXISTS idx_match_history_user ON match_history(user_id);
+CREATE INDEX IF NOT EXISTS idx_match_history_user_played_at ON match_history(user_id, played_at);
+CREATE UNIQUE INDEX IF NOT EXISTS uq_match_history_user_source ON match_history(user_id, source_match_id);

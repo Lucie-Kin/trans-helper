@@ -14,8 +14,8 @@ ELK_IMPORT_SCRIPT=./ELK/kibana/scripts/import_shared_objects.sh
 
 # =================== RÈGLES ===================
 
-all: network
-	$(COMPOSE) -f $(COMPOSE_FILE) up --build -d
+all: 
+	$(COMPOSE) -p $(NAME) -f $(COMPOSE_FILE) up --build -d
 	@$(MAKE) wait-kibana
 	@$(MAKE) elk-import
 
@@ -33,7 +33,10 @@ ps:
 
 
 clean:
-	docker compose down
+	docker compose -p $(NAME) down
+
+vclean:
+	docker compose -p $(NAME) down -v
 
 fclean-hard:
 	docker compose down
@@ -43,14 +46,14 @@ fclean-hard:
 	docker volume rm $$(docker volume ls -qf dangling=true) 2>/dev/null || true
 
 fclean:
-	docker compose down --remove-orphans
+	docker compose -p $(NAME) down --remove-orphans
 	docker container prune -f
 	docker image prune -af
 
 
-network:
-	docker network inspect transcendance_net >/dev/null 2>&1 || \
-	docker network create transcendance_net
+# network:
+# 	docker network inspect transcendance_net >/dev/null 2>&1 || \
+# 	docker network create transcendance_net
 
 
 # =================== SCRIPTS & NPM ===================
@@ -81,4 +84,4 @@ elk-export:
 	@bash $(ELK_EXPORT_SCRIPT)
 
 
-.PHONY: all up down restart logs ps clean fclean re script npm-clean npm-install npm-install-docker
+.PHONY: all up down restart logs ps clean vclean fclean fclean-hard re script npm-clean npm-install npm-install-docker wait_kibana elk-import elk-export network

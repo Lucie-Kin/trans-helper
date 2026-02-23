@@ -1,3 +1,4 @@
+// tournament/src/mappers/tournament.mapper.ts
 import { Tournament, TournamentMatch, TournamentParticipant } from '../types/tournament';
 import { TournamentInfo } from '../types/tournament.view';
 

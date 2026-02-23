@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import type { Language } from "./LanguageContext";
 
 const LANGS: Record<Language, { label: string; flag: string }> = {

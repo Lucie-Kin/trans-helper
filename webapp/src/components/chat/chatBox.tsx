@@ -69,9 +69,9 @@ export default function ChatBox({ myUserId, onGameInviteSent, onGameInviteAccept
   const isBlockedByThem =
     activeUserId !== null && blockedMe.includes(activeUserId);
 
-  if (!isConnected) {
-    return <div className="chat-placeholder">Connexion au chat...</div>;
-  }
+  // if (!isConnected) {
+  //   return <div className="chat-placeholder">Connexion au chat...</div>;
+  // }
 
   return (
     <div className="chat-box">

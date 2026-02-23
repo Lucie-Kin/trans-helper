@@ -1,4 +1,3 @@
-// webapp/src/pong/main.ts
 import { GameField } from "./core/gameField";
 import { Player } from "./entities/player";
 import { Ball } from "./entities/ball";
@@ -350,7 +349,6 @@ export function startPong(
   last = performance.now();
   rafId = requestAnimationFrame(loop);
 
-  // super important pour React : on nettoie quand on quitte la page
   return {
     cleanup,
     setPaused: (value: boolean) => setPaused(value, last)

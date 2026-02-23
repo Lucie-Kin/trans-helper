@@ -12,15 +12,16 @@ export const TEXTS = {
     },
     menu: {
 		settings: "Paramètres",
+		history: "Historique des parties",
 		logout: "Déconnexion",
     },
     game: {
-		mode: "Choisis un Mode de Jeu",
-		ai: "Joue contre l'IA",
-		title: "Match aléatoire",
+		mode: "Choisir un Mode de Jeu",
+		ai: "Jouer contre l'IA",
+		title: "Match 1v1",
 		start: "Appuyez sur Espace pour commencer",
 		quit: "Quitter la partie",
-		random: "Trouve un adversaire au hasard",
+		random: "Jouer en local",
 		victory: "VICTOIRE",
 		rank: "Classsement: "
     },
@@ -40,6 +41,14 @@ export const TEXTS = {
 		accept_invite: "Accepter la demande d'invitation",
 		decline_invite: "Refuser la demande d'invitation"
 	},
+	tournament: {
+		null: "Aucun tournoi en cours",
+		title: "Tournois disponibles",
+		for: "Par",
+		player: "joueurs",
+		join: "Rejoindre",
+		status: "En cours"
+	},
 	settings: {
 		title: "Paramètres",
 		subtitle: "Nom d'affichage : ",
@@ -48,6 +57,11 @@ export const TEXTS = {
 		registering: "Enregistrement...",
 		loading: "Chargement…",
 		twofa: "Activer 2FA",
+	},
+	history: {
+		load: "Chargement de l'historique des parties…",
+		errload: "Erreur de chargement de l'historique des parties:",
+		nullmatch: "Aucune partie n'a été joué.",
 	}
   },
   en: {
@@ -61,6 +75,7 @@ export const TEXTS = {
 		},
     menu: {
 		settings: "Settings",
+		history: "Match History",
 		logout: "Logout",
     },
     game: {
@@ -89,6 +104,14 @@ export const TEXTS = {
 		accept_invite: "Accept the invitation request",
 		decline_invite: "Decline the invitation request"
 	},
+	tournament: {
+		null: "No tournament currently running",
+		title: "Available Tournaments",
+		for: "By",
+		player: "players",
+		join: "Join",
+		status: "In progress"
+	},
 	settings: {
 		title: "Settings",
 		subtitle: "Display name : ",
@@ -97,7 +120,12 @@ export const TEXTS = {
 		registering: "Registering...",
 		loading: "Loading…",
 		twofa: "Enable 2FA",
-	}
+	},
+	history: {
+		load: "Loading match history…",
+		errload: "Error loading match history:",
+		nullmatch: "No matches played yet.",
+	}//{translate("history.")}
   },
   es: {
     home: {
@@ -110,6 +138,7 @@ export const TEXTS = {
     },
     menu: {
       settings: "Ajustes",
+	  history: "Estadísticas del partidos",
       logout: "Cerrar sesión",
     },
     game: {
@@ -138,6 +167,14 @@ export const TEXTS = {
 		accept_invite: "Aceptar la solicitud de invitación",
 		decline_invite: "Rechazar la solicitud de invitación"
 	},
+	tournament: {
+		null: "Ningún torneo accessible",
+		title: "Torneos disponibles",
+		for: "Para",
+		player: "jugadores",
+		join: "Unirse",
+		status: "En progresso"
+	},
 	settings: {
 		title: "Ajustes",
 		subtitle: "Nombre para mostrar : ",
@@ -146,6 +183,11 @@ export const TEXTS = {
 		registering: "Registro...",
 		loading: "Cargando…",
 		twofa: "Permitir 2FA"
+	},
+	history: {
+		load: "Cargando estadísticas del partidos…",
+		errload: "Error al cargar los estadísticas del partidos",
+		nullmatch: "No partidos jugando.",
 	}
   },
 } as const;

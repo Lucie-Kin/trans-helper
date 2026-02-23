@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import "../../style/chat/profileModal.css";
 import { useMatchHistory } from "../../hooks/useMatchHistory";
-import { API_BASE } from "../../api";
-import { useLanguage } from "../../language/LanguageContext.tsx";
+import { useLanguage } from "../../language/LanguageContext";
 
 type User = {
   id: number;
@@ -18,7 +17,7 @@ export default function MatchHistory({ onClose }: { onClose: () => void }) {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const res = await fetch(`${API_BASE}/auth/api/users`, {
+        const res = await fetch("https://localhost:8443/auth/api/users", {
           credentials: "include",
         });
         if (res.ok) {
@@ -34,7 +33,7 @@ export default function MatchHistory({ onClose }: { onClose: () => void }) {
       }
     };
 
-    if (items.some((m: any) => (m.opponent_kind ?? "USER") === "USER")) {
+    if (items.length > 0) {
       fetchUsers();
     }
   }, [items]);
@@ -46,7 +45,7 @@ export default function MatchHistory({ onClose }: { onClose: () => void }) {
 
     return (
       <ul className="match-history-list">
-        {items.map((m: any) => {
+        {items.map((m) => {
           const date = new Date(m.played_at);
           const formattedDate = isNaN(date.getTime())
             ? m.played_at
@@ -60,13 +59,7 @@ export default function MatchHistory({ onClose }: { onClose: () => void }) {
 
           const outcomeLabel = m.result === "WIN" ? "Win " : "Loss ";
           const typeLabel = m.match_type === "TOURNAMENT" ? "Tournament " : "1v1 ";
-
-          const kind: "USER" | "AI" | "GUEST" = (m.opponent_kind ?? "USER") as any;
-
-          const opponentName =
-            kind !== "USER"
-              ? (m.opponent_name || (kind === "AI" ? "AI" : "Guest"))
-              : (usersMap.get(String(m.opponent_id)) || String(m.opponent_id));
+          const opponentName = usersMap.get(m.opponent_id) || m.opponent_id;
 
           return (
             <li key={m.id} className="match-history-item">
@@ -102,3 +95,5 @@ export default function MatchHistory({ onClose }: { onClose: () => void }) {
     </div>
   );
 }
+
+

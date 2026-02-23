@@ -1,3 +1,4 @@
+// utils/tournament.manager.ts
 import { TournamentRepository } from '../repository/tournament.repository';
 import { TournamentStatus, InvitationStatus, TournamentMatchStatus, ParticipantStatus } from '../types/tournament';
 import { TournamentInvitation } from '../types/tournament';
@@ -13,6 +14,7 @@ export class TournamentManager {
 
     async createTournament(name: string, organizedId: string) {
         const id = await this.repo.createTournament(name, organizedId);
+        console.log(id);
         return this.repo.getTournamentById(id);
     }
     async getTournament(id:string) {
@@ -112,6 +114,8 @@ export class TournamentManager {
         }
         return true;
     }
+
+    // we dont use it anywhere
     async reportMatchResult(matchId: string, winnerId: string): Promise<boolean> {
         return this.repo.withTransaction(async () => {
             const match = await this.repo.getMatchById(matchId);
@@ -128,56 +132,80 @@ export class TournamentManager {
             const nextMatch = await this.repo.getMatchByPosition(match.tournamentId, nextRoundIndex, nextBracketPosition);
             if (nextMatch)
                 await this.repo.updateMatchPlayer(nextMatch.id, winnerId, slot);
-            const db = this.repo.getDb();
-            const matchDetails = await db.get<{
-                player_a_id: string | null;
-                player_b_id: string | null;
-                score_a: number | null;
-                score_b: number | null;
-            }>(
-                `
-                SELECT 
-                    pa.player_id AS player_a_id,
-                    pb.player_id AS player_b_id,
-                    tm.score_a,
-                    tm.score_b
-                FROM tournament_match tm
-                LEFT JOIN tournament_participant pa ON tm.player_a_id = pa.id
-                LEFT JOIN tournament_participant pb ON tm.player_b_id = pb.id
-                WHERE tm.id = ?
-                `,
-                matchId
-            );
+             /*const db = this.repo.getDb();
 
-            if (matchDetails && matchDetails.player_a_id && matchDetails.player_b_id) {
-                const isAWin = winnerId === match.playerAId;
-                const winnerUserId = isAWin ? matchDetails.player_a_id : matchDetails.player_b_id;
-                const loserUserId = isAWin ? matchDetails.player_b_id : matchDetails.player_a_id;
-                const scoreWinner = isAWin ? (matchDetails.score_a ?? 0) : (matchDetails.score_b ?? 0);
-                const scoreLoser = isAWin ? (matchDetails.score_b ?? 0) : (matchDetails.score_a ?? 0);
+           
+const matchDetails = await db.get<{
+  player_a_id: string | null;
+  player_b_id: string | null;
+  score_a: number | null;
+  score_b: number | null;
+}>(
+  `
+  SELECT 
+    pa.player_id AS player_a_id,
+    pb.player_id AS player_b_id,
+    tm.score_a,
+    tm.score_b
+  FROM tournament_match tm
+  LEFT JOIN tournament_participant pa ON tm.player_a_id = pa.id
+  LEFT JOIN tournament_participant pb ON tm.player_b_id = pb.id
+  WHERE tm.id = ?
+  `,
+  matchId
+);
 
-                await this.repo.addMatchHistory(
-                    winnerUserId,
-                    loserUserId,
-                    'WIN',
-                    scoreWinner,
-                    scoreLoser,
-                    'TOURNAMENT',
-                    completedAt,
-                    matchId
-                );
+if (matchDetails?.player_a_id && matchDetails?.player_b_id) {
+  const a = String(matchDetails.player_a_id);
+  const b = String(matchDetails.player_b_id);
 
-                await this.repo.addMatchHistory(
-                    loserUserId,
-                    winnerUserId,
-                    'LOSE',
-                    scoreLoser,
-                    scoreWinner,
-                    'TOURNAMENT',
-                    completedAt,
-                    matchId
-                );
-            }
+  const isAI = (x: string) => /^AI_/i.test(x);
+
+  // winnerId тут = tournament_participant.id (не user id)
+  const isAWin = winnerId === match.playerAId;
+
+  const winnerUser = isAWin ? a : b;
+  const loserUser  = isAWin ? b : a;
+
+  const scoreWinner = isAWin ? (matchDetails.score_a ?? 0) : (matchDetails.score_b ?? 0);
+  const scoreLoser  = isAWin ? (matchDetails.score_b ?? 0) : (matchDetails.score_a ?? 0);
+
+  // helper
+  const kindOf = (id: string): 'USER' | 'AI' | 'GUEST' => (isAI(id) ? 'AI' : 'USER');
+  const nameOf = (id: string): string | undefined => (isAI(id) ? id : undefined);
+
+  // Пишем только для реальных пользователей
+  if (!isAI(winnerUser)) {
+    await this.repo.addMatchHistory(
+      winnerUser,
+      loserUser,
+      'WIN',
+      scoreWinner,
+      scoreLoser,
+      'TOURNAMENT',
+      completedAt,
+      matchId,
+      kindOf(loserUser),
+      nameOf(loserUser)
+    );
+  }
+
+  if (!isAI(loserUser)) {
+    await this.repo.addMatchHistory(
+      loserUser,
+      winnerUser,
+      'LOSE',
+      scoreLoser,
+      scoreWinner,
+      'TOURNAMENT',
+      completedAt,
+      matchId,
+      kindOf(winnerUser),
+      nameOf(winnerUser)
+    );
+  }
+}*/
+
             const remainingMatches = await this.repo.countPendingMatches(match.tournamentId);
             if (remainingMatches === 0)
                 await this.repo.updateTournament(match.tournamentId, TournamentStatus.COMPLETED, winnerId, new Date());

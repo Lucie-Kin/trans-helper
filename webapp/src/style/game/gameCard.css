@@ -68,6 +68,9 @@
     width: 120%;
     min-height: 9rem;
 
+    width: 120%;
+    min-height: 9rem;
+
     border-radius: 12px;
     background: rgba(15, 20, 40, 0.55);
     backdrop-filter: blur(8px);
