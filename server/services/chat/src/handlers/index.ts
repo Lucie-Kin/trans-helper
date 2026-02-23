@@ -3,6 +3,7 @@ import { registerFriendHandlers } from "./friends.js";
 import { registerMessageHandlers } from "./messages.js";
 import { registerInviteHandlers } from "./invite.js";
 import { registerAuthHandlers } from "./auth.js";
+import { registerTournamentHandlers } from "./tournament.js";
 
 import { getAllSnapshotUsers } from "../repositories/users.repository.js";
 import { isUserOnline } from "../socketRegistry.js";
@@ -62,4 +63,7 @@ export function registerAllHandlers(io: any, socket: any) {
 
   // invite
   registerInviteHandlers(io, socket);
+
+  // tournament
+  registerTournamentHandlers(io, socket);
 }

@@ -162,11 +162,16 @@ export function useTournament(myUserId: number) {
                 }
             }
         };
+
+        const onTournamentNextMatch = (payload: { playerAName: string; playerBName: string; tournamentId: string }) => {
+            setNextMatchNotification({ playerAName: payload.playerAName, playerBName: payload.playerBName });
+        };
         socket.on("game:start", onGameStart);
         socket.on("game:end", onGameEnd);
         socket.on("game:invite:accepted", onInviteAccepted);
         socket.on("game:invite:rejected", onGameInviteRejected);
         socket.on("notification", onNotification);
+        socket.on("tournament:nextMatch", onTournamentNextMatch);
 
         fetchTournaments();
 
@@ -176,6 +181,7 @@ export function useTournament(myUserId: number) {
             socket.off("game:invite", onInviteAccepted);
             socket.off("game:invite:rejected", onGameInviteRejected);
             socket.off("notification", onNotification);
+            socket.off("tournament:nextMatch", onTournamentNextMatch);
         };
     }, [socket, myUserId, fetchTournaments, fetchTournamentBracket]);
 
@@ -369,11 +375,28 @@ export function useTournament(myUserId: number) {
                     const pAName = nextMatch.playerA?.name || "AI";
                     const pBName = nextMatch.playerB?.name || "AI";
                     setNextMatchNotification({ playerAName: pAName, playerBName: pBName });
+
+                    if (tournamentId) {
+                        const participantIds = Array.from(
+                            new Set(
+                                latestMatches
+                                    .flatMap((m) => [m.playerA, m.playerB])
+                                    .filter((p) => p && !p.isAI && p.id > 0)
+                                    .map((p) => p!.id)
+                            )
+                        );
+                        socket.emit("tournament:nextMatch", {
+                            tournamentId,
+                            playerAName: pAName,
+                            playerBName: pBName,
+                            participantIds,
+                        });
+                    }
                 }
                 return latestMatches;
             });
         }, 2000);
-    }, [activeTournamentMatch, findFirstUnplayedMatch]);
+    }, [activeTournamentMatch, findFirstUnplayedMatch, tournamentId, socket]);
 
     const startTournament = useCallback(async () => {
         if (tournamentId) {
