@@ -58,6 +58,7 @@ A React/Vite frontend application with authentication features. A web applicatio
 - **ELO**: Noob (0-1199, K=32), Mid (1200-1599, K=24), Pro (1600+, K=16)
 
 ## Recent Changes
+- 2026-02-23: Match history now persists locally (localStorage) — saves results from AI, invite, random, and tournament games; falls back to local when server unavailable
 - 2026-02-23: Added TournamentNotification component: shows "PLAYER1 VS. PLAYER2" for next match, auto-closes after 5s, pauses game when visible
 - 2026-02-23: Fixed settings/history modal title word-breaking: responsive width with clamp(), word-break: keep-all
 - 2026-02-23: Ball no longer resets to center on unpause (resumeOnly flag in main.ts)

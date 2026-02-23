@@ -16,7 +16,9 @@ export type ActiveTournamentMatch = {
     position: number;
     playerAName: string;
     playerBName: string;
+    playerBId: number;
     isAIOpponent: boolean;
+    isGuestOpponent: boolean;
 };
 
 export type NextMatchNotification = {
@@ -336,7 +338,9 @@ export function useTournament(myUserId: number) {
             position: match.position,
             playerAName: pA.name,
             playerBName: pB.name,
+            playerBId: pB.id,
             isAIOpponent: false,
+            isGuestOpponent: !!pB.isGuest,
         });
         return true;
     }, [tournamentMatches, invitedPlayers, myUserId, findFirstUnplayedMatch, generateBracketMatches]);

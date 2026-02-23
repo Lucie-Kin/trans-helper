@@ -15,6 +15,7 @@ import TournamentNotification from '../game/TournamentNotification.tsx';
 import "../../style/homePage/homepage.css";
 import "../../style/homePage/settings.css";
 import { LanguageDropdown } from '../../language/LanguageMenu.tsx';
+import { saveMatchToLocal, generateMatchId } from '../../utils/localMatchHistory';
 
 ////////////
 const DEV_MODE = false;
@@ -220,6 +221,24 @@ export default function HomePage() {
           paused={showSettings || showHistory || menuOpen || !!tournament.nextMatchNotification}
           onGameEnd={(result) => {
             tournament.handleTournamentMatchEnd(result.winner, result.scoreP1, result.scoreP2);
+            const am = tournament.activeTournamentMatch;
+            if (am) {
+              const isWin = result.winner === 1;
+              const kind = am.isAIOpponent ? "AI" as const
+                : am.isGuestOpponent ? "GUEST" as const
+                : "USER" as const;
+              saveMatchToLocal({
+                id: generateMatchId(),
+                opponent_id: String(am.playerBId ?? "unknown"),
+                opponent_kind: kind,
+                opponent_name: result.player2Name,
+                played_at: new Date().toISOString(),
+                result: isWin ? "WIN" : "LOSE",
+                score_for: result.scoreP1,
+                score_against: result.scoreP2,
+                match_type: "TOURNAMENT",
+              });
+            }
           }}
         />
       ) : gameState === GameState.Playing && activeCard ? (
@@ -234,6 +253,26 @@ export default function HomePage() {
           }
           invitePlayerId={invitePlayerId}
           paused={showSettings || showHistory || menuOpen || !!tournament.nextMatchNotification}
+          onGameEnd={(result) => {
+            const isWin = result.winner === 1;
+            const kind = activeCard === GameCardType.AI ? "AI" as const
+              : activeCard === GameCardType.Invite ? "USER" as const
+              : "USER" as const;
+            const oppId = activeCard === GameCardType.AI ? "ai"
+              : activeCard === GameCardType.Invite ? String(invitePlayerId ?? "unknown")
+              : "random";
+            saveMatchToLocal({
+              id: generateMatchId(),
+              opponent_id: oppId,
+              opponent_kind: kind,
+              opponent_name: result.player2Name,
+              played_at: new Date().toISOString(),
+              result: isWin ? "WIN" : "LOSE",
+              score_for: result.scoreP1,
+              score_against: result.scoreP2,
+              match_type: "NORMAL",
+            });
+          }}
         />
       ) : (
         <div className="boxes-wrapper">
