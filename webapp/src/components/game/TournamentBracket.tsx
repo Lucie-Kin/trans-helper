@@ -434,16 +434,17 @@ export default function TournamentBracket({
                 {effectiveMatches.length > 0 && effectiveMatches.every((m) => m.winner !== undefined) ? (
                     <button className="tournament-start-btn close" onClick={onClose}>Fermer le tournoi</button>
                 ) : (() => {
-                    const filledSlots = effectiveMatches
+                    const filledSlots =effectiveMatches
                         .filter((m) => m.round === 1)
                         .reduce((count, m) => count + (m.playerA ? 1 : 0) + (m.playerB ? 1 : 0), 0);
                     const ready = filledSlots >= 4;
                     return (
-                        <button
+                        <button 
                             className={`tournament-start-btn${!ready ? " disabled" : ""}`}
                             onClick={ready ? onStart : undefined}
-                            disabled={!ready}
-                        >Jouer</button>
+                            disabled={!ready}>
+                          Jouer
+                        </button>
                     );
                 })()}
         </div>

@@ -234,7 +234,7 @@ export function useTournament(myUserId: number) {
     }, []);
 
     useEffect(() => {
-        if (invitedPlayers.length < 2) return;
+        if (invitedPlayers.length < 2) return ;
 
         const allPlayers: TournamentPlayer[] = [
             ...(myUserId ? [{ id: myUserId, name: "Moi", isAI: false, confirmed: true }] : []),
@@ -243,36 +243,34 @@ export function useTournament(myUserId: number) {
                 .map((p) => ({ id: p.id, name: p.name, isAI: false, confirmed: p.confirmed })),
         ];
 
-        if (tournamentMatches.length === 0) {
-            const matches = generateBracketMatches(allPlayers);
-            if (matches.length > 0)
-                setTournamentMatches(matches);
-        } else {
+        setTournamentMatches((prev) => {
+            if (prev.length === 0) {
+                const matches = generateBracketMatches(allPlayers);
+                return matches.length > 0 ? matches : prev;
+            }
+
             const existingIds = new Set<number>();
-            tournamentMatches.forEach((m) => {
+            prev.forEach((m) => {
                 if (m.playerA) existingIds.add(m.playerA.id);
                 if (m.playerB) existingIds.add(m.playerB.id);
             });
 
-            const newPlayers = allPlayers.filter((p) => !existingIds.has(p.id));
-            if (newPlayers.length === 0) return;
+            const toPlace = allPlayers.filter((p) => !existingIds.has(p.id));
+            if (toPlace.length === 0) return prev;
 
-            setTournamentMatches((prev) => {
-                const toPlace = [...newPlayers];
-                return prev.map((m) => {
-                    if (m.round !== 1 || toPlace.length === 0) return m;
-                    const newA = !m.playerA && toPlace.length > 0 ? toPlace.shift() : undefined;
-                    const newB = !m.playerB && toPlace.length > 0 ? toPlace.shift() : undefined;
-                    if (!newA && !newB) return m;
-                    return {
-                        ...m,
-                        ...(newA ? { playerA: newA } : {}),
-                        ...(newB ? { playerB: newB } : {}),
-                    };
-                });
+            return prev.map((m) => {
+                if (m.round !== 1 || toPlace.length === 0) return m;
+                const newA = !m.playerA && toPlace.length > 0 ? toPlace.shift() : undefined;
+                const newB = !m.playerB && toPlace.length > 0 ? toPlace.shift() : undefined;
+                if (!newA && !newB) return m;
+                return {
+                    ...m,
+                    ...(newA ? { playerA: newA } : {}),
+                    ...(newB ? { playerB: newB } : {}),
+                };
             });
-        }
-    }, [invitedPlayers, myUserId, tournamentMatches, generateBracketMatches]);
+        });
+    }, [invitedPlayers, myUserId, generateBracketMatches]);
 
     const playAI = useCallback(() => {
         setGameState(GameState.Playing);
