@@ -12,6 +12,7 @@ type Props = {
     invitePlayerId?: number;
     onExit: () => void;
     onGameEnd?: (result: MatchResult) => void;
+    paused?: boolean;
 };
 
 export default function GameArea({
@@ -21,15 +22,16 @@ export default function GameArea({
     invitePlayerId,
     onExit,
     onGameEnd,
+    paused: externalPaused = false,
 }: Props) {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
-	const { translate } = useLanguage();
+    const gameRef = useRef<ReturnType<typeof startPong> | null>(null);
+    const { translate } = useLanguage();
 
     useEffect(() => {
         if (!canvasRef.current) return;
 
         const canvas = canvasRef.current;
-        let game: ReturnType<typeof startPong>;
         let cancelled = false;
 
         const init = async () => {
@@ -40,17 +42,20 @@ export default function GameArea({
             canvas.width = rect.width;
             canvas.height = rect.height;
 
-            game = startPong(canvas, gameCardType, player1Name, player2Name, invitePlayerId, onGameEnd, 1000, 1000, translate);
+            const g = startPong(canvas, gameCardType, player1Name, player2Name, invitePlayerId, onGameEnd, 1000, 1000, translate);
+            if (!cancelled) {
+                gameRef.current = g ?? null;
+                if (externalPaused) g?.setPaused(true);
+            }
         };
 
-        const onBlur = () => game?.setPaused(true);
-        const onFocus = () => game?.setPaused(false);
+        const onBlur = () => gameRef.current?.setPaused(true);
+        const onFocus = () => gameRef.current?.setPaused(false);
         const onVisibilityChange = () => {
             if (document.hidden)
-                game?.setPaused(true);
+                gameRef.current?.setPaused(true);
             else
-                game?.setPaused(false);
-
+                gameRef.current?.setPaused(false);
         };
 
         window.addEventListener("blur", onBlur);
@@ -61,12 +66,18 @@ export default function GameArea({
 
         return () => {
             cancelled = true;
-            game?.cleanup();
+            gameRef.current?.cleanup();
+            gameRef.current = null;
             window.removeEventListener("blur", onBlur);
             window.removeEventListener("focus", onFocus);
             document.removeEventListener("visibilitychange", onVisibilityChange);
         };
-	}, [gameCardType, player1Name, player2Name, invitePlayerId, onGameEnd, translate]);
+    }, [gameCardType, player1Name, player2Name, invitePlayerId, onGameEnd, translate]);
+
+    useEffect(() => {
+        gameRef.current?.setPaused(externalPaused);
+    }, [externalPaused]);
+
     return (
         <div className="game-area">
             <div className="game-viewport">

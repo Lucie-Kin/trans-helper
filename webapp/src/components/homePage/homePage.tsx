@@ -209,6 +209,7 @@ export default function HomePage() {
           gameCardType={tournament.activeTournamentMatch.isAIOpponent ? GameCardType.AI : GameCardType.Invite}
           player1Name={tournament.activeTournamentMatch.playerAName}
           player2Name={tournament.activeTournamentMatch.playerBName}
+          paused={showSettings || showHistory}
           onGameEnd={(result) => {
             tournament.handleTournamentMatchEnd(result.winner, result.scoreP1, result.scoreP2);
           }}
@@ -224,6 +225,7 @@ export default function HomePage() {
               : tournament.invitedPlayers.find(p => p.id === invitePlayerId)?.name || "Adversaire"
           }
           invitePlayerId={invitePlayerId}
+          paused={showSettings || showHistory}
         />
       ) : (
         <div className="boxes-wrapper">
